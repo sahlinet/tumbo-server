@@ -1,0 +1,270 @@
+{% extends "fastapp/index.html" %}
+
+{% block title %}{{ block.super }} - {{ active_base.name }} {% endblock title %}
+
+{% block fastapp_header %} {{ block.super }} {% endblock %} {% block ngapp %} ng-app="execApp" {% endblock %} {% block main %}
+
+<!-- /.container -->
+<div class="container" ng-controller="BasesCtrl">
+    <div class="row">
+        <h1>
+            {{ FASTAPP_NAME }} {% if user.is_authenticated %}
+            <button id="share" type="button" class="btn btn-default btn-xs">
+                <span class="glyphicon glyphicon-share"></span> Share</button>
+
+            <button id="delete" type="button" class="btn btn-default btn-xs">
+                <span class="glyphicon glyphicon-remove"></span> Delete</button>
+
+            <button id="rename_base_{{ FASTAPP_NAME }}" type="button" class="btn btn-default btn-xs">
+                <span class="glyphicon glyphicon-pencil"></span> Rename</button>
+
+            <a id="export" class="btn btn-default btn-xs" href="{% url 'base-export' active_base.name %}">
+                <span class="glyphicon glyphicon-download-alt"></span> Export</a>
+
+
+                <button type="button" class="btn btn-default btn-xs" ng-click="cycle_state(base)">
+                    <span ng-show="base.state == false">Start</span>
+                    <span ng-show="base.state == true">Stop</span>
+                </button>
+
+                <span ng-if="base.state">
+                    <button type="button" class="btn btn-default btn-xs" ng-click="restart(base)">
+                        <span>Restart</span>
+                    </button>
+                </span>
+
+            {% endif %}
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12" >
+            <h3>Runtime Information</h3>
+            {% verbatim %}
+            <p>Port: </p>
+            <p><a target="_blank" href="http://{{ base.executors[0].ip }}:{{ base.executors[0].port }}">http://{{ base.executors[0].ip }}:{{ base.executors[0].port }}</a></p>
+            <p><a target="_blank" href="http://[{{ base.executors[0].ip6 }}]:{{ base.executors[0].port }}">http://[{{ base.executors[0].ip6 }}]:{{ base.executors[0].port }}</a></p>
+            {% endverbatim %}
+            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS }}</a></p>
+            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS_V4 }}</a></p>
+            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS_V6 }}</a></p>
+
+        </div>
+    </div>
+    <div class="row rendered">
+        {{ active_base.template }} {% block content %} {% endblock %}
+    </div>
+    <div class="row">
+        <div class="col-md-12" >
+            <h3>Foreign Apys</h3>
+            <p>Filter: </p>
+            {% verbatim %}
+            <div>
+              <p><input ng-model="search.$"/></p>
+            </div>
+            <div class="row">
+              <div class="col-md-8">
+                <table class="table table-striped table-bordered table-condensed table-hover">
+                   <thead>
+                      <th>Name</th>
+                      <th>Description</th>
+                      <th>Base</th>
+                      <th>Creator</th>
+                      <th>Actions</th>
+                    </thead>
+                    <tr ng-repeat="foreign_apy in public_apys | filter:search:strict ">
+                        <td>{{ foreign_apy.name }}</th>
+                        <td>{{ foreign_apy.description }}</th>
+                        <td>{{ foreign_apy.base }}</th>
+                        <td>{{ foreign_apy.first_lastname }}</th>
+                        <td>
+                            <button ng-show="is_related(foreign_apy)" class="btn btn-default btn-xs" ng-click="relate(foreign_apy)">Unrelate</button>
+                            <button ng-show="!is_related(foreign_apy)" class="btn btn-default btn-xs" ng-click="relate(foreign_apy)">Relate</button>
+                        </td>
+                    </tr>
+                </table>
+              </div>
+            </div>
+            {% endverbatim %}
+        </div>
+        <div class="col-md-12" >
+            <h3>Configuration</h3>
+            {% verbatim %}
+            <p>Public: </p>
+            <a href="#" editable-checkbox="base.public" e-title="Published?" onaftersave="updatePublicity(base)">{{ base.public && "Public" || "Private" }}</a>
+            <p>Static Public: </p>
+            <a href="#" editable-checkbox="base.static_public" e-title="Published?" onaftersave="updatePublicity(base)">{{ base.static_public && "Public" || "Private" }}</a>
+            {% endverbatim %}
+        </div>
+
+        <div class="col-md-6">
+            <div ng-controller="TransportEndpointCtrl">
+                <h3>Transport</h3>
+                {% verbatim %}
+                <div ng-repeat="endpoint in endpoints">
+
+                    <button ng-click="transport(endpoint, base)" id="transport" type="button" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-share"></span> Transport to {{ endpoint.url }}</button>
+                </div>
+                {% endverbatim %}
+            </div>
+            <h3>User Agent</h3>
+            <h4>index
+                <button id="edit_html" type="button" class="btn btn-default btn-xs">
+                    <span class="glyphicon glyphicon-edit"></span> Edit</button>
+            </h4>
+            <p>
+                <form id="edit_html">
+                    <textarea id="area_html" name="html">{{ active_base.content }}</textarea>
+                </form>
+            </p>
+            <script>
+                /* html */
+                var editor = CodeMirror.fromTextArea(document.getElementById("area_html"), {
+                    lineNumbers: true,
+                    mode: "application/x-ejs",
+                    indentUnit: 4,
+                    indentWithTabs: true,
+                    lineWrapping: true,
+                    enterMode: "keep",
+                    vimMode: true,
+                    tabMode: "shift",
+                });
+                editor.on("blur", function(cm, cmChangeObject) {
+                    $.post("/fastapp/{{ active_base.name }}/sync/", {
+                        content: cm.getValue()
+                    });
+                    $('body > div.container > div.row.rendered').html(cm.getValue());
+                });
+            </script>
+            <div class="table-responsive" ng-controller="SettingsCtrl" ng-init="init()">
+                <h3>Settings
+                    <button type="button" class="btn btn-default btn-xs" ng-click="addRow()">
+                        <span class="glyphicon glyphicon-plus"></span> Add row</button>
+                    <button type="button" class="btn btn-default btn-xs" ng-click="save()">
+                        <span class="glyphicon glyphicon-save"></span> Save</button>
+                </h3>
+
+                <div class="gridStyle" ng-grid="gridOptions"></div>
+
+            </div>
+        </div>
+        <div class="col-md-6" ng-controller="ExecCtrl" ng-init="init()" ng-model="apys">
+            <h3>Execs</h3>
+
+            <!--
+                        <h4>Foreigns</h4>
+                        <div ng-repeat="foreign in base.foreign_apys">
+                            <p>{{ foreign.name }}</p>
+                        </div>
+                    -->
+            {% if user.is_authenticated %} {% verbatim %}
+            <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+            {% endverbatim %}
+
+            <div>
+                <p>
+                    <button id="create_exec" type="button" class="btn btn-default btn-xs" ng-click="showNewExec = !showNewExec">
+                        <span class="glyphicon glyphicon-plus"></span> New Exec</button>
+
+                    <div class="row" ng-show="showNewExec">
+                        <div class="col-lg-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="new_exec_name">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" ng-click="create()">
+                                        <span class="glyphicon glyphicon-save"></span> Save</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </p>
+                {% verbatim %}
+                <div ng-repeat="apy in apys | orderBy:'name':false ">
+                    <h4>{{ apy.name }}
+                        <span class="badge">{{ apy.counter.executed }}</span>&nbsp
+                        <span class="badge badge-error">{{ apy.counter.failed }}</span>
+                    </h4>
+                    <p class="light">
+                        {{ apy.description }}
+                    </p>
+                    <div>
+                        <button id="edit_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="showApyEditor = !showApyEditor">
+                            <span class="glyphicon glyphicon-edit"></span> Edit</button>
+
+                        <button id="delete_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="delete(apy)">
+                            <span class="glyphicon glyphicon-remove"></span> Delete</button>
+
+                        <button type="button" class="btn btn-default btn-xs" ng-click="save(apy)">
+                            <span class="glyphicon glyphicon-save"></span> Save</button>
+
+                        <button id="clone_exec_{{ apy.name }}" class="btn btn-default btn-xs" ng-click="clone(apy)">
+                            <span class="glyphicon glyphicon-chevron-down"></span> Clone</button>
+
+                        <button id="exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="executeNewWindow(apy)">
+                            <span class="glyphicon glyphicon-fire"></span> Execute</button>
+
+                        <!--<button id="exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="printcurl(apy)">
+                            <span class="glyphicon glyphicon-fire"></span> Curl command</button> -->
+
+                        <button id="rename_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="show = !show">
+                            <span class="glyphicon glyphicon-pencil"></span> Rename</button>
+
+                    </div>
+
+                    <div ng-show="show" class="row">
+                        <div class="col-lg-6">
+                            <div class="input-group">
+                                <input type="text" value="{{ apy.name }}" class="form-control">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" ng-click="rename($event)">
+                                        <span class="glyphicon glyphicon-save"></span> Save</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-show="showApyEditor">
+                        <p>
+
+                            <div class="form-group">
+                                <form id="edit_execs_description_{{ apy.name}}" class="code">
+                                    <label for="exampleInputPassword1">Description</label>
+                                    <textarea ng-model="apy.description" ng-blur="blur(apy)" class="form-control" id="exec_description_for_{{ apy.name }}" name="exec_description_for_{{ apy.name }}">{{ exec.description }}</textarea>
+                                </form>
+
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" ng-model="apy.public"> Be public
+                                    </label>
+                                </div>
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" ng-model="apy.everyone">Everyone 
+                                    </label>
+                                </div>
+
+
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="tesxt" ng-model="apy.schedule"> Schedule config
+                                    </label>
+                                </div>
+
+
+                                <p>
+                                    <form id="edit_exec_{{ apy.name }}" class="code">
+                                        <textarea id="exec_code" codemirror="apy"></textarea>
+                                    </form>
+                                </p>
+                        </p>
+
+                        </div>
+                    </div>
+                    {% endverbatim %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main %}

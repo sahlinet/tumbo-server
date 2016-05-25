@@ -1,0 +1,86 @@
+{% load url from future %}
+{% load redis_metrics_filters %}
+{% load static %}
+
+{% comment %}
+
+NOTE: This template gets a `metric_history` context that's organized like so:
+
+  metric_history = {
+      'periods': ['y:2012', 'y:2013', 'y:2014']
+      'data': [
+        {
+          'slug': 'bar',
+          'values': [1, 2, 3]
+        },
+        {
+          'slug': 'foo',
+          'values': [4, 5, 6]
+        },
+  }
+
+{% endcomment %}
+
+<div class="chart">
+  <canvas id="{{chart_id}}{{granularity}}"></canvas>
+</div>
+<script type="text/javascript" src="{% static 'redis_metrics/js/zepto.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'redis_metrics/js/chart.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'redis_metrics/js/colors.js' %}"></script>
+<script type="text/javascript">
+var ctx = document.getElementById("{{chart_id}}{{granularity}}").getContext("2d");
+{% verbatim %}
+var options = {animation:false, responsive: true, datasetFill: false,
+            legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"><%if(datasets[i].label){%><%=datasets[i].label%><%}%></span></li><%}%></ul>"
+        };
+{% endverbatim %}
+var data = {
+  labels: {{metric_history.periods|json}},
+  datasets: [
+    {% for d in metric_history.data %}
+    {
+        label: '{{d.slug}}',  {# the metric key, eg. time period #}
+        fillColor: Color({{forloop.counter0}}).fillColor,
+        strokeColor: Color({{forloop.counter0}}).fillColor,
+        highlightFill:Color({{forloop.counter0}}).highlightFill,
+        highlightStroke:Color({{forloop.counter0}}).highlightFill,
+        pointColor: Color({{forloop.counter0}}).fillColor,
+        pointStrokeColor: "#fff",
+        pointHighlightFill: Color({{forloop.counter0}}).highlightFill,
+        pointHighlightStroke: "#eee",
+        data: {{ d.values|json }}
+    },
+    {% endfor %}
+  ]
+};
+var chart = new Chart(ctx).Line(data, options);
+$("div.chart").append(chart.generateLegend());
+</script>
+
+{% if with_data_table %}
+<table class="table">
+    <caption>
+      {{ granularity }} metrics for<br/><code>{{slugs|join:", " }}</code>
+      {% if since %}<br/>since {{ since }}{% endif %}
+    </caption>
+    <thead>
+        <tr>
+            <th>Period</th>
+            {% for slug in slugs %}
+            <th><code>{{ slug }}</code></th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in tabular_data %}
+        <tr>
+        {% for column in row %}
+            <td>
+            {{ column|default_if_none:"-" }}
+            </td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}

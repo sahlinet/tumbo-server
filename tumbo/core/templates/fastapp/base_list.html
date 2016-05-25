@@ -1,0 +1,127 @@
+{% extends "fastapp/index.html" %}
+
+{% block title %}{{ block.super }} - Console {% endblock title %}
+
+{% block ngapp %} ng-app="execApp" ng-controller="BasesCtrl" {% endblock %} {% block additional_headers %}
+<div class="collapse navbar-collapse navbar-ex1-collapse">
+    {% if user.is_authenticated %}
+    <ul class="nav navbar-nav navbar-right ">
+        {% if active_base %}
+        <li><a href=".?refresh">Refresh</a></li>
+        {% endif %}
+        <!--
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">My Bases<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                {% for base in bases %}
+                <li>
+                    <a class="{% ifequal active_base base %}active{%endifequal%}" href="/fastapp/{{ base.name }}/index/">{{ base.name }}</a>
+                </li>
+                {% endfor %}
+                <li>
+
+                </li>
+            </ul>
+        </li>
+        -->
+    </ul>
+    {% endif %} {% if not user.is_authenticated %}
+    <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Shared Bases<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                {% for name, shared_key in shared_bases.items %}
+                <li><a class="{% ifequal active_base base %}active{%endifequal%}" href="/fastapp/{{ name }}/index/?shared_key={{ shared_key }}">{{ name }}</a></li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+    {% endif %}
+</div>
+{% endblock %} {% block main %}
+<div class="container" ng-controller="BasesCtrl" ng-init="init()" ng-model="bases">
+    <div class="row-fluid">
+        <div class="col-md-12">
+
+            <h2>My Bases</h2>
+
+            {% verbatim %}
+            <div ng-class="{'running' : one_base.state}" class="highlight bases col-md-4" ng-repeat="one_base in bases | orderBy:'name':false">
+                <h4>
+                    <a href="/fastapp/{{ one_base.name }}/index/">{{ one_base.name }}</a>
+                    <button type="button" class="btn btn-default btn-xs" ng-click="cycle_state(one_base)">
+                        <span ng-show="one_base.state == false">Start</span>
+                        <span ng-show="one_base.state == true">Stop</span>
+                    </button>
+                    <span ng-if="one_base.state">
+                        <button type="button" class="btn btn-default btn-xs" ng-click="restart(one_base)">
+                            <span>Restart</span>
+                        </button>
+                    </span>
+                    <span ng-if="!one_base.state && one_base.executors.length">
+                        <button type="button" class="btn btn-default btn-xs" ng-click="destroy(one_base)">
+                            <span>Destroy</spgTgTan>
+                        </button>
+                        </span>
+                </h4>
+                <p>
+                    <span ng-if="one_base.public" class="label label-default">Public</span>
+                    <span ng-if="one_base.apy_models.length>0" class="label label-default"><ng-pluralize count="one_base.apy_models.length"
+                                    when="{'0': 'No Execs',
+                                          'one': '1 Exec',
+                                          'other': '{} Execs'}"></span>
+                    <span ng-if="one_base.executors" class="label label-default">PID {{ one_base.executors[0].pid|limitTo: 20 }} </span>
+                </p>
+                <!--<span ng-repeat="apy in one_base.apy_models | orderBy:'name':false">
+						<button type="button" class="btn btn-default btn-xs"> {{ apy.name }} </button>
+					</span>-->
+            </div>
+            {% endverbatim %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-4">
+                    <h2>Import</h2>
+                    <input type="text" class="form-control" ng-model="name" placeholder="New name" />
+                    </br>
+                    <span class="btn btn-default btn-file">
+                        Browse
+                        <input type="file" ng-file-select="onFileSelect($files)">
+                    </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <h2>New base</h2>
+                    <!--<form method="post" url="base/new">
+						<div>
+							<div class="input-group">
+								<input type="text" class="form-control" name="new_base" placeholder="New base">
+								<span class="input-group-btn">
+									<button id="new_base" class="btn btn-default" type="button"><span class="glyphicon glyphicon-arrow-right"></span></button>
+								</span>
+							</div>
+							<span class="help-block">Woohoo!</span>
+						</div>
+					</form>	-->
+
+                    <!--<form method="post" url="base/new/">-->
+                    <form id="new_base" ng-submit="submit_new_base($event)">
+                        <div class="form-group">
+                            <label class="control-label">Name</label>
+                            <input type="text" class="form-control" id="inputSuccess" ng-model="new_base_name" name="new_base">
+                            <!--<span class="help-block">Woohoo!</span>-->
+                        </div>
+                        <button id="new_base" type="submit" class="btn btn-warning">
+                            <img ng-show="creation_running()" src="{{ STATIC_URL}}img/ajax-loader.gif" /> Submit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

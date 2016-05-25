@@ -1,0 +1,27 @@
+<h1>Server Threads</h1>
+<table class="table">
+  <tr>
+    <th>Name</th>
+    <th>Running</th>
+    <th>Last up</th>
+    <th>RSS</th>
+    <th>Threads</th>
+    <th>Version (fastapp)</th>
+  </tr>
+  {% for process in process_list %}
+  {% if "Thread" in process.name %}
+    <tr>
+      <td> {{ process.name }} </td>
+      <td> {{ process.is_up }} </td>
+      <td> {{ process.running | date:"c"}} </td>
+      <td> {{ process.rss }} </td>
+      <td class="small"> {% for thread in process.threads.all %}
+        {{ thread.name }} [{{ thread.health }}] [{{ thread.updated|timesince }}]</br>
+        {% endfor %}
+      </td>
+      <td> {{ process.version }} </td>
+
+    </tr>
+  {% endif %}
+  {% endfor %}
+</table>

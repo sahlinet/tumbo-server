@@ -1,0 +1,20 @@
+{% block extra_header %}
+	{{ block.super }}
+	<link type="text/css" rel="stylesheet" href="/static/bower_components/jquery.tocify.js/src/stylesheets/jquery.tocify.css" />
+{% endblock %}
+
+{% block js_end_body %}
+	{{ block.super }}
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/bower_components/jquery-ui/ui/jquery-ui.custom.js"></script>
+  <script type="text/javascript" src="/static/bower_components/jquery.tocify.js/src/javascripts/jquery.tocify.min.js"></script>
+
+<script type="text/javascript">
+//Executes your code when the DOM is ready.  Acts the same as $(document).ready().
+  $( document ).ready(function() {
+			$("#toc").tocify({
+				'selectors': "h1,h2,h3,h4,h5",
+			});
+	});
+</script>
+{% endblock %}

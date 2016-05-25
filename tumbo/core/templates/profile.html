@@ -1,0 +1,70 @@
+{% extends "fastapp/default.html" %}
+
+{% block title %}{{ block.super }} - Profile {% endblock title %}
+
+{% block ngapp %} ng-app="execApp" ng-controller="BasesCtrl" {% endblock %}
+
+{% load gravatar %}
+
+{% block main %}
+<div class="container" ng-controller="BasesCtrl" ng-init="init()" ng-model="bases">
+	<div class="row">
+		<div class="col-md-12">
+			<h2>Profile</h2>
+			<div class="row">
+				<div class="col-md-2">
+					<p>Username </p>
+				</div>
+				<div class="col-md-2">
+					<code>{{ user }}</code>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-2">
+					<p>Email</p>
+				</div>
+				<div class="col-md-2">
+					<code>{{ user.email }}</code>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-2">
+					<p>Gravatar</p>
+				</div>
+				<div class="col-md-2">
+					<img class="img-circle" src="{% gravatar_url user.email 150 %}"/>
+				</div>
+			</div>
+			<h2>Linked Apps</h2>
+			<div class="row">
+				<div class="col-md-2">
+					<p>Dropbox</p>
+				</div>
+				<div class="col-md-2">
+					{% if user.authprofile.access_token %}
+						<code>linked</code>
+						<a href="/fastapp/dropbox_auth_disconnect/">unlink app</a>
+					{% else %}
+						<a href="/fastapp/dropbox_auth_start/">authorize now</a>
+					{% endif %}
+				</div>
+			</div>
+			<h2>Transport</h2>
+
+			<h3>Token</h3>
+			<div class="row">
+				<div class="col-md-2">
+					<p>Personal</p>
+				</div>
+				<div class="col-md-2">
+					<code>{{ TOKEN }}</code>
+				</div>
+			</div>
+			<h3>Endpoints</h3>
+			<div class="row">
+				{% include "transport.html" %}
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

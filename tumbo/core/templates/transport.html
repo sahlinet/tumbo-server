@@ -1,0 +1,41 @@
+<div ng-controller="TransportEndpointCtrl" class="table">
+	{% verbatim %}
+	<form editable-form="" name="tableform" onaftersave="saveTable()">
+		<!-- table -->
+		<table class="table table-bordered table-hover table-condensed" style="width: 100%">
+			<tr style="font-weight: bold">
+				<td style="width:40%">
+					Endpoint
+				</td>
+				<td style="width:30%">
+					Override private
+				</td>
+				<td style="width:30%">
+					Override public
+				</td>
+				<td style="width:30%">
+					Authtoken
+				</td>
+			</tr>
+			<tr ng-repeat="endpoint in endpoints">
+				<td>
+					<!-- editable username (text with validation) -->
+					<span editable-text="endpoint.url" e-focus-me="user.isFocused" e-form="tableform">{{ endpoint.url || 'empty' }}</span>
+				</td>
+				<td>
+					<!-- editable status (select-local) -->
+					<span editable-checkbox="endpoint.override_settings_priv" e-title="Override" e-form="tableform">{{ endpoint.override_settings_priv &amp;&amp; "override" || "don't override" }}</span>
+				</td>
+				<td>
+					<span editable-checkbox="endpoint.override_settings_pub" e-title="Override" e-form="tableform">{{ endpoint.override_settings_pub &amp;&amp; "override" || "don't override" }}</span>
+				</td>
+				<td>
+					<span editable-text="endpoint.token" e-title="Authtoken" e-form="tableform">{{ endpoint.token || "empty" }}</span>
+				</td>
+			</tr>
+		</table><!-- buttons -->
+		<div style="white-space: nowrap">
+			<button type="button" class="btn btn-default" ng-click="addEndpoint()">Add</button> <button type="submit" ng-show="tableform.$visible" ng-disabled="tableform.$waiting" class="btn btn-primary">save</button> <button type="button" class="btn btn-default" ng-show="!tableform.$visible" ng-click="tableform.$show()">edit</button> <button type="button" ng-show="tableform.$visible" ng-disabled="tableform.$waiting" ng-click="cancelChanges()" class="btn btn-default">cancel</button>
+		</div>
+	</form>{% endverbatim %}
+</div>

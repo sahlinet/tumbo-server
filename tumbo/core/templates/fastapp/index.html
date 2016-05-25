@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>{% extends 'default.html' %}
+{% load compress %}{% block fastapp_title %}
+<title>Fastapp {% if FASTAPP_NAME %}: {{ FASTAPP_NAME }} {% endif %} asdf</title>{% endblock fastapp_title %}{% block main %}{% endblock %}{% block fastapp_header %}
+
+
+<!-- js -->
+<!-- js for fastapp -->
+<script type="text/javascript">
+    window.channel = "{{ CHANNEL }}";
+    window.shared_key_link = "{{ active_base.shared }}";
+    window.active_base = "{{ active_base.name }}";
+    window.active_base_id = "{{ active_base.id }}";
+    window.username = "{{ username }}";
+</script>
+
+<!-- JQuery -->
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<!-- AngularJS -->
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.21/angular.min.js">
+</script>
+<!-- css for fastapp -->
+{% compress css %}
+<!-- Bootstrap core CSS -->
+<link href="{{ STATIC_URL }}bare/css/bootstrap.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/fastapp.css" rel="stylesheet" />{% if "full" not in request.GET %}
+<link href="{{ STATIC_URL }}css/fastapp-nav.css" rel="stylesheet" />{% endif %}
+<!-- Grid  -->
+<link href="{{ STATIC_URL }}grid/ng-grid.css" rel="stylesheet" />
+{% endcompress css %}
+{% compress js %}
+<script src="{{ STATIC_URL }}js/ndatetime-1.4.0.min.js">
+</script>
+<script type="text/javascript" src="{{ STATIC_URL }}bower_components/angularjs/angular.js">
+</script>
+<script type="text/javascript" src="{{ STATIC_URL }}bower_components/angular-xeditable/dist/js/xeditable.js">
+</script>{% endcompress %}
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular-cookies.js"> </script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular-resource.min.js"></script>
+{% compress js %}
+<script type="text/javascript" src="{{ STATIC_URL }}bower_components/ng-grid/build/ng-grid.js">
+</script>
+<script src="{{ STATIC_URL }}bower_components/angular-bootstrap/ui-bootstrap.min.js">
+</script>
+<script src="{{ STATIC_URL }}bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js">
+</script>
+<script src="{{ STATIC_URL }}js/app/services.js">
+</script>
+<script src="{{ STATIC_URL }}js/app/utils.js">
+</script>
+<script src="{{ STATIC_URL }}js/app/app.js">
+</script>
+<script src="{{ STATIC_URL }}js/app/controllers.js"></script>
+<script src="{{ STATIC_URL }}bower_components/ng-file-upload/angular-file-upload.js">
+</script>
+<script src="{{ STATIC_URL }}js/angular-base64.min.js">
+</script>
+<script src="{{ STATIC_URL }}js/app/app.js">
+</script>
+<script src="{{ STATIC_URL }}js/fastapp.js">
+</script>{% endcompress %}
+<!-- CodeMirror -->
+<link rel="stylesheet" href="{{ STATIC_URL }}codemirror/css/codemirror.css" />
+{% compress js %}
+<script src="{{ STATIC_URL }}codemirror/js/codemirror.js">
+</script>
+<script src="{{ STATIC_URL }}codemirror/js/javascript.js">
+</script>
+<script src="{{ STATIC_URL }}codemirror/js/python.js">
+</script>
+<script src="{{ STATIC_URL }}codemirror/js/xml.js">
+</script>
+<script src="{{ STATIC_URL }}codemirror/js/css.js">
+</script>
+<script src="{{ STATIC_URL }}codemirror/js/htmlmixed.js">
+</script>
+<script src="{{ STATIC_URL }}codemirror/js/htmlembedded.js">
+</script>
+<script src="{{ STATIC_URL }}codemirror/js/vim.js">
+</script>{% endcompress %} {% endblock fastapp_header %} {% block extra_header %} {% endblock %}</head>{% block js_end_body %}
+<script src="{{ STATIC_URL }}bare/js/bootstrap.js">
+</script>{% endblock %}

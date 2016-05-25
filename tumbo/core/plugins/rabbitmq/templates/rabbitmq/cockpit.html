@@ -1,0 +1,42 @@
+{% load fastapp_tags %}
+
+<script type="text/javascript">
+  $( document ).ready(function() {
+      $('.json').each(function(index) {
+        pre = JSON.stringify(JSON.parse($(this).text()), null, 2);
+        pre = "<pre>"+pre+"</pre>";
+        $(this).replaceWith(pre);
+      });
+
+      //console.log(JSON.stringify(JSON.parse($('.json').text()), null, 2));
+  });
+</script>
+
+
+<div>
+  <h3>vhosts ({{ plugin.cockpit_context.vhosts|length }})</h3>
+      {% for vhost in plugin.cockpit_context.vhosts %}
+      <h4>{{ vhost.name }} </h4>
+        {% if vhost.test_vhost.status != "ok" %}
+          <div class="alert alert-danger">
+              Error: <strong>{{ vhost.test_vhost.error }}</strong> {{ vhost.test_vhost.reason }}
+          </div>
+        {% endif %}
+        <p class="json">{{ vhost|asjson }}</p>
+      {% endfor %}
+<hr>
+</div>
+
+<div>
+  <h3>channels</h3>
+      {% for channel in plugin.cockpit_context.channels %}
+        <p class="json">{{ channel|asjson }}</p>
+      {% endfor %}
+<hr>
+</div>
+
+<div>
+  <h3>overview</h3>
+      <p class="json">{{ plugin.cockpit_context.overview|asjson }}</p>
+<hr>
+</div>

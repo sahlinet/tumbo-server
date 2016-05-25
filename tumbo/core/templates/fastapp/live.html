@@ -1,0 +1,92 @@
+{% extends "fastapp/index.html" %}
+
+{% block title %}{{ block.super }} - {{ active_base.name }} {% endblock title %}
+
+{% block fastapp_header %} {{ block.super }} {% endblock %} {% block ngapp %} ng-app="execApp" {% endblock %} {% block main %}
+
+<!-- /.container -->
+<div class="container" ng-controller="TransactionCtrl">
+
+    <div class="container">
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <div class="page-header">
+                    <h2>
+                        Live Transactions
+                        <small>What your bases are doing</small>
+                    </h2>
+                </div>
+
+                    <h3>
+                      Filters
+                    </h3>
+                    <label>By base: <input ng-model="search.base_name"></label>
+                    <label>By exec: <input ng-model="search.apy_name"></label>
+                    <label>By response status {OK, NOK}: <input ng-model="search.tout_object.status"></label>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        {% verbatim %}
+        <img ng-show="loading" src="http://www.ajaxload.info/cache/FF/FF/FF/00/00/00/1-0.gif"/>
+        <div class="row" ng-show="!loading" ng-repeat="transaction in transactions | filter:search:strict | reverse">
+            <div class="col-md-4">
+                <div class="row">
+                    <div class="col-md-12 column">
+                    <h4>
+                        {{ transaction.base_name }}
+                    </h4>
+                        <p>
+                            <span class="label label-default">{{ transaction.apy_name }}</span>
+                            <span class="label label-default">{{ transaction.id }}</span>
+                            <span class="label label-default">{{ transaction.status }}</span>
+                            <span class="label label-default">async:{{ transaction.async }}</span>
+                        </p>
+                        <p>
+                            Start
+                            <span class="label label-default">{{ transaction.created }}</span>
+                        </p>
+                        <p>
+                            Updated
+                            <span class="label label-default">{{ transaction.modified }}</span>
+
+                        </p>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="row">
+                    <h4> IN
+                        <span class="label label-default">POST</span>
+                    </h4>
+                    <pre>{{ transaction.tin_object | json:4 }}</pre>
+                </div>
+
+                <div class="row">
+                    <h4> Logs </h4>
+                    <div id="messages">
+                        <table class="table table-condensed">
+                            <tr class="{{ log.slevel | lowercase }}" ng-repeat="log in transaction.logs">
+                                <td class="col-md-4">{{ log.created }}</td>
+                                <td class="col-md-1 ">{{ log.level }}</td>
+                                <td>{{ log.msg }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <h4> OUT
+                        <span class="label label-default">HTML</span>
+                    </h4>
+                    <pre>{{ transaction.tout_object | json:4 }}</pre>
+                    <p>
+                </div>
+            </div>
+
+        </div>
+
+        {% endverbatim %}
+    </div>
+</div>
+{% endblock main %}

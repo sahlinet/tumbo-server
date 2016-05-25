@@ -1,0 +1,38 @@
+db:
+  image: philipsahli/postgresql-test
+  ports:
+   - "5432"
+  environment:
+   - DB_NAME=tumbo
+   - DB_USER=tumbo
+   - PASSWORD=tumbopw
+store:
+  image: philipsahli/postgresql-test
+  ports:
+   - "5432"
+  environment:
+   - DB_NAME=store
+   - DB_USER=store
+   - PASSWORD=storepw
+   - SUPERUSER=true
+jobstoredb:
+  image: philipsahli/postgresql-test
+  ports:
+   - "5432"
+  environment:
+   - DB_NAME=store
+   - DB_USER=store
+   - PASSWORD=storepw
+   - SUPERUSER=true
+queue:
+  image: tutum/rabbitmq
+  ports:
+   - "5672"
+  environment:
+   - RABBITMQ_PASS=rabbitpw
+cache:
+  image: tutum/redis
+  ports:
+   - "5672"
+  environment:
+   - REDIS_PASS=redispw

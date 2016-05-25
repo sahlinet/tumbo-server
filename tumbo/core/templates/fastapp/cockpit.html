@@ -1,0 +1,62 @@
+{% extends "fastapp/default.html" %}
+
+{% load cache %}
+{% load redis_metric_tags %}
+{% load fastapp_tags %}
+
+{% block title %}{{ block.super }} - Cockpit {% endblock title %}
+
+{% block extra_header %}
+	{{ block.super }}
+	<link type="text/css" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery.tocify/1.9.0/stylesheets/jquery.tocify.min.css"/>
+{% endblock %}
+
+{% block js_end_body %}
+	{{ block.super }}
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js">
+	</script>
+  <script type="text/javascript" src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js">
+	</script>
+  <!-- <script type="text/javascript" src="/static/bower_components/jquery.tocify.js/src/javascripts/jquery.tocify.min.js"></script> -->
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.tocify/1.9.0/javascripts/jquery.tocify.min.js">
+	</script>
+<script type="text/javascript">
+//Executes your code when the DOM is ready.  Acts the same as $(document).ready().
+  $( document ).ready(function() {
+			$("#toc").tocify({
+				'selectors': "h1,h2,h3,h4,h5",
+  			'extendPage': false,
+			});
+	});
+</script>
+
+{% endblock %}
+
+{% block main %}
+<div class="container">
+	<div class="row">
+		<div class="hidden-sm hidden-xs col-md-4">
+				<div id="toc"></div>
+		</div>
+	<div class="container">
+		<div class="col-md-8">
+				{% cache 120 heartbeat %}
+				{% include "fastapp/cockpits/heartbeat.html" %}
+				{% endcache 120 %}
+
+				{% cache 30 serverthreads %}
+				{% include "fastapp/cockpits/serverthreads.html" %}
+				{% endcache %}
+
+				{% include "fastapp/cockpits/worker.html" %}
+
+				{% include "fastapp/cockpits/executors.html" %}
+
+				{% cache 30 plugins %}
+				{% include "fastapp/cockpits/plugins.html" %}
+				{% endcache %}
+		</div>
+	</div>
+</div>
+</div>
+{% endblock %}

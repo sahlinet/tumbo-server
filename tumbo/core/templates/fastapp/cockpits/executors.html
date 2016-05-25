@@ -1,0 +1,30 @@
+<h1>Executors</h1>
+<table class="table">
+  <tr>
+    <th>Username</th>
+    <th>Base name</th>
+    <th>Is running</th>
+    <th>Marked as started</th>
+    <th>PID</th>
+    <th>Num instances</th>
+    <th>Instances</th>
+    <th>Log (Docker only)</th>
+  </tr>
+  {% for executor in executors %}
+  <tr>
+    <td> {{ executor.base.user.username }} </td>
+    <td> {{ executor.base.name }} </td>
+    <td> {{ executor.is_running }} </td>
+    <td> {{ executor.started }} </td>
+    <td> {{ executor.pid }} </td>
+    <td> {{ executor.instances.count }} </td>
+    <td>
+      {% for instance in executor.instances.all %}
+      <p> {{ instance.is_alive }} </p>
+      <p> {{ instance.last_beat | date:"c"}} </p>
+      {% endfor %}
+    </td>
+    <td><a href="{% url 'base-log' executor.base.pk %}">Log</a></td>
+  </tr>
+  {% endfor %}
+</table>

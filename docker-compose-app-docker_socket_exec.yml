@@ -1,0 +1,88 @@
+app:
+  build: .
+  external_links:
+   - tumboserver_db_1:db
+   - tumboserver_jobstoredb_1:jobstoredb
+   - tumboserver_store_1:store
+   - tumboserver_queue_1:queue
+   - tumboserver_cache_1:cache
+  ports:
+   - "80"
+  environment:
+   - MODE=web
+   - ADMIN_PASSWORD=tumbo
+   - ALLOWED_HOSTS="*"
+   - DB_HOST=$${DB_PORT_5432_TCP_ADDR}
+   - DB_NAME=tumbo
+   - DB_PASS=$${DB_ENV_PASSWORD}
+   #- DB_PORT=$DB_1_PORT_5432_TCP_PORT
+   - DB_PORT=$${DB_PORT_5432_TCP_PORT}
+   - DB_USER=tumbo
+   - JOBSTOREDB_NAME=$${JOBSTOREDB_ENV_DB_NAME}
+   - JOBSTOREDB_USER=$${JOBSTOREDB_ENV_DB_USER}
+   - JOBSTOREDB_PASS=$${JOBSTOREDB_ENV_PASSWORD}
+   - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
+   - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
+   # TODO: Fix path for STREAM in nginx
+   #- STREAM_PORT=$${STREAM_PORT_9999_TCP_PORT}
+   #- STREAM_HOST=$${STREAM_PORT_9999_TCP_ADDR}
+   - STREAM_PORT=9999
+   - STREAM_HOST=127.0.0.1
+   - FASTAPP_WORKER_IMPLEMENTATION=fastapp.executors.worker_engines.dockers.DockerSocketExecutor
+   - DROPBOX_CONSUMER_KEY
+   - DROPBOX_CONSUMER_SECRET
+   - DROPBOX_REDIRECT_URL
+   - FRONTEND_HOST
+   - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
+   - RABBITMQ_ADMIN_USER=admin
+   - FASTAPP_DOCKER_MEM_LIMIT="128m"
+   - FASTAPP_DOCKER_IMAGE=philipsahli/tumbo-worker:develop
+   - DEBUG=True
+  volumes:
+   - /var/run/docker.sock:/var/run/docker.sock
+background:
+  build: .
+  #image: philipsahli/skyblue-planet-lite:develop
+  external_links:
+   - tumboserver_db_1:db
+   - tumboserver_jobstoredb_1:jobstoredb
+   - tumboserver_store_1:store
+   - tumboserver_queue_1:queue
+   - tumboserver_cache_1:cache
+  links:
+   - app
+  ports:
+   - "80"
+  environment:
+   - MODE=background
+   - ADMIN_PASSWORD=tumbo
+   - ALLOWED_HOSTS="*"
+   - DB_HOST=$${DB_PORT_5432_TCP_ADDR}
+   - DB_NAME=tumbo
+   - DB_PASS=$${DB_ENV_PASSWORD}
+   #- DB_PORT=$DB_1_PORT_5432_TCP_PORT
+   - DB_PORT=$${DB_PORT_5432_TCP_PORT}
+   - DB_USER=tumbo
+   - JOBSTOREDB_NAME=$${JOBSTOREDB_ENV_DB_NAME}
+   - JOBSTOREDB_USER=$${JOBSTOREDB_ENV_DB_USER}
+   - JOBSTOREDB_PASS=$${JOBSTOREDB_ENV_PASSWORD}
+   - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
+   - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
+   - FASTAPP_WORKER_IMPLEMENTATION=fastapp.executors.worker_engines.dockers.DockerSocketExecutor
+   - DROPBOX_CONSUMER_KEY
+   - DROPBOX_CONSUMER_SECRET
+   - DROPBOX_REDIRECT_URL
+   - FRONTEND_HOST
+   - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
+   - RABBITMQ_ADMIN_USER=admin
+   - FASTAPP_DOCKER_MEM_LIMIT="128m"
+   - FASTAPP_DOCKER_IMAGE=philipsahli/tumbo-worker:develop
+   - DEBUG=True
+  volumes:
+   - /var/run/docker.sock:/var/run/docker.sock
+lb:
+  image: tutum/haproxy
+  links:
+   - app
+  ports:
+   - "80"

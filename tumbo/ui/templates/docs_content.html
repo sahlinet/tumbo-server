@@ -1,0 +1,228 @@
+<h1>Documentation</h1>
+<hr />
+<h2>Base</h2>
+<p>A Base is a runtime unit and is running in an isolated environment. It can have many Execs.</p>
+<h3>Start and Stop</h3>
+<p>The Base needs to run to execute Execs and to deliver static files to the client.</p>
+<h3>Export and Import</h3>
+<p>On the Base page you can export the configuration into a zip file. Later you
+can create or update the base on the same or on other platform.</p>
+<blockquote>
+<p>If a Base contains a lot of static files, export and import might fail because of timeouts!</p>
+</blockquote>
+<hr />
+<h2>Static Files</h2>
+<p>Place static files in a folder <code>static</code> on the Dropbox base directory. When a static file is
+accessed by a client, the file is read from your Dropbox and then cached on Tumbo for {{ FASTAPP_STATIC_CACHE_SECONDS }} seconds.</p>
+<p>{% verbatim %}
+Static files can be accessed over <code>https://tumbo.sahli.net/planet/EXAMPLE_BASE/static/FILE</code>. The
+URL until the word <em>static</em> is available as variable in HTML files as {{ FASTAPP_STATIC_URL }}.
+{% endverbatim %}</p>
+<hr />
+<h2>Exec</h2>
+<p>An Exec is function, which can be called by an HTTP Request.</p>
+<h3>Editing</h3>
+<p>You can edit the Execs in the browser editor or in the Dropbox base folder.</p>
+<p>An Exec is always a function named <code>func</code>:</p>
+<pre><code>def func(self):
+    return True
+</code></pre>
+<p>If the Exec has changed on Dropbox, it will be refreshed on <em>Tumbo</em> automatically. This
+can take up to 30 seconds.</p>
+<h3>Initialize</h3>
+<p>If you need to install i.e. Python modules or do any specific work in a base after startup, you can use this feature. On startup of a base the exec with the name <code>init</code> is called with a HTTP GET Request.</p>
+<h3>Logging</h3>
+<p>From within python code write log messages with following line:</p>
+<p><code>self.error(self.rid, "error")</code></p>
+<p><code>self.warn(self.rid, "warn")</code></p>
+<p><code>self.info(self.rid, "info")</code></p>
+<p><code>self.debug(self.rid, "debug")</code></p>
+<h3>Siblings</h3>
+<p>Siblings are Exec's in the same base and are available for execution on <code>self.siblings.NAME</code>.</p>
+<pre><code>def func(self):
+    return self.siblings.another_exec(self)
+</code></pre>
+<h3>Request Arguments</h3>
+<p>In the Exec some basic data about the request is available:</p>
+<ul>
+<li>
+<p>Username of authenticated user <code>self.user</code></p>
+</li>
+<li>
+<p>HTTP Request Method <code>self.method</code></p>
+</li>
+<li>
+<p>HTTP Header Content-Type <code>self.content_type</code></p>
+</li>
+<li>
+<p>GET parameters <code>self.GET</code></p>
+</li>
+<li>
+<p>POST parameters <code>self.POST</code></p>
+</li>
+<li>
+<p>Clients IP Address <code>self.REMOTE_ADDR</code></p>
+</li>
+</ul>
+<h3>Responses</h3>
+<h4>HTML (text/html)</h4>
+<pre><code>def func(self):
+    return self.responses.HTMLResponse("&lt;html&gt;&lt;body&gt;Hello World&lt;/body&gt;&lt;/html&gt;")
+</code></pre>
+<h4>JSON (application/json)</h4>
+<pre><code>def func(self):
+    return self.responses.JSONResponse("{'a': 'b'}")
+</code></pre>
+<h4>XML (application/xml)</h4>
+<pre><code>def func(self):
+    return self.responses.XMLResponse("&lt;note&gt;&lt;text&gt;hello&lt;/text&gt;&lt;/note&gt;")
+</code></pre>
+<h4>HTTP Redirect</h4>
+<pre><code>def func(self):
+    return self.responses.RedirectResponse("http://another-url")
+</code></pre>
+<h3>Sharing</h3>
+<h4>Shared Exec's</h4>
+<p>You can make an Exec public. Public Exec's can be related to a Base.</p>
+<p>Related Exec's are available at <code>self.foreigns</code> as attribute.</p>
+<pre><code>def func(self):
+    return self.foreigns.yum_install(self)
+</code></pre>
+<h3>With Shared Key</h3>
+<p>Every base has a Shared-Key. Non-public bases can be used for anonymous users with providing a Querystring <code>shared_key</code>.</p>
+<h3>Public</h3>
+<p>A public base can be accessed and used by anonymous users.
+This configuration setting is for security reasons not exported. A base must be made public explicit.</p>
+<h3>Execution</h3>
+<h4>Curl</h4>
+<pre><code> curl -L -v "https://tumbo.sahli.net/fastapp/base/hello-world/exec/echo/?json=&amp;shared_key=f241fcab-0323-42b5-ac17-94bfefd5df72"
+ {
+   "status": "OK",
+   "exception": null,
+   "returned": null,
+   "response_class": null,
+   "time_ms": "98",
+   "exception_message": null,
+   "rid": 17941542,
+   "id": "echo"
+ }
+</code></pre>
+<p>If the Exec raises an Exception the response status is <code>NOK</code>.</p>
+<pre><code> curl -L -v "https://tumbo.sahli.net/fastapp/base/hello-world/exec/echo/?json=&amp;shared_key=f241fcab-0323-42b5-ac17-94bfefd5df72"
+ {
+   "status": "NOK",
+   "exception": "Exception",
+   "returned": null,
+   "response_class": null,
+   "time_ms": "344",
+   "exception_message": "this text is raised",
+   "rid": 41447693,
+   "id": "echo"
+ }
+</code></pre>
+<h4>Browser</h4>
+<p>With the button <em>execute</em> the exec is always executed with a HTTP GET request. The response is visible in the log window.</p>
+<h4>Asynchronous</h4>
+<p><code>&amp;async</code></p>
+<p>When the key <em>async</em> is specified as query string, the client receives immediately a  'HTTP response status code 301 Moved Permanently' response.
+The response refers to a location which is enriched with a query string <code>rid</code> (request id). With this URL the client can poll and
+wait until the <code>status</code> is <code>FINISHED</code>.</p>
+<h3>Schedules</h3>
+<p>Add in the UI a configuration for a scheduled execution of a function. For example <code>*/30 * * *</code> (<code>second minute our day_of_week</code>).</p>
+<hr />
+<h2>Settings</h2>
+<p>{% verbatim %}
+The settings you configured in a Base are rendered in static files ending with <code>.html</code> when used as <code>{{ SETTING_KEY }}</code> or
+in python code in a exec as <code>self.settings.SETTING_KEY</code>.
+{% endverbatim %}</p>
+<hr />
+<h2>Service Port</h2>
+<p>On every worker a service port is allocated for usage. This let's you for example to run
+a webserver or any other daemon.</p>
+<h3>Port</h3>
+<pre><code>print os.environ['SERVICE_PORT']
+</code></pre>
+<h3>IP</h3>
+<p>To know on which IP address the service is reachable, get the following variable:</p>
+<pre><code>print os.environ['SERVICE_IP']
+</code></pre>
+<p>Use <code>SERVICE_IP6</code> for the IPv6 address.</p>
+<h3>DNS</h3>
+<p>A host record is registered in a DNS zone in the form:</p>
+<pre><code>USERNAME-BASENAME-INSTANCE_NUM[-V4,-V6].ZONE
+</code></pre>
+<p>IPv4 (A) and IPv6 (AAAA) record:</p>
+<pre><code>print os.environ['SERVICE_DNS']
+</code></pre>
+<p>IPv4 only:</p>
+<pre><code>print os.environ['SERVICE_DNS_V4']
+</code></pre>
+<p>IPv6 only:</p>
+<pre><code>print os.environ['SERVICE_DNS_V6']
+</code></pre>
+<hr />
+<h2>Datastore</h2>
+<p>The datastore lets you store and access data per base. The data get retained over base lifecycle.
+On <code>init</code> the datastore is not yet available.</p>
+<h3>API</h3>
+<h4>Store JSON data</h4>
+<pre><code>data = {"name": "Rolf"}
+self.datastore.write_dict(data)
+</code></pre>
+<h4>Get all stored data</h4>
+<pre><code>results = self.datastore.all()
+for row in results:
+     print row
+</code></pre>
+<h4>Filter data</h4>
+<p>Per value in key</p>
+<pre><code>self.datastore.filter("name", "Rolf")
+</code></pre>
+<h5>Get one row</h5>
+<pre><code>self.datastore.get("name", "Rolf")
+</code></pre>
+<h4>Update one row</h4>
+<pre><code>result_obj = self.datastore.get("function", "setUp")
+result_obj.data['function'] = "tearDown"
+self.datastore.save(result_obj)
+</code></pre>
+<h4>Delete one row</h4>
+<pre><code>row = self.datastore.get("name", "Rolf")
+self.datastore.delete(row)
+</code></pre>
+<h3>Static Files</h3>
+<p>You can access the data in the static files. The data is rendered on server-side.</p>
+<p>{% verbatim %}</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello World&lt;/h1&gt;
+    &lt;ul&gt;
+    {% for obj in datastore.all %}
+        &lt;li&gt;
+        Obj: {{ obj.data.name }} ({{ obj.created_on }})
+        &lt;/li&gt;
+    {% endfor %}
+    &lt;/ul&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>{% endverbatim %}</p>
+<hr />
+<h2>Transport</h2>
+<p>Transporting from one <em>Tumbo</em> platform to another uses internally the export and import feature.
+On the source platform you have to configure the transport endpoint, the token and how to handle settings.</p>
+<p>Then you can transport a Base to the target platform from the base page.</p>
+<pre><code>https://HOST/fastapp/api/base/import/
+</code></pre>
+<hr />
+<h2>Development</h2>
+<p>How you can run <em>Tumbo</em> as lite-version on your machine is documented on <a href="https://github.com/sahlinet/tumbo-server">github.com/sahlinet/tumbo-server</a></p>
+<h2>HTTP API</h2>
+<h3>Authorization</h3>
+<p>The API uses an authentication mechanism with a per user token. HTTP-Requests to the API must include a header like:</p>
+<pre><code>Authorization: Token YOUR-TOKEN
+</code></pre>
+<p>The token can be grabbed from your profile page.</p>
+<h3>API Docs</h3>
+<p><a target="_blank" href="{% url 'django.swagger.base.view' %}#!/api">API Documentation</a></p>

@@ -1,0 +1,42 @@
+{% extends "fastapp/default.html" %}
+
+{% block title %}{{ block.super }} - Documentation {% endblock title %}
+
+  {% block extra_header %}
+  	{{ block.super }}
+    <link rel="stylesheet" href="{{ STATIC_URL}}css/docs.css">
+	  <link type="text/css" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery.tocify/1.9.0/stylesheets/jquery.tocify.min.css"/>
+  {% endblock %}
+
+  {% block js_end_body %}
+  	{{ block.super }}
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js">
+  	</script>
+    <script type="text/javascript" src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js">
+  	</script>
+    <!-- <script type="text/javascript" src="/static/bower_components/jquery.tocify.js/src/javascripts/jquery.tocify.min.js"></script> -->
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.tocify/1.9.0/javascripts/jquery.tocify.min.js">
+  	</script>
+  <script type="text/javascript">
+  //Executes your code when the DOM is ready.  Acts the same as $(document).ready().
+    $( document ).ready(function() {
+  			$("#toc").tocify({
+  				'selectors': "h2,h3,h4,h5",
+  				'extendPage': false,
+  			});
+  	});
+  </script>
+  {% endblock %}
+
+{% block main %}
+<div class="container" ng-controller="BasesCtrl" ng-init="init()" ng-model="bases">
+	<div class="row">
+    <div class="hidden-sm hidden-xs col-md-4">
+        <div id="toc"></div>
+    </div>
+		<div class="col-md-8">
+			{% include "docs_content.html" %}
+		</div>
+	</div>
+</div>
+{% endblock %}

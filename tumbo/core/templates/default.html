@@ -1,0 +1,96 @@
+{% load gravatar %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Tumbo{% endblock title %}</title>
+    <!-- Sets initial viewport load and disables zooming  -->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="shortcut icon" href="{{ STATIC_URL }}img/favicon.ico" />
+    <link rel="bookmark" href="{{ STATIC_URL }}img/favicon.ico" />
+    <!-- site css -->
+    <link rel="stylesheet" href="{{STATIC_URL}}bower_components/Bootflat/css/site.min.css">
+    <link rel="stylesheet" href="{{ STATIC_URL}}css/tumbo.css">
+    <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,800,700,400italic,600italic,700italic,800italic,300italic" rel="stylesheet" type="text/css">
+
+    <!-- sentry -->
+    <script src="//d3nslu0hdya83q.cloudfront.net/dist/1.0/raven.min.js"></script>
+
+    {% block extra_header_pre %} {% endblock %} {% block fastapp_header %} {% endblock %} {% block extra_header %} {% endblock %}
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.js"></script>
+      <script src="js/respond.min.js"></script>
+      <![endif]-->
+    <script type="text/javascript" src="{{ STATIC_URL}}bower_components/Bootflat/js/site.min.js"></script>
+</head>
+
+<body {% block ngapp %}{% endblock %}>
+    <div class="docs-header" ng-controller="BasesCtrl">
+        <!--nav-->
+        <nav class="navbar navbar-default navbar-custom" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/">Tumbo</a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <!-- <li><a class="nav-link current" href="#/start">Start</a></li> -->
+                        <li><a class="nav-link" href="/docs">
+                        <!--
+                        glyphicon glyphicon-book
+                        -->
+                        <span class="glyphicon glyphicon-book img-circle" aria-hidden="true"></span>&nbsp;
+              Documentation
+                        </a></li>
+                        <li><a class="nav-link" href="{% url 'console' %}">
+                        <span class="glyphicon glyphicon-edit img-circle" aria-hidden="true"></span>&nbsp;
+
+                Console</a></li>
+
+                        {% if user.is_superuser %}
+                        <li><a class="nav-link" href="{% url 'cockpit' %}">Cockpit</a></li>
+                        <li><a class="nav-link" href="/admin/fastapp/">Admin</a></li>
+                        {% endif %}
+
+                        {% if user.is_authenticated %}
+                        <li>
+                            <a class="nav-link" href="/profile/">
+                                <img class="img-circle" src="{% gravatar_url user.email 20 %}" />&nbsp;Profile</a>
+                        </li>
+                        <li>
+                            <button type="button" class="btn btn-warning navbar-btn btn-margin-left" onclick="window.location='/logout/'">Logout</button>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    {% block additional_headers %}{% endblock %}
+                </div>
+            </div>
+        </nav>
+        {% block hugetron %}{% endblock %}
+    </div>
+    {% block main %} {% endblock %}
+    <!--footer-->
+    <div class="site-footer">
+        <div class="container">
+            {% block splash %} {% endblock %}
+            <div class="copyright clearfix">
+                <hr class="dashed" />
+                <p><b>Tumbo</b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="/">Start</a>&nbsp;&bull;&nbsp;<a href="/docs/">Docs</a>&nbsp;&bull;&nbsp;{{ TUMBO_VERSION }}</p>
+                <p>&copy; 2015 <a href="http://bit.ly/11gbFZI" target="_blank">sahli.net</a>&nbsp;&bull;&nbsp; Tumbo is <a href="http://en.wikipedia.org/wiki/MIT_License">MIT licensed</a></p>
+            </div>
+        </div>
+    </div>
+    {{ GOOGLE_ANALYTICS | safe }} {% block js_end_body %} {% endblock %}
+</body>
+
+</html>

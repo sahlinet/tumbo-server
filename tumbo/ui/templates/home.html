@@ -1,0 +1,155 @@
+{% extends "default.html" %}
+
+{% block main %}
+<div class="container">
+    <div class="row">
+        {% include "content.html" %}
+        <div class="col-md-4">
+            <!--<h3>Login</h3>-->
+            {% include "aaa/login_form.html" %}
+
+            {% if user.is_authenticated %}
+            <div>
+              <p>Head over to the <a href="{% url 'console' %}">Console</a></p>
+            </div>
+    {% endif %}
+        </div>
+    </div>
+</div>
+
+<hr class="dashed" />
+
+<div class="container">
+
+      <div class="row">
+        <div class="col-md-12">
+            <h2 class="center">Features</h2>
+   </div>
+   </div>
+    {% comment %}
+      <div class="row" style="min-height: 200px">
+        <div class="col-md-12">
+          {% if user.is_authenticated %}
+          <div class="user-details">
+            You are logged in as <code>{{ user.username }}</code>!
+          </div>
+          {% endif %}
+
+          {% for sublist in available_backends|social_backends %}
+          <h3>Login</h3>
+          <div class="row login-buttons">
+            {% for name, backend in sublist %}
+            {% associated backend %}
+            {% if association %}
+            <form class="disconnect-form col-md-2" action="{% url "social:disconnect_individual" backend=association.provider association_id=association.id %}" method="post">{% csrf_token %}
+              <a class="btn" name="{{ backend|backend_class }}" href="#">
+                <i class="fa fa-{{ name|icon_name }}"></i>
+                Disconnect {{ backend|backend_name }}
+              </a>
+            </form>
+            {% else %}
+            <a class="btn" name="{{ backend|backend_class }}" href="{% url "social:begin" backend=name %}">
+              <i class="fa fa-{{ name|icon_name }}"></i>
+              {{ backend|backend_name }}
+            </a>
+            {% endif %}
+            {% endfor %}
+          </div>
+          {% endfor %}
+
+      </div>
+      </div>
+    {% endcomment %}
+
+  <div class="row">
+    <div class="col-md-4">
+      <h3>Run Python Code</h3>
+      Write Python code in the browser or on your Dropbox and execute the code from anywhere.
+    </div>
+    <div class="col-md-4">
+      <h3>Asynchronous Execution</h3>
+      Execute long-running tasks asynchronously and get the results later.
+    </div>
+    <div class="col-md-4">
+      <h3>Manage Static Content</h3>
+      Load static files from an installed Python module or from your Dropbox.
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4">
+      <h3>Transport Projects</h3>
+      Deploy projects to another Tumbo Platform with single clicks.
+    </div>
+    <div class="col-md-4">
+      <h3>Develop with Planet</h3>
+       Install Planet as Runtime Environment on your notebook for a simpler development.
+    </div>
+    <div class="col-md-4">
+      <h3>Client JS Framework</h3>
+      Use our javascript library for Angular integration.
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      <h3>Store Data</h3>
+      Store Data in JSON Format. Access data over HTTP API (coming soon), Execs and in Static Files.
+    </div>
+    <div class="col-md-4">
+      <h3>Run Services</h3>
+      Start a service in your worker and access it.
+    </div>
+  </div>
+</div>
+
+
+
+
+{% endblock %}
+
+{% block splash %}
+<div class="row">
+  <div class="col-md-8">
+    <h3>Talk to me</h3>
+    <ul>
+      <li>Tweet me&nbsp;<a href="https://twitter.com/philipsahli" target="_blank">@philipsahli</a>&nbsp;&nbsp;&nbsp;&nbsp;Email me at <span class="connect">info@sahli.net</span></li>
+      <li>
+        <a title="Twitter" href="https://twitter.com/philipsahli" target="_blank" rel="external nofollow"><i class="icon" data-icon="&#xe121"></i></a>
+        <a title="Google+" href="https://plus.google.com/+PhilipSahli" target="_blank" rel="external nofollow"><i class="icon" data-icon="&#xe110"></i></a>
+        <a title="Github" href="https://github.com/fatrix" target="_blank" rel="external nofollow"><i class="icon" data-icon="&#xe10e"></i></a>
+      </li>
+    </ul>
+    <h3>Contribute</h3>
+    Open sourced under MIT License.
+  </div>
+</div>
+<hr class="dashed" />
+<div class="row">
+  <div class="col-md-4">
+    <h3>Provide feedback</h3>
+    Your words are important to know which features are needed or not. Please contact me for discussing your thoughts.
+  </div>
+  <div class="col-md-4">
+    <h3>Planned features</h3>
+    More cloud storage service for static content, scalable workers, request throttling, live console view with WebSockets.
+  </div>
+  <div class="col-md-4">
+    <h3>Found a bug?</h3>
+    In case of a misfunction report a bug either on the <a href="https://github.com/sahlinet/tumbo-server">Tumbo Repository.</a>. For security issue please email <a href="mailto:info@sahli.net">me</a>.
+  </div>
+</div>
+{% endblock %}
+
+{% block hugetron %}
+<div class="topic" ng-show="showMainContent()">
+  <div class="container">
+    <h3>Tumbo</h3>
+    <h4>Python Runtime Platform</h4>
+  </div>
+  <div class="topic__infos">
+    <div class="container">
+      Enjoy Python in a new and effortless way
+    </div>
+  </div>
+</div>
+{% endblock %}

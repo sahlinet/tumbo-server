@@ -1,0 +1,12 @@
+{% for k, v in plugin.cockpit_context.items %}
+   <div>
+     <h3>{{ k }}</h3>
+    {% ifequal k "CONNECTIONS" %}
+      {% for cnx in v %}
+      <pre>{{ cnx }}</pre>
+      {% endfor %}
+    {% else %}
+      <pre>{{ v }}</pre>
+    {% endifequal %}
+    </div>
+{% endfor %}

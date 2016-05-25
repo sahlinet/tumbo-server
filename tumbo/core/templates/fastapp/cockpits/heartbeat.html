@@ -1,0 +1,31 @@
+{% load redis_metric_tags %}
+{% load fastapp_tags %}
+
+<h1>Heartbeat Memory Usage</h1>
+
+  {% comment %}
+  {% get_past_datetime 30 "m" as starttime %}
+  <h2>Virtual</h2>
+  {% metric_history "Heartbeat Virtual Memory" "minutes" starttime False %}
+  <h2>Physical</h2>
+  {% metric_history "Heartbeat Physical Memory" "minutes" starttime False %}
+  {% endcomment %}
+
+  <div>
+      {% get_slug_list "Heartbeat" as slug_list %}
+      <h2>Last 7 days</h2>
+      {% get_past_datetime 7 "d" as starttime %}
+      {% aggregate_history slug_list "daily" starttime %}
+  </div>
+
+  <div>
+      {% get_slug_list "Heartbeat" as slug_list %}
+      <h2>Last 24 hours</h2>
+      {% get_past_datetime 24 "h" as starttime %}
+      {% aggregate_history slug_list "hourly" starttime %}
+  </div>
+  <div>
+      <h2>Last 30 minutes</h2>
+      {% get_past_datetime 30 "m" as starttime %}
+      {% aggregate_history slug_list "minutes" starttime %}
+  </div>

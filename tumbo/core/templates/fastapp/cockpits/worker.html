@@ -1,0 +1,43 @@
+{% load redis_metric_tags %}
+{% load fastapp_tags %}
+
+<h1>Worker Processes</h1>
+<table class="table">
+  <tr>
+    <th>Name</th>
+    <th>Running</th>
+    <th>Last up</th>
+    <th>RSS</th>
+    <th>Threads</th>
+    <th>Version (fastapp)</th>
+  </tr>
+  {% for process in process_list %}
+  {% if "Thread" not in process.name %}
+  <tr>
+    <td> {{ process.name }} </td>
+    <td> {{ process.is_up }} </td>
+    <td> {{ process.running | date:"c"}} </td>
+    <td> {{ process.rss }}
+
+    {% if process.is_up %}
+    {% with process.name|replacer:"/,"|add:"-rss" as slug %}
+      {% get_past_datetime 15 "m" as short_starttime %}
+      {% metric_history slug "minutes" short_starttime False %}
+    {% endwith %}
+    {% endif %}
+
+    </td>
+
+    {% regroup process.threads.all by health as thread_state %}
+
+    <td class="small"> {% for state in thread_state %}
+
+      {{ state.grouper }} {{ state.list|length }}
+
+      {% endfor %}
+    </td>
+    <td> {{ process.version }} </td>
+  </tr>
+  {% endif %}
+  {% endfor %}
+</table>

@@ -1,0 +1,104 @@
+{% extends "fastapp/index.html" %}
+{% block extra_header %}
+{% endblock %}
+{% block fastapp_main %}
+<div class="container" ng-controller="BasesCtrl" ng-init="init()" ng-model="bases">
+	<div class="row">
+		<div class="col-md-12">
+			<div><h1>My bases</h1></div>
+			<div class="row">
+				<div class="col-md-4"><h2>Import</h2>
+					<input type="text" class="form-control" ng-model="name" placeholder="New name"/>
+				</br>
+				<span class="btn btn-default btn-file">
+					Browse <input type="file" ng-file-select="onFileSelect($files)">
+				</span>
+				<!--<input type="file" ng-file-select="onFileSelect($files)">-->
+			</div>
+			<div class="row" ng-controller="TransportEndpointCtrl">
+				<div class="col-md-4"><h2>Transport</h2>
+                    <p>Your token is: {{TOKEN}}</p>
+					{% verbatim %}
+					<form editable-form name="tableform" onaftersave="saveTable()">
+
+						<!-- table -->
+						<table class="table table-bordered table-hover table-condensed" style="width: 80%">
+							<tr style="font-weight: bold">
+								<td style="width:40%">Endpoint</td>
+								<td style="width:30%">Override private</td>
+								<td style="width:30%">Override public</td>
+								<td style="width:30%">Authtoken</td>
+							</tr>
+							<tr ng-repeat="endpoint in endpoints">
+								<td>
+									<!-- editable username (text with validation) -->
+									<span editable-text="endpoint.url" e-focus-me="user.isFocused" e-form="tableform">
+										{{ endpoint.url || 'empty' }}
+									</span>
+								</td>
+								<td>
+									<!-- editable status (select-local) -->
+									<span editable-checkbox="endpoint.override_settings_priv" e-title="Override" e-form="tableform"> 
+										{{ endpoint.override_settings_priv && "override" || "don't override" }}
+									</span>
+								</td>
+								<td>
+									<span editable-checkbox="endpoint.override_settings_pub" e-title="Override" e-form="tableform"> 
+										{{ endpoint.override_settings_pub && "override" || "don't override" }}
+									</span>
+								</td>
+								<td>
+									<span editable-text="endpoint.token" e-title="Authtoken" e-form="tableform"> 
+										{{ endpoint.token || "empty" }}
+									</span>
+								</td>
+							</tr>
+						</table>
+
+						<!-- buttons -->
+						<div style="white-space: nowrap">
+							<button type="button" class="btn btn-default" ng-click="addEndpoint()" >Add</button>
+							<button type="submit" ng-show="tableform.$visible" ng-disabled="tableform.$waiting" class="btn btn-primary">save</button>
+							<button type="button" class="btn btn-default" ng-show="!tableform.$visible" ng-click="tableform.$show()">
+								edit
+							</button>
+							<button type="button" ng-show="tableform.$visible" ng-disabled="tableform.$waiting" ng-click="cancelChanges()" class="btn btn-default">cancel
+							</button>
+						</div>
+
+					</form>
+
+					{% endverbatim %}
+				</div>
+			</div>
+			{% verbatim %}
+			<div class="highlight bases col-md-3" ng-repeat="one_base in bases | orderBy:'name':false">
+				<h4>
+					<a href="/fastapp/{{ one_base.name }}/index/">{{ one_base.name }}</a>
+					<button type="button" class="btn btn-default btn-xs" ng-click="cycle_state(one_base)">
+						<span ng-show="one_base.state == false">Stopped</span>
+						<span ng-show="one_base.state == true">Started (PID's: {{ one_base.pids }})</span>
+					</button>
+				</h4>
+				<div ng-repeat="apy in one_base.apy_models | orderBy:'name':false">
+					<button type="button" class="btn btn-default btn-xs"> {{ apy.name }} </button>
+				</div>
+			</div>
+			{% endverbatim %}
+		</div>
+	 	<!--<div class="col-md-4">
+		 	<div><h1>Public bases</h1></div>
+		 	{% for base in public_bases %}
+		 	<div class="highlight bases">
+		 		<h4><a href="/fastapp/{{base.name}}/index/">{{ base.name }}</a></h4>
+		 		<p> {% for exec in base.execs.all %}
+		 			<button type="button" class="btn btn-default btn-xs"> {{ exec.name }} </button>
+		 			{% endfor %}
+		 		</p>
+		 	</div>
+	 		{% endfor %}
+	 	</div> 
+	 -->
+	</div>
+</div>
+{% endblock %}

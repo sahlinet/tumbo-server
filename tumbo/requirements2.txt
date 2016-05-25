@@ -1,0 +1,1 @@
+#-e git+http://git.sahli.net/philipsahli/fastapp.git@master#egg=fastapp
