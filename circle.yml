@@ -51,9 +51,10 @@ deployment:
       # publish master tag
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker tag tumboserver_app philipsahli/tumbo-server:master
+      - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-server:master
       - docker images
       - docker push philipsahli/tumbo-server:master
-      - docker images
+      - docker push philipsahli/tumbo-worker:master
   trunk:
     branch: develop
     commands:
