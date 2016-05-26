@@ -18,6 +18,7 @@ RUN echo "tumbo ALL = NOPASSWD: /usr/bin/yum" >> /etc/sudoers
 RUN echo cachebust_1401424855
 
 ADD app_worker /home/tumbo/code/app
+ADD tumbo/core /home/tumbo/code/app/
 
 RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements-worker-basic.txt
 RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements-worker.txt
