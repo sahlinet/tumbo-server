@@ -32,6 +32,7 @@ RUN /home/tumbo/.virtualenvs/tumbo/bin/pip uninstall -y djangorestframework && /
 RUN echo cachebust_14014248644
 # WORKAROUND
 RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install -e git+https://github.com/rpalacios/django-sequence-field.git@f1bdc48c897e6cd95a3182f8253665609a87a895#egg=django_sequence_field-master
+RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install -e git+https://github.com/docker/docker-py.git@aa19d7b6609c6676e8258f6b900dea2eda1dbe95#egg=docker_py-master
 
 # we need the fork sahlinet/swampdragon installed, because of reference in swampdragon-auth we need to install first our version.
 #RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install -e git+https://github.com/sahlinet/swampdragon.git@master#egg=swampdragon
