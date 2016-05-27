@@ -59,7 +59,7 @@
 
                         {% if user.is_superuser %}
                         <li><a class="nav-link" href="{% url 'cockpit' %}">Cockpit</a></li>
-                        <li><a class="nav-link" href="/admin/fastapp/">Admin</a></li>
+                        <li><a class="nav-link" target="_blank" href="{% url 'admin:index' %}core/">Admin</a></li>
                         {% endif %}
 
                         {% if user.is_authenticated %}

@@ -175,10 +175,11 @@ class DataStore(object):
             return None
         return result[0]
 
-    def _execute(self, sql, result=None):
+    def _execute(self, sql, commit=True, result=None):
         logger.info(sql)
         result = self.session.execute(sql)
-        self._commit()
+        if commit:
+            self._commit()
         return result
 
     def truncate(self):
@@ -245,8 +246,9 @@ class DataStorePlugin(Plugin):
         CONNECTIONS_COUNT = "SELECT count(*) FROM pg_stat_activity;"
 
         return {
-            'SCHEMAS': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(SCHEMAS)],
-            'TABLESPACES': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(TABLESPACES)][0],
-            'CONNECTIONS': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(CONNECTIONS)],
-            'CONNECTIONS_COUNT': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(CONNECTIONS_COUNT)]
+            'SCHEMAS': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(SCHEMAS, commit=False)],
+            'TABLESPACES': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(TABLESPACES, commit=False)][0],
+            'CONNECTIONS': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(CONNECTIONS, commit=False)],
+            'CONNECTIONS_COUNT': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(CONNECTIONS_COUNT, commit=False)]
         }
+        return {}
