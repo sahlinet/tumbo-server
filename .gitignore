@@ -68,3 +68,5 @@ erl_crash.dump
 *.sqlite3-journal
 
 history
+
+!tumbo/core/static/bower_components/ng-grid/build
