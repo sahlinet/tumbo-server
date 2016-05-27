@@ -5,11 +5,9 @@ RUN yum install -y postgresql-devel python-virtualenv libevent-devel gcc libffi-
 RUN useradd -m -d /home/tumbo -s /bin/bash tumbo
 
 WORKDIR /home/tumbo
-RUN mkdir /home/tumbo/code/
-RUN chown tumbo:tumbo code
+RUN mkdir /home/tumbo/code/ && chown tumbo:tumbo code
 
-RUN mkdir /home/tumbo/logs && mkdir /logs && mkdir /home/tumbo/.virtualenvs
-RUN chown tumbo:tumbo /logs
+RUN mkdir /home/tumbo/logs && mkdir /logs && mkdir /home/tumbo/.virtualenvs && chown tumbo:tumbo /logs
 
 RUN virtualenv --no-site-packages /home/tumbo/.virtualenvs/tumbo
 
@@ -18,11 +16,10 @@ RUN echo "tumbo ALL = NOPASSWD: /usr/bin/yum" >> /etc/sudoers
 RUN echo cachebust_1401424855
 
 ADD app_worker /home/tumbo/code/app
-ADD tumbo/core /home/tumbo/code/app/
+ADD tumbo/core /home/tumbo/code/app/core
+ADD tumbo/requirements.txt /home/tumbo/code/app/core/requirements.txt
 
-RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements-worker-basic.txt
-RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements-worker.txt
-RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install newrelic j2cli sh supervisor_stdout
+RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements.txt && /home/tumbo/.virtualenvs/tumbo/bin/pip install newrelic j2cli sh supervisor_stdout && /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/core/requirements.txt
 
-# /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/app/manage.py start_worker --vhost=/ilipcito-skyblue-cloud --base=skyblue-cloud --username=skyblue-cloud --password=p3HKN84fuF
+
 CMD ["/bin/bash"]
