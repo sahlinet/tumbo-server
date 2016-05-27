@@ -28,7 +28,7 @@ app:
    #- STREAM_HOST=$${STREAM_PORT_9999_TCP_ADDR}
    - STREAM_PORT=9999
    - STREAM_HOST=127.0.0.1
-   - FASTAPP_WORKER_IMPLEMENTATION=fastapp.executors.worker_engines.dockers.DockerSocketExecutor
+   - FASTAPP_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
    - DROPBOX_CONSUMER_KEY
    - DROPBOX_CONSUMER_SECRET
    - DROPBOX_REDIRECT_URL
@@ -52,7 +52,7 @@ background:
   links:
    - app
   ports:
-   - "80"
+   - "8000:80"
   environment:
    - MODE=background
    - ADMIN_PASSWORD=tumbo
@@ -68,7 +68,7 @@ background:
    - JOBSTOREDB_PASS=$${JOBSTOREDB_ENV_PASSWORD}
    - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
    - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
-   - FASTAPP_WORKER_IMPLEMENTATION=fastapp.executors.worker_engines.dockers.DockerSocketExecutor
+   - FASTAPP_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
    - DROPBOX_CONSUMER_KEY
    - DROPBOX_CONSUMER_SECRET
    - DROPBOX_REDIRECT_URL

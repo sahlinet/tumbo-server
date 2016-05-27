@@ -16,7 +16,7 @@ docker-compose>=1.5.2
 docopt==0.6.2
 dropbox==1.6
 ecdsa==0.10
-docker-py>=1.8.1
+-e git+https://github.com/docker/docker-py.git@aa19d7b6609c6676e8258f6b900dea2eda1dbe95#egg=docker_py-master
 -e git+https://github.com/rpalacios/django-sequence-field.git#egg=django_sequence_field-master
 gevent==1.0.1
 greenlet==0.4.5
