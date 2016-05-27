@@ -11,6 +11,7 @@ Usage:
   tumbo.py server docker test
   tumbo.py server docker pull
   tumbo.py server docker url
+  tumbo.py server docker logs
   tumbo.py server tutum run [--worker=worker] [--ngrok-hostname=host] [--ngrok-authtoken=token]
   tumbo.py env list
   tumbo.py env <env-id> login <url>
@@ -565,6 +566,12 @@ if __name__ == '__main__':
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 build.wait()
 
+            if arguments['logs']:
+                print "Follow logs of docker containers"
+
+                cmd = "-f docker-compose-app-docker_socket_exec.yml logs -f"
+                build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                build.wait()
 
             if arguments['run']:
                 print "Starting Tumbo on docker"
