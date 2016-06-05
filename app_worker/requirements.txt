@@ -13,4 +13,3 @@ remote-pdb==1.2.0
 jsonfield==0.9.22
 -e git+https://github.com/rpalacios/django-sequence-field.git#egg=django_sequence_field-master
 boto==2.40.0
-remote-pdb==1.2.0
