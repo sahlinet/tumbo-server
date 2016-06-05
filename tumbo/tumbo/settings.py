@@ -260,6 +260,7 @@ STATICFILES_FINDERS = (
 REDIS_METRICS = {
    # 'MIN_GRANULARITY': 'hourly',
    'MIN_GRANULARITY': 'minutes',
+   'MAX_GRANULARITY': 'monthly',
    'MONDAY_FIRST_DAY_OF_WEEK': True
 }
 
