@@ -23,6 +23,7 @@ Usage:
   tumbo.py project <base-name> open
   tumbo.py project <base-name> start
   tumbo.py project <base-name> stop
+  tumbo.py project <base-name> restart
   tumbo.py project <base-name> destroy
   tumbo.py project <base-name> delete
   tumbo.py project <base-name> create
@@ -410,6 +411,12 @@ if __name__ == '__main__':
         if arguments['<base-name>']:
             if arguments['stop']:
                 env.project_stop(arguments['<base-name>'])
+                env.project_show(arguments['<base-name>'])
+
+            if arguments['restart']:
+                env.project_stop(arguments['<base-name>'])
+                time.sleep(2)
+                env.project_start(arguments['<base-name>'])
                 env.project_show(arguments['<base-name>'])
 
             if arguments['destroy']:
