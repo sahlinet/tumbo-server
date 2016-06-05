@@ -786,9 +786,11 @@ class DropboxNotifyView(View):
         return HttpResponse(challenge)
 
     def post(self, request):
+        logger.info("DropboxNotifyView is called")
 
         # get delta for user
         for uid in json.loads(request.body)['delta']['users']:
+            logger.info("Start thread for handling delta for user '%s'" % uid)
             thread = threading.Thread(target=process_user, args=(uid,))
             thread.daemon = True
             thread.start()
