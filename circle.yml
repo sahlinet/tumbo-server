@@ -13,9 +13,6 @@ dependencies:
     - chmod +x $HOME/bin/docker-compose
 test:
   override:
-    - git submodule init
-    - git submodule update
-    #
     - sh -x build-worker.sh
     #
     - sudo pip install docopt==0.6.2
