@@ -23,9 +23,11 @@ from django.views.generic.base import ContextMixin
 from django.conf import settings
 from django.views.decorators.cache import never_cache
 from django.core import serializers
-from dropbox.rest import ErrorResponse
 from django.core.cache import cache
 from django.template import Template
+
+from dropbox.rest import ErrorResponse
+from random import uniform
 
 from core.utils import UnAuthorized, Connection, NoBasesFound, message, info, warn, channel_name_for_user, send_client
 from core.queue import generate_vhost_configuration
@@ -37,6 +39,7 @@ from core.executors.remote import call_rpc_client
 from core.importer import _handle_settings, _read_config
 
 from core.plugins import PluginRegistry
+from core.threadpool import ThreadPool
 
 User = get_user_model()
 
@@ -651,13 +654,13 @@ def process_file(path, metadata, client, user):
         #    continue
 
         # setup recognition
-        regex = re.compile("/(.*)/.*")
+        regex = re.compile("\/(.*)\/(.*)\/.*")
         r = regex.search(path)
         if not r:
             logger.warn("regex '/(.*)/(.*).py' no results in '%s'" % path)
             return
         names = r.groups()
-        base_name = names[0]
+        base_name = names[1]
         appconfig_path = "%s/app.config" % base_name
         logger.info("notification for: base_name: %s, user: %s" % (base_name, user))
 
@@ -752,11 +755,6 @@ def process_user(uid):
     client = Connection(token)
 
     has_more = True
-
-    from core.threadpool import ThreadPool
-    from random import uniform
-
-
     while has_more:
         result = client.delta(cursor)
 
@@ -782,7 +780,10 @@ def process_user(uid):
 class DropboxNotifyView(View):
 
     def get(self, request):
-        challenge = request.GET['challenge']
+        try:
+            challenge = request.GET['challenge']
+        except:
+            return HttpResponseNotFound("Not Found")
         return HttpResponse(challenge)
 
     def post(self, request):
