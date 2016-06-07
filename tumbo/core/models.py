@@ -126,42 +126,42 @@ class Base(models.Model):
         template_content = connection.get_file_content(template_name)
         self.content = template_content
 
-    def refresh_execs(self, exec_name=None, put=False):
-        from core.utils import Connection, NotFound
-        # execs
-        connection = Connection(self.user.authprofile.access_token)
-        app_config = "%s/app.config" % self.name
-        config = ConfigParser.RawConfigParser()
-        config.readfp(io.BytesIO(connection.get_file_content(app_config)))
-        if put:
-            if exec_name:
-                connection.put_file("%s/%s.py" % (self.name, exec_name),
-                                self.execs.get(name=exec_name).module)
-                connection.put_file(app_config, self.config)
-            else:
-                raise Exception("exec_name not specified")
-        else:
-            for name in config.sections():
-                module_name = config.get(name, "module")
-                try:
-                    module_content = connection.get_file_content("%s/%s" % (self.name, module_name))
-                except NotFound:
-                    try:
-                        Exec.objects.get(name=module_name, base=self).delete()
-                    except Exec.DoesNotExist, e:
-                        self.save()
-
-                # save new exec
-                app_exec_model, created = Apy.objects.get_or_create(base=self, name=name)
-                app_exec_model.module = module_content
-                app_exec_model.save()
-
-            # delete old exec
-            for local_exec in Apy.objects.filter(base=self).values('name'):
-                if local_exec['name'] in config.sections():
-                    logger.warn()
-                else:
-                    Apy.objects.get(base=self, name=local_exec['name']).delete()
+#    def refresh_execs(self, exec_name=None, put=False):
+#        from core.utils import Connection, NotFound
+#        # execs
+#        connection = Connection(self.user.authprofile.access_token)
+#        app_config = "%s/app.config" % self.name
+#        config = ConfigParser.RawConfigParser()
+#        config.readfp(io.BytesIO(connection.get_file_content(app_config)))
+#        if put:
+#            if exec_name:
+#                connection.put_file("%s/%s.py" % (self.name, exec_name),
+#                                self.execs.get(name=exec_name).module)
+#                connection.put_file(app_config, self.config)
+#            else:
+#                raise Exception("exec_name not specified")
+#        else:
+#            for name in config.sections():
+#                module_name = config.get(name, "module")
+#                try:
+#                    module_content = connection.get_file_content("%s/%s" % (self.name, module_name))
+#                except NotFound:
+#                    try:
+#                        Exec.objects.get(name=module_name, base=self).delete()
+#                    except Exec.DoesNotExist, e:
+#                        self.save()
+#
+#                # save new exec
+#                app_exec_model, created = Apy.objects.get_or_create(base=self, name=name)
+#                app_exec_model.module = module_content
+#                app_exec_model.save()
+#
+#            # delete old exec
+#            for local_exec in Apy.objects.filter(base=self).values('name'):
+#                if local_exec['name'] in config.sections():
+#                    logger.warn()
+#                else:
+#                    Apy.objects.get(base=self, name=local_exec['name']).delete()
 
     def export(self):
         # create in-memory zipfile
@@ -178,7 +178,7 @@ class Base(models.Model):
             dropbox_connection = Connection(self.auth_token)
 
             try:
-                zf = dropbox_connection.directory_zip("%s/static" % self.name, zf)
+                zf = dropbox_connection.directory_zip("%s/%s/static" % (self.user.username, self.name, zf))
             except Exception, e:
                 logger.warn(e)
         except AuthProfile.DoesNotExist, e:
@@ -689,8 +689,8 @@ def initialize_on_storage(sender, *args, **kwargs):
         #else:
         #    logger.exception(e)
 
-    connection.put_file("%s/app.config" % (instance.name), instance.config)
-    connection.put_file("%s/index.html" % (instance.name), instance.content)
+    connection.put_file("%s/%s/app.config" % (instance.user.username, instance.name), instance.config)
+    connection.put_file("%s/%s/index.html" % (instance.user.username, instance.name), instance.content)
 
 
 @receiver(ready_to_sync, sender=Apy)
