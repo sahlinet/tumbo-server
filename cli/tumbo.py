@@ -244,6 +244,9 @@ class Env(object):
     def project_destroy(self, name):
         status_code, projects = self._call_api("/fastapp/api/base/%s/destroy/" % name, method="POST")
 
+    def project_delete(self, name):
+        status_code, projects = self._call_api("/fastapp/base/%s/delete/" % name, method="POST")
+
     def project_show(self, name):
 
         status_code, project = self._call_api("/fastapp/api/base/%s/" % name)
@@ -374,7 +377,7 @@ def do_ngrok():
 
 if __name__ == '__main__':
     # arguments = docopt(__doc__, version=version)
-    arguments = docopt(__doc__, version="0.1.7")
+    arguments = docopt(__doc__, version="0.1.8")
     #import pprint; pprint.pprint(arguments)
     if arguments['--ngrok-hostname'] and arguments['docker']:
 	    try:
@@ -422,6 +425,9 @@ if __name__ == '__main__':
             if arguments['destroy']:
                 env.project_destroy(arguments['<base-name>'])
                 env.project_show(arguments['<base-name>'])
+
+            if arguments['delete']:
+                env.project_delete(arguments['<base-name>'])
 
             if arguments['start']:
                 env.project_start(arguments['<base-name>'])
