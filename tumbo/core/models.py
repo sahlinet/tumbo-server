@@ -178,9 +178,11 @@ class Base(models.Model):
             dropbox_connection = Connection(self.auth_token)
 
             try:
-                zf = dropbox_connection.directory_zip("%s/%s/static" % (self.user.username, self.name, zf))
+                zf = dropbox_connection.directory_zip(
+                            "%s/%s/static" % (self.user.username, self.name), zf
+                )
             except Exception, e:
-                logger.warn(e)
+               logger.warn(e)
         except AuthProfile.DoesNotExist, e:
             logger.warn(e)
         except Exception, e:

@@ -118,8 +118,9 @@ class Connection(object):
                         filepath = content['path']
                         try:
                             file = self.get_file(filepath)
-                            filepath = re.sub(r"(.+?)(\/.*)", r"\2", filepath)
-                            zf.writestr(os.path.relpath(filepath, "/"), file.read())
+                            filepath_new = re.sub(r"(.*?)/(.+?)(\/.*)", r"\2", filepath)
+                            logger.debug("Add file '%s' as '%s' to zip" % (filepath, filepath_new))
+                            zf.writestr(os.path.relpath(filepath_new, "/"), file.read())
                             file.close()
                         except ErrorResponse, e:
                             logger.error(e)

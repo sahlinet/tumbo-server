@@ -151,6 +151,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'core.utils': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
         'core.executors.remote': {
             #'handlers': ['console'],
             'handlers': [],
