@@ -1,5 +1,5 @@
 <h1>Documentation</h1>
-<hr />
+<hr>
 <h2>Base</h2>
 <p>A Base is a runtime unit and is running in an isolated environment. It can have many Execs.</p>
 <h3>Start and Stop</h3>
@@ -10,15 +10,15 @@ can create or update the base on the same or on other platform.</p>
 <blockquote>
 <p>If a Base contains a lot of static files, export and import might fail because of timeouts!</p>
 </blockquote>
-<hr />
+<hr>
 <h2>Static Files</h2>
 <p>Place static files in a folder <code>static</code> on the Dropbox base directory. When a static file is
 accessed by a client, the file is read from your Dropbox and then cached on Tumbo for {{ FASTAPP_STATIC_CACHE_SECONDS }} seconds.</p>
 <p>{% verbatim %}
-Static files can be accessed over <code>https://tumbo.sahli.net/planet/EXAMPLE_BASE/static/FILE</code>. The
+Static files can be accessed over <code>https://tumbo.example.com/fastapp/EXAMPLE_BASE/static/FILE</code>. The
 URL until the word <em>static</em> is available as variable in HTML files as {{ FASTAPP_STATIC_URL }}.
 {% endverbatim %}</p>
-<hr />
+<hr>
 <h2>Exec</h2>
 <p>An Exec is function, which can be called by an HTTP Request.</p>
 <h3>Editing</h3>
@@ -95,7 +95,7 @@ can take up to 30 seconds.</p>
 This configuration setting is for security reasons not exported. A base must be made public explicit.</p>
 <h3>Execution</h3>
 <h4>Curl</h4>
-<pre><code> curl -L -v "https://tumbo.sahli.net/fastapp/base/hello-world/exec/echo/?json=&amp;shared_key=f241fcab-0323-42b5-ac17-94bfefd5df72"
+<pre><code> curl -L -v "https://tumbo.example.com/fastapp/base/hello-world/exec/echo/?json=&amp;shared_key=f241fcab-0323-42b5-ac17-94bfefd5df72"
  {
    "status": "OK",
    "exception": null,
@@ -108,7 +108,7 @@ This configuration setting is for security reasons not exported. A base must be 
  }
 </code></pre>
 <p>If the Exec raises an Exception the response status is <code>NOK</code>.</p>
-<pre><code> curl -L -v "https://tumbo.sahli.net/fastapp/base/hello-world/exec/echo/?json=&amp;shared_key=f241fcab-0323-42b5-ac17-94bfefd5df72"
+<pre><code> curl -L -v "https://tumbo.example.com/fastapp/base/hello-world/exec/echo/?json=&amp;shared_key=f241fcab-0323-42b5-ac17-94bfefd5df72"
  {
    "status": "NOK",
    "exception": "Exception",
@@ -129,13 +129,13 @@ The response refers to a location which is enriched with a query string <code>ri
 wait until the <code>status</code> is <code>FINISHED</code>.</p>
 <h3>Schedules</h3>
 <p>Add in the UI a configuration for a scheduled execution of a function. For example <code>*/30 * * *</code> (<code>second minute our day_of_week</code>).</p>
-<hr />
+<hr>
 <h2>Settings</h2>
 <p>{% verbatim %}
 The settings you configured in a Base are rendered in static files ending with <code>.html</code> when used as <code>{{ SETTING_KEY }}</code> or
 in python code in a exec as <code>self.settings.SETTING_KEY</code>.
 {% endverbatim %}</p>
-<hr />
+<hr>
 <h2>Service Port</h2>
 <p>On every worker a service port is allocated for usage. This let's you for example to run
 a webserver or any other daemon.</p>
@@ -160,7 +160,7 @@ a webserver or any other daemon.</p>
 <p>IPv6 only:</p>
 <pre><code>print os.environ['SERVICE_DNS_V6']
 </code></pre>
-<hr />
+<hr>
 <h2>Datastore</h2>
 <p>The datastore lets you store and access data per base. The data get retained over base lifecycle.
 On <code>init</code> the datastore is not yet available.</p>
@@ -208,14 +208,14 @@ self.datastore.delete(row)
 &lt;/html&gt;
 </code></pre>
 <p>{% endverbatim %}</p>
-<hr />
+<hr>
 <h2>Transport</h2>
 <p>Transporting from one <em>Tumbo</em> platform to another uses internally the export and import feature.
 On the source platform you have to configure the transport endpoint, the token and how to handle settings.</p>
 <p>Then you can transport a Base to the target platform from the base page.</p>
 <pre><code>https://HOST/fastapp/api/base/import/
 </code></pre>
-<hr />
+<hr>
 <h2>Development</h2>
 <p>How you can run <em>Tumbo</em> as lite-version on your machine is documented on <a href="https://github.com/sahlinet/tumbo-server">github.com/sahlinet/tumbo-server</a></p>
 <h2>HTTP API</h2>
