@@ -173,7 +173,7 @@ class HeartbeatThread(CommunicationThread):
                                    )
 
         if not self.in_sync:
-            print "Set to true ready_for_init"
+            logger.info("Set to true ready_for_init")
             self.on_next_ready_for_init = True
 
         self.in_sync = True

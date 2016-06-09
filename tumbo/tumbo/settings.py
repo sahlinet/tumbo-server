@@ -103,7 +103,7 @@ STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 STATIC_ROOT = "/static/"
 
-LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'INFO'
 
 LOGGING = {
     'version': 1,
@@ -184,7 +184,7 @@ LOGGING = {
         },
         'core.views': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'core.executors.heartbeat': {
@@ -197,19 +197,30 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'core.scheduler': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+
         'tornado': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
         },
+        'sqlalchemy': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
         'sqlalchemy.pool': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'propagate': True,
         },
         'sqlalchemy.orm': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'WARNING',
             'propagate': True,
         }
 
