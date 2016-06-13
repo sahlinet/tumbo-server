@@ -45,7 +45,7 @@ class RancherApiExecutor(BaseExecutor):
             json_response = None
         logger.debug(r.status_code)
         if r.status_code == 422:
-            logger.error("422 status_code when calling %s, %s" % (url, r.text))
+            logger.warning("422 status_code when calling %s, %s" % (url, r.text))
         return r.status_code, json_response
 
     def _get_container(self, id):
