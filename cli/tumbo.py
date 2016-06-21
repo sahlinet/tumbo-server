@@ -379,7 +379,7 @@ def do_ngrok():
 
 if __name__ == '__main__':
     # arguments = docopt(__doc__, version=version)
-    arguments = docopt(__doc__, version="0.1.9")
+    arguments = docopt(__doc__, version="0.1.10")
     #import pprint; pprint.pprint(arguments)
     if arguments['--ngrok-hostname'] and arguments['docker']:
 	    try:
