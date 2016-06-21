@@ -2,9 +2,9 @@
 
 ## Environment Configuration
 
-Create a file with following environment variables:
+Create a file `your-env.env` with following environment variables:
 
-    PASSWORD   # DB
+    PASSWORD                 
     RABBITMQ_PASS
     REDIS_PASS
     ADMIN_PASSWORD
@@ -16,10 +16,18 @@ Create a file with following environment variables:
     RANCHER_URL
 
     FRONTEND_HOST
-    SWAMP_DRAGON_FRONTEND
 
     DEBUG
 
-## Launch stack
+# Run on Rancher
 
-   rancher-compose -p tumbo -e tumbo-sahli-net.env up
+    wget https://releases.rancher.com/compose/beta/v0.7.2/rancher-compose-linux-amd64-v0.7.2.tar.gz
+    tar -zxvf rancher-compose-linux-amd64-v0.7.2.tar.gz                                                                                                                 
+    sudo mv rancher-compose-v0.7.2/rancher-compose  /usr/local/bin 
+    rm -rf rancher-compose-v0*
+    
+    export RANCHER_ACCESS_KEY=ACCESS_KEY                                                                                                                      
+    export RANCHER_SECRET_KEY=SECRET_KEY                                                                                       
+    export RANCHER_URL=http://URL
+    
+    rancher-compose -p tumbo -f docker-compose.yml -e your-env.env  up

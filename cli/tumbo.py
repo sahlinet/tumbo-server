@@ -270,6 +270,14 @@ class Env(object):
             print "Project does not exist"
             return
 
+        status_code, settings = self._call_api("/fastapp/api/base/%s/setting/" % name)
+        print "\nSettings\n********"
+        table = []
+        for setting in settings:
+            public = "Yes" if setting['public'] else "No"
+            table.append([setting['key'], public, setting['value']])
+        print tabulate(table, headers=["Key", "Public", "Value"])
+
         print "\nFunctions\n*********"
         table = []
         for function in functions:
@@ -286,13 +294,7 @@ class Env(object):
             ])
         print tabulate(table, headers=["Name", "Public", "Schedule", "Counter success", "Counter failed"])
 
-        status_code, settings = self._call_api("/fastapp/api/base/%s/setting/" % name)
-        print "\nSettings\n********"
-        table = []
-        for setting in settings:
-            public = "Yes" if setting['public'] else "No"
-            table.append([setting['key'], public, setting['value']])
-        print tabulate(table, headers=["Key", "Public", "Value"])
+
 
     def project_transactions(self, name, tid=None):
 	data={}

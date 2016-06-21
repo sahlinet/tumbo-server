@@ -1,3 +1,5 @@
+# Create a Dropbox App
+
 https://www.dropbox.com/developers/apps -> "Create app"
 
 
@@ -21,11 +23,11 @@ Note "App key" and "App secret"
 
 OAuth 2 -> Redirect URI's
 
-    https://tumbo.sahli.net/fastapp/dropbox_auth_finish/
+    https://tumbo.example.com/fastapp/dropbox_auth_finish/
 
 Webhooks -> Webhook URI's
 
-    https://tumbo.sahli.net/fastapp/dropbox_notify/
+    https://tumbo.example.com/fastapp/dropbox_notify/
 
     - DROPBOX_CONSUMER_KEY
     - DROPBOX_CONSUMER_SECRET

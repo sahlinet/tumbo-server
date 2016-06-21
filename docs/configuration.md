@@ -1,4 +1,4 @@
-# django-fastapp
+# Configuration
 -------
 
 django-fastapp is a reusable Django app which lets you prototype apps in the browser with client- and server-side elements.

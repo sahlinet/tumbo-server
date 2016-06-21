@@ -212,7 +212,7 @@ if os.environ.get('DIGITALOCEAN_CONFIG', None):
                 'core.plugins.dnsname': {
                     'provider': "DigitalOcean",
                     'token': os.environ['DIGITALOCEAN_CONFIG'],
-                    'zone': "hosts.planet-lite-test.sahli.net"
+                    'zone': os.environ['DIGITALOCEAN_ZONE']
                 }
         }
     )

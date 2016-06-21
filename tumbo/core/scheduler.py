@@ -75,14 +75,13 @@ def start_scheduler():
     scheduler.start()
 
     while True:
-        logger.info("START rescheduling call_apy")
+        logger.debug("START rescheduling call_apy")
         for apy in Apy.objects.all():
             try:
                 update_job(apy, scheduler)
             except Exception, e:
                 if not apy.schedule:
                     logger.warn("Problem with schedule config for %s: %s" % (apy.name, apy.schedule))
-        logger.info("END rescheduling call_apy")
+        logger.debug("END rescheduling call_apy")
         time.sleep(120)
 
-    logger.info("Done scheduling jobs")

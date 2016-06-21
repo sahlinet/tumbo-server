@@ -5,18 +5,18 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
-#REDIS_URL = "redis://127.0.0.1:6379/1"
+REDIS_URL = "redis://:asdf123asdf123567sdf1238908898989@127.0.0.1:6379/1"
 #SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 #SESSION_CACHE_ALIAS = "default"
-#CACHES = {
-#    "default": {
-#        "BACKEND": "django_redis.cache.RedisCache",
-#        "LOCATION": REDIS_URL,
-#        "OPTIONS": {
-#            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#            }
-#    }
-#}
+CACHES = {
+   "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+    }
+}
 
 STATIC_URL = '/static/'
 

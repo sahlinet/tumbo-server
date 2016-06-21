@@ -199,7 +199,7 @@ LOGGING = {
         },
         'core.scheduler': {
             'handlers': ['console'],
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'propagate': False,
         },
 

@@ -76,6 +76,10 @@ class BaseTestCase(TransactionTestCase):
         self.client_csrf = Client(enforce_csrf_checks=True)  # not logged in
 
 
+        self.admin_pw= 'mypassword' 
+        my_admin = User.objects.create_superuser('myuser', 'myemail@test.com', self.admin_pw)
+
+
 class BaseObjectTestCase(BaseTestCase):
 
     def test_base_duplicates_not_possible(self):
@@ -148,6 +152,15 @@ class BaseExecutorStateTestCase(BaseTestCase):
         from core.queue import generate_vhost_configuration
         vhost = generate_vhost_configuration('username', 'base1')
         self.assertEquals(vhost, "/username-base1")
+
+
+class CockpitTestCase(BaseTestCase):
+
+    def test_cockpit(self):
+
+        self.client1.login(username='my_admin', password=self.admin_pw)
+        response = self.client1.get("/fastapp/cockpit/")
+        self.assertEqual(200, response.status_code)
 
 
 @patch("core.views.send_client")
