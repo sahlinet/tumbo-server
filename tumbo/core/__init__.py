@@ -1,7 +1,7 @@
 import os
 
 from django.core.exceptions import ImproperlyConfigured
-__VERSION__ = "0.1.11"
+__VERSION__ = "0.1.12"
 
 # load plugins
 from django.conf import settings
