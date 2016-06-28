@@ -37,7 +37,7 @@ def update_job(apy, scheduler):
         kwargs = cron_to_dict(apy.schedule)
         if scheduler.get_job(job_id):
             scheduler.reschedule_job(job_id, trigger='cron', **kwargs)
-            logger.info("Job '%s' rescheduled" % job_id)
+            logger.debug("Job '%s' rescheduled" % job_id)
         else:
             job_id = scheduler.add_job(call_apy, 'cron', args=[apy.base.name, apy.name], id=job_id, **kwargs)
             logger.info("Job '%s' added" % job_id)

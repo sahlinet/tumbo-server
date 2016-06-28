@@ -36,7 +36,7 @@ class RancherApiExecutor(BaseExecutor):
             logger.info("POST to %s" % url)
             r = requests.post(url, json=data, auth=self.auth)
         else:
-            logger.info("GET to %s" % url)
+            logger.debug("GET to %s" % url)
             r = requests.get(url, auth=self.auth)
         # logger.debug(r.text)
         try:
@@ -229,7 +229,7 @@ class RancherApiExecutor(BaseExecutor):
             container = self._get_container(id)
         except ContainerNotFound:
             return False
-        logger.info("Worker is in state: %s (%s)" % (container['state'], container['transitioningMessage']))
+        logger.debug("Worker is in state: %s (%s)" % (container['state'], container['transitioningMessage']))
         return (container['state'] == "active")
 
     def addresses(self, id, port=None):
