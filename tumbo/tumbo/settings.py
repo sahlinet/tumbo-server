@@ -210,7 +210,7 @@ LOGGING = {
         },
         'sqlalchemy': {
             'handlers': ['console'],
-            'level': 'WARNING',
+            'level': 'INFO',
             'propagate': True,
         },
         'sqlalchemy.pool': {

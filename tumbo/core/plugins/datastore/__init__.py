@@ -61,7 +61,7 @@ class DataStore(object):
         DataObject.__table__.schema = self.schema
 
         # create session with engine
-        self.engine = create_engine(self.__class__.ENGINE % kwargs, echo=True, poolclass=NullPool)
+        self.engine = create_engine(self.__class__.ENGINE % kwargs, echo=False, poolclass=NullPool)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
