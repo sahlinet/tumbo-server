@@ -41,5 +41,5 @@ redis==2.10.3
 requests==2.7.0
 sh==1.09
 shortuuid==0.4
-SQLAlchemy==1.0.13
+SQLAlchemy==1.1.0b1
 tabulate==0.7.5

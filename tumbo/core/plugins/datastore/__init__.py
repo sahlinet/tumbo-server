@@ -151,14 +151,41 @@ class DataStore(object):
         flag_modified(obj, "data")
         self._commit()
 
-    def all(self):
-        return self.session.query(DataObject).all()
+    def all(self, lock=False, nowait=False, read=False, skip_locked=False):
+        if lock:
+            self.session.autocommit = False
+            #self.session.begin()
+            try:
+                return self.session.query(DataObject).with_for_update(nowait=nowait, skip_locked=skip_locked, read=read).all()
+            except Exception, e:
+                logger.error(e)
+                if "could not obtain lock on row" in repr(e):
+                    self.session.rollback()
+                    raise LockException(e)
+                raise e
+        else:
+            return self.session.query(DataObject).all()
 
     def count(self):
         return self.session.query(DataObject).count()
 
-    def filter(self, k, v):
-        return self.session.query(DataObject).filter(text("data->>'"+k+"' = '"+v+"';")).all()
+    #def filter(self, k, v):
+    #    return self.session.query(DataObject).filter(text("data->>'"+k+"' = '"+v+"';")).all()
+
+    def filter(self, k, v, lock=False, nowait=True, skip_locked=False, read=False):
+        if lock:
+            try:
+                qs = self.session.query(DataObject).filter(text("data->>'"+k+"' = '"+v+"'")).with_for_update(nowait=nowait, skip_locked=skip_locked, read=read).all()
+            except Exception, e:
+                logger.error(e)
+                if "could not obtain lock on row" in repr(e):
+                    self.session.rollback()
+                    raise LockException(e)
+                raise e
+        else:
+            qs = self.session.query(DataObject).filter(text("data->>'"+k+"' = '"+v+"'")).with_for_update(read=read).all()
+
+        return qs
 
     def delete(self, obj):
         self.session.delete(obj)
@@ -167,8 +194,11 @@ class DataStore(object):
     def save(self, obj):
         return self._commit()
 
-    def get(self, k, v):
-        result = self.filter(k, v)
+    def get(self, k, v, lock=False, nowait=False):
+        if lock:
+            result = self.filter(k, v, lock, nowait)
+        else:
+            result = self.filter(k, v)
         if len(result) > 1:
             raise Exception("More than one row returned! (%s)" % len(result))
         elif len(result) < 1:
@@ -252,3 +282,6 @@ class DataStorePlugin(Plugin):
             'CONNECTIONS_COUNT': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(CONNECTIONS_COUNT, commit=False)]
         }
         return {}
+
+class LockException(Exception):
+    pass

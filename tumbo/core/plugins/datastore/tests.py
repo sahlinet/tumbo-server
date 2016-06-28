@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from . import DataObject, PsqlDataStore, resultproxy_to_list
+from . import DataObject, PsqlDataStore, resultproxy_to_list, LockException
 
 from django.conf import settings
 from django.test import TestCase
@@ -25,8 +25,7 @@ class TestStringMethods(TestCase):
     def setUp(self):
 
         #self.store = PsqlDataStore("user1", **settings.DATABASES['store'])
-        self.datastore = PsqlDataStore(schema="test", **settings.DATABASES['store'])
-        self.datastore.init_store()
+        self.datastore = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])
 
         # write data
         data = {"function": "setUp"}
@@ -112,5 +111,53 @@ class TestStringMethods(TestCase):
         self.datastore.delete(result)
         self.assertEqual(0, len(self.datastore.all()))
 
+    @override_settings(DATABASES=db_settings)
+    def test_lock_on_all_query(self):
+        all = self.datastore.all(lock=True, nowait=True)
+        with self.assertRaises(LockException):
+            self.datastore2 = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])
+            all1 = self.datastore2.all(lock=True, nowait=True)
+
+        self.datastore.session.commit()
+        self.datastore2 = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])
+        all1 = self.datastore2.all(lock=True, nowait=True)
+        self.datastore2.session.commit()
+
+    @override_settings(DATABASES=db_settings)
+    def test_lock_on_get(self):
+        result = self.datastore.get("function", "setUp", lock=True, nowait=True)
+        with self.assertRaises(LockException):
+            self.datastore2 = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])
+            result1 = self.datastore2.get("function", "setUp", lock=True, nowait=True)
+
+        self.datastore.session.commit()
+        self.datastore2 = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])
+        result1 = self.datastore2.get("function", "setUp", lock=True, nowait=True)
+        self.datastore2.session.commit()
+
+    @override_settings(DATABASES=db_settings)
+    def test_lock_on_filter(self):
+        results = self.datastore.filter("function", "setUp", lock=True, nowait=True)
+        with self.assertRaises(LockException):
+            self.datastore2 = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])
+            result1 = self.datastore2.filter("function", "setUp", lock=True, nowait=True)
+
+        self.datastore.session.commit()
+        self.datastore2 = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])
+        result1 = self.datastore2.filter("function", "setUp", lock=True, nowait=True)
+        self.datastore2.session.commit()
+
+    @override_settings(DATABASES=db_settings)
+    def test_lock_on_filter_with_read(self):
+        self.datastore2 = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])
+        self.datastore3 = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])
+
+        results1 = self.datastore.filter("function", "setUp2", read=True)
+        results2 = self.datastore2.filter("function", "setUp2", read=True)
+
+        self.datastore2.session.commit()
+        self.datastore.session.commit()
+
     def tearDown(self):
         self.datastore.truncate()
+
