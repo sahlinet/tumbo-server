@@ -344,11 +344,14 @@ class Env(object):
             status_code, response = self._call_api("/fastapp/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
         else:
             status_code, response = self._call_api("/fastapp/api/base/%s/apy/%s/execute/?json=&async=" % (project_name, function_name))
-	    state_url = response['url']
-	    print "Started with id '%s'" % response['rid']
-	    while True:
-            	status_code, response = self._call_api(state_url)
-            	state = response['status']
+        state_url = response.get('url', None)
+        print "Started with id '%s'" % response['rid']
+        if not state_url and response['status'] == "OK":
+            pass
+        else:
+            while True:
+                status_code, response = self._call_api(state_url)
+                state = response['status']
 		if state != "RUNNING":
 			break
 		#print "Still running..."
@@ -566,7 +569,7 @@ if __name__ == '__main__':
             if arguments['build']:
                 print "Build docker images"
 
-                cmd = "-f docker-compose-app-docker_socket_exec.yml build"
+                cmd = "-f docker-compose-app-docker_socket_exec.yml build --pull --no-cache"
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
 
                 build.wait()
