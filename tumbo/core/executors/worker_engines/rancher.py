@@ -99,6 +99,15 @@ class RancherApiExecutor(BaseExecutor):
                 'SERVICE_PORT': self.executor.port,
                 'SERVICE_IP': self.executor.ip
                 }
+
+            try:
+                for var in settings.PROPAGATE_VARIABLES:
+                    if os.environ.get(var, None):
+                        env[var] = os.environ[var]
+            except AttributeError:
+                pass
+
+
             json_data = {
                 "scale": 1,
                 "type": "service",

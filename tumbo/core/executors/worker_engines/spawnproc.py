@@ -42,6 +42,15 @@ class SpawnExecutor(BaseExecutor):
             except KeyError:
                 pass
             env['PYTHONPATH'] = python_paths
+
+            try:
+                for var in settings.PROPAGATE_VARIABLES:
+                    #import pdb; pdb.set_trace()
+                    if os.environ.get(var, None):
+                        env[var] = os.environ[var]
+            except AttributeError, e:
+                pass
+
             logger.info(env['PYTHONPATH'])
             settings.SETTINGS_MODULE = "app_worker.settings"
             p = subprocess.Popen("%s %s/manage.py start_worker --settings=%s --vhost=%s --base=%s --username=%s --password=%s" % (

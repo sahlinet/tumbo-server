@@ -495,11 +495,18 @@ if __name__ == '__main__':
                     sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                     #sys.exit(0)
                 print "Starting development server"
-                env = {'PYTHONPATH': "fastapp", 'CACHE_ENV_REDIS_PASS': "asdf123asdf123567sdf1238908898989",
+                env = {}
+                env.update(os.environ)
+                env.update({'PYTHONPATH': "fastapp", 'CACHE_ENV_REDIS_PASS': "asdf123asdf123567sdf1238908898989",
                                    'DROPBOX_CONSUMER_KEY': os.environ['DROPBOX_CONSUMER_KEY'],
                                    'DROPBOX_CONSUMER_SECRET': os.environ['DROPBOX_CONSUMER_SECRET'],
                                    'DROPBOX_REDIRECT_URL': os.environ['DROPBOX_REDIRECT_URL'],
-                           }
+                           })
+                PROPAGATE_VARIABLES = os.environ.get("PROPAGATE_VARIABLES", None)
+                print PROPAGATE_VARIABLES
+                if PROPAGATE_VARIABLES:
+                    env['PROPAGATE_VARIABLES'] = PROPAGATE_VARIABLES
+                
 
                 cmd = "tumbo/manage.py syncdb --noinput --settings=tumbo.dev"
                 syncdb = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
