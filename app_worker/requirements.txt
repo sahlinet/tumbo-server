@@ -1,15 +1,15 @@
 Django==1.7.10
 bunch==1.0.1
 configobj==5.0.6
-requests==2.7.0
+requests==2.10.0
 pytz==2014.9
 shortuuid==0.4.0
 raven==5.2.0
 ecdsa==0.10
 pyOpenSSL==0.14
-sh==1.09
+sh==1.10
 psycopg2==2.6.1
 remote-pdb==1.2.0
 jsonfield==0.9.22
 -e git+https://github.com/rpalacios/django-sequence-field.git#egg=django_sequence_field-master
-boto==2.40.0
+boto==2.41.0
