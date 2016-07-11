@@ -19,7 +19,7 @@ ADD app_worker /home/tumbo/code/app
 ADD tumbo/core /home/tumbo/code/app/core
 ADD tumbo/requirements.txt /home/tumbo/code/app/core/requirements.txt
 
-RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements.txt && /home/tumbo/.virtualenvs/tumbo/bin/pip install newrelic j2cli sh supervisor_stdout && /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/core/requirements.txt
+RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install newrelic j2cli sh supervisor_stdout && /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/core/requirements.txt && /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements.txt
 
 
 CMD ["/bin/bash"]
