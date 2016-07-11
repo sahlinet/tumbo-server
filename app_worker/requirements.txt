@@ -10,6 +10,11 @@ pyOpenSSL==0.14
 sh==1.10
 psycopg2==2.6.1
 remote-pdb==1.2.0
-jsonfield==0.9.22
--e git+https://github.com/rpalacios/django-sequence-field.git#egg=django_sequence_field-master
 boto==2.41.0
+APScheduler==3.2.0
+bumpversion==0.5.3
+gevent==1.0.1
+greenlet==0.4.5
+pika==0.9.14
+psutil==3.3.0
+SQLAlchemy==1.1.0b1

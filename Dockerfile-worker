@@ -7,19 +7,17 @@ RUN useradd -m -d /home/tumbo -s /bin/bash tumbo
 WORKDIR /home/tumbo
 RUN mkdir /home/tumbo/code/ && chown tumbo:tumbo code
 
-RUN mkdir /home/tumbo/logs && mkdir /logs && mkdir /home/tumbo/.virtualenvs && chown tumbo:tumbo /logs
+RUN echo cachebust_1401424855
+
+RUN mkdir /home/tumbo/.virtualenvs
 
 RUN virtualenv --no-site-packages /home/tumbo/.virtualenvs/tumbo
 
 RUN echo "tumbo ALL = NOPASSWD: /usr/bin/yum" >> /etc/sudoers
 
-RUN echo cachebust_1401424855
-
 ADD app_worker /home/tumbo/code/app
 ADD tumbo/core /home/tumbo/code/app/core
-ADD tumbo/requirements.txt /home/tumbo/code/app/core/requirements.txt
 
-RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install newrelic j2cli sh supervisor_stdout && /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/core/requirements.txt && /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements.txt
-
+RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install j2cli sh && /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements.txt
 
 CMD ["/bin/bash"]
