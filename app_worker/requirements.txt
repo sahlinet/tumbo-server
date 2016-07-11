@@ -24,3 +24,4 @@ dropbox==1.6
 django-extensions==1.4.6
 pyflakes==0.8.1
 django-redis-metrics==1.4.0
+PyYAML==3.11
