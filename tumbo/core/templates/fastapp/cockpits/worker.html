@@ -22,7 +22,7 @@
     {% if process.is_up %}
     {% with process.name|replacer:"/,"|add:"-rss" as slug %}
       {% get_past_datetime 15 "m" as short_starttime %}
-      {% metric_history slug "minutes" short_starttime False %}
+      {% metric_history slug "minutes" short_starttime %}
     {% endwith %}
     {% endif %}
 

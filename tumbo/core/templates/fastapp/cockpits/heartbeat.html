@@ -6,9 +6,9 @@
   {% comment %}
   {% get_past_datetime 30 "m" as starttime %}
   <h2>Virtual</h2>
-  {% metric_history "Heartbeat Virtual Memory" "minutes" starttime False %}
+  {% metric_history "Heartbeat Virtual Memory" "minutes" starttime %}
   <h2>Physical</h2>
-  {% metric_history "Heartbeat Physical Memory" "minutes" starttime False %}
+  {% metric_history "Heartbeat Physical Memory" "minutes" starttime %}
   {% endcomment %}
 
   <div>
