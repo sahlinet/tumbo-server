@@ -18,7 +18,7 @@ ecdsa==0.10
 -e git+https://github.com/rpalacios/django-sequence-field.git#egg=django_sequence_field-master
 gevent==1.0.1
 greenlet==0.4.5
-gunicorn==19.1.1
+gunicorn==19.6.0
 jsonfield==0.9.22
 Markdown==2.6.6
 mock==1.0.1
