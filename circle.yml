@@ -14,11 +14,11 @@ dependencies:
     - chmod +x $HOME/bin/docker-compose
 test:
   override:
+    #
+    - sudo pip install coverage
+    - coverage run --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
+    #
     - sh -x build-worker.sh
-    - markdown_py -o html5 -f tumbo/ui/templates/docs_content.html docs/user_guide.md
-    - git config --global user.email "philip@sahli.net"
-    - git config --global user.name "Philip Sahli"
-    - git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
     #
     - sudo pip install docopt==0.6.2
     - sudo pip install sh==1.11
@@ -45,10 +45,15 @@ test:
     - pkill python
     # Tests
     - docker run -e CIRCLECI=True -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test core --settings=tumbo.dev
-    - pip install coverage
-    - coverage run --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
-    - pip install codecov==2.0.5
+    #
+    - sudo pip install codecov==2.0.5
     - codecov -t $CODECOV_KEY
+    #
+    - markdown_py -o html5 -f tumbo/ui/templates/docs_content.html docs/user_guide.md
+    - git config --global user.email "philip@sahli.net"
+    - git config --global user.name "Philip Sahli"
+    - git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
+    #
     #- "PORT=$(docker-compose -f docker-compose-app-spawnproc.yml port lb 80|awk -F: '{print $2}'); curl --retry 10 --retry-delay 5 -v http://localhost:$PORT"
 deployment:
   release:
