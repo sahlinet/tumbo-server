@@ -15,8 +15,9 @@ dependencies:
 test:
   override:
     #
-    - sudo pip install coverage
-    - coverage run --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
+    #- sudo pip install coverage
+    # TODO: coverage should be run in cotainer and data directory for output should be added as volume
+    #- coverage run --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
     #
     - sh -x build-worker.sh
     #
@@ -46,8 +47,8 @@ test:
     # Tests
     - docker run -e CIRCLECI=True -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test core --settings=tumbo.dev
     #
-    - sudo pip install codecov==2.0.5
-    - codecov -t $CODECOV_KEY
+    #- sudo pip install codecov==2.0.5
+    #- codecov -t $CODECOV_KEY
     #
     - markdown_py -o html5 -f tumbo/ui/templates/docs_content.html docs/user_guide.md
     - git config --global user.email "philip@sahli.net"
