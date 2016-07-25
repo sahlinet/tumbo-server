@@ -7,7 +7,8 @@ from core.views import DjendBaseView, DjendBaseDeleteView, \
         DjendExecDeleteView, \
         DjendExecView, \
         login_or_sharedkey, dropbox_auth_finish, dropbox_auth_start, dropbox_auth_disconnect, DjendView, \
-        DjendBaseRenameView, CockpitView, DropboxNotifyView
+        DjendBaseRenameView, CockpitView, DropboxNotifyView, \
+        change_password
 from core.views.static import DjendStaticView
 from rest_framework import routers
 
@@ -28,6 +29,8 @@ urlpatterns = patterns('',
     url(r'dropbox_auth_finish/?$',dropbox_auth_finish),
     url(r'dropbox_auth_disconnect/?$',dropbox_auth_disconnect),
     url(r'dropbox_notify/?$', DropboxNotifyView.as_view()),
+
+    url(r'change_password/?$', change_password, name="change_password"),
 
     url(r'cockpit/$', login_required(never_cache(CockpitView.as_view(template_name="fastapp/cockpit.html"))), name='cockpit'),
 

@@ -120,7 +120,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                         logger.info(data)
                         logger.info("%s: file not found on worker, try to load from dropbox" % static_path)
                         # get file from dropbox
-                        auth_token = base_model.user.authprofile.access_token
+                        auth_token = base_model.user.authprofile.dropbox_access_token
                         client = dropbox.client.DropboxClient(auth_token)
                         try:
                             # TODO: read file only when necessary

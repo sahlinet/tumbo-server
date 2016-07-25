@@ -37,7 +37,8 @@ app:
    - RABBITMQ_ADMIN_USER=admin
    - FASTAPP_DOCKER_MEM_LIMIT="128m"
    - FASTAPP_DOCKER_IMAGE=philipsahli/tumbo-worker:develop
-   - DEBUG=True
+   - DEBUG=False
+   - ALLOWED_HOSTS=*
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
 background:

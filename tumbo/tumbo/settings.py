@@ -290,3 +290,23 @@ TEMPLATE_LOADERS = (
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 PROPAGATE_VARIABLES=os.environ.get("PROPAGATE_VARIABLES", "").split("|")
+
+# social auth
+
+INSTALLED_APPS += (
+    'social.apps.django_app.default',
+)
+
+AUTHENTICATION_BACKENDS = (
+    'social.backends.github.GithubOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS += (
+    'social.apps.django_app.context_processors.backends',
+    'social.apps.django_app.context_processors.login_redirect',
+)
+
+SOCIAL_AUTH_GITHUB_KEY = '367fc54a95e4953e6ee9'
+SOCIAL_AUTH_GITHUB_SECRET = '35949713f8ef99eb4a1183c67474440df5907335'
+LOGIN_REDIRECT_URL = '/profile/'

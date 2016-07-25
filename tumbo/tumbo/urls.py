@@ -15,4 +15,7 @@ urlpatterns = patterns('',
     url(r'^fastapp/', include('core.urls')),
 
     url(r'^profile/$', 'ui.views.profile'),
+
+    url('', include('social.apps.django_app.urls', namespace='social'))
+
 )

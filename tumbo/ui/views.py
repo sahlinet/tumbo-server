@@ -8,13 +8,15 @@ from django.conf import settings
 from tumbo import __VERSION__ as TUMBO_VERSION
 
 from rest_framework.authtoken.models import Token
+from social.backends.utils import load_backends
+from core.models import AuthProfile
 
 
 def context(**extra):
     return dict({
         # 'plus_id': getattr(settings, 'SOCIAL_AUTH_GOOGLE_PLUS_KEY', None),
         # 'plus_scope': ' '.join(GooglePlusAuth.DEFAULT_SCOPE),
-        # 'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS)
+        'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS),
         'PLANET_VERSION': TUMBO_VERSION,
         'FASTAPP_STATIC_CACHE_SECONDS': settings.FASTAPP_STATIC_CACHE_SECONDS
     }, **extra)
@@ -35,8 +37,9 @@ def home(request):
 @render_to(PROFILE_TEMPLATE)
 def profile(request):
     """Home view, displays login mechanism"""
+    auth, created = AuthProfile.objects.get_or_create(user=request.user)
     if not request.user.is_authenticated():
-        raise Exception()
+        raise Exception("Not Logged in")
 
     token, created = Token.objects.get_or_create(user=request.user)
     context = {}

@@ -18,7 +18,7 @@ from jsonfield import JSONField
 
 from django.db import models, transaction
 from django.template import Template
-from django_extensions.db.fields import UUIDField, ShortUUIDField
+from django_extensions.db.fields import UUIDField, ShortUUIDField, RandomCharField
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver, Signal
 from django.db.models import F
@@ -46,7 +46,8 @@ index_template = """{% extends "fastapp/base.html" %}
 
 class AuthProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="authprofile")
-    access_token = models.CharField(max_length=72, help_text="Access token for dropbox-auth")
+    dropbox_access_token = models.CharField(max_length=72, help_text="Access token for dropbox-auth")
+    internalid = RandomCharField(length=12, include_alpha=False)
     dropbox_userid = models.CharField(max_length=32,
                                       help_text="Userid on dropbox",
                                       default=None, null=True)
@@ -86,7 +87,7 @@ class Base(models.Model):
 
     @property
     def auth_token(self):
-        return self.user.authprofile.access_token
+        return self.user.authprofile.dropbox_access_token
 
     @property
     def config(self):
@@ -121,7 +122,7 @@ class Base(models.Model):
         return config_string.getvalue()
 
     def refresh(self, put=False):
-        connection = Connection(self.user.authprofile.access_token)
+        connection = Connection(self.user.authprofile.dropbox_access_token)
         template_name = "%s/index.html" % self.name
         template_content = connection.get_file_content(template_name)
         self.content = template_content
@@ -129,7 +130,7 @@ class Base(models.Model):
 #    def refresh_execs(self, exec_name=None, put=False):
 #        from core.utils import Connection, NotFound
 #        # execs
-#        connection = Connection(self.user.authprofile.access_token)
+#        connection = Connection(self.user.authprofile.dropbox_access_token)
 #        app_config = "%s/app.config" % self.name
 #        config = ConfigParser.RawConfigParser()
 #        config.readfp(io.BytesIO(connection.get_file_content(app_config)))
@@ -676,7 +677,7 @@ def initialize_on_storage(sender, *args, **kwargs):
     instance = kwargs['instance']
     # TODO: If a user connects his dropbox after creating a base, it should be initialized anyway.
 
-    connection = Connection(instance.user.authprofile.access_token)
+    connection = Connection(instance.user.authprofile.dropbox_access_token)
     #if not kwargs.get('created'):
     #    connection.put_file("%s/index.html" % (instance.name), instance.content)
     #    return
@@ -699,7 +700,7 @@ def initialize_on_storage(sender, *args, **kwargs):
 def synchronize_to_storage(sender, *args, **kwargs):
     instance = kwargs['instance']
     try:
-        connection = Connection(instance.base.user.authprofile.access_token)
+        connection = Connection(instance.base.user.authprofile.dropbox_access_token)
         result = connection.put_file("%s/%s/%s.py" % (instance.base.user.username, instance.base.name,
                                                    instance.name),
                                      instance.module)
@@ -753,7 +754,7 @@ def setup_base(sender, *args, **kwargs):
 def base_to_storage_on_delete(sender, *args, **kwargs):
     instance = kwargs['instance']
     try:
-        connection = Connection(instance.user.authprofile.access_token)
+        connection = Connection(instance.user.authprofile.dropbox_access_token)
         gevent.spawn(connection.delete_file("%s/%s" % (instance.user.username, instance.name)))
     except Exception, e:
         logger.error("error in base_to_storage_on_delete")
@@ -765,7 +766,7 @@ def synchronize_to_storage_on_delete(sender, *args, **kwargs):
     instance = kwargs['instance']
     from utils import NotFound
     try:
-        connection = Connection(instance.base.user.authprofile.access_token)
+        connection = Connection(instance.base.user.authprofile.dropbox_access_token)
         gevent.spawn(connection.put_file("%s/%s/app.config" % (
                                          instance.base.user.username,
                                          instance.base.name),

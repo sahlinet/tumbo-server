@@ -71,9 +71,10 @@
           $scope.public_apys = PublicApy.all();
 
 
-          $scope.$watch("bases", function(newvalue) {
+          /*$scope.$watch("bases", function(newvalue) {
               console.log("Changed to " + newvalue);
           });
+            */
 
 
           $scope.relate = function(apy) {
@@ -541,19 +542,14 @@
 
   //  var FooControllers = angular.module('FooControllers', []);
 
+ 
+
   window.app.controller('TransportEndpointCtrl', ['$scope', '$filter', '$q',
       '$http', '$timeout', 'TransportEndpoints', 'Base',
       function($scope, $filter, $q, $http, $timeout, TransportEndpoints,
           Base) {
 
           var itemsPendingSave = [];
-
-          /*$scope.users = [
-  		   {id: 1, name: 'awesome user1', status: 2, group: 4, groupName: 'admin'},
-  		   {id: 2, name: 'awesome user2', status: undefined, group: 3, groupName: 'vip'},
-  		   {id: 3, name: 'awesome user3', status: 2, group: null}
-  		 ];
-  		 */
 
           $scope.transport = function(transport, base) {
               Base.transport({
@@ -708,3 +704,25 @@
           return items.slice().reverse();
       };
   });
+
+$().ready(function() {
+
+    $( "input#change_password" ).click(function(e) {
+          $form = $("form#change_password");
+          var post_url = $form.attr("action");
+          $.ajax({
+            type: "POST",
+            url: post_url,
+            data: $form.serialize()
+          }).done(function(html) {
+            // check the html and use that to determine what message to prompt back to your user
+            console.info(html);
+            if (html == "OK") { 
+                $form.html('<div class="alert alert-success"> <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a> <strong>Password changed!</strong> You need to relogin, thus you will be redirected in 3 seconds!</div>');
+                setTimeout(function(){ window.location.href = "/" }, 3000);
+            };
+          });
+        e.preventDefault();
+    });
+
+});

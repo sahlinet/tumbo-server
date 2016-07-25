@@ -25,11 +25,13 @@ from django.views.decorators.cache import never_cache
 from django.core import serializers
 from django.core.cache import cache
 from django.template import Template
+from django.contrib.auth import update_session_auth_hash
+
 
 from dropbox.rest import ErrorResponse
 from random import uniform
 
-from core.utils import UnAuthorized, Connection, NoBasesFound, message, info, warn, channel_name_for_user, send_client
+from core.utils import UnAuthorized, Connection, NoBasesFound, message, info, warn, channel_name_for_user, send_client, create_jwt
 from core.queue import generate_vhost_configuration
 from core.models import AuthProfile, Base, Apy, Setting, Executor, Process, Thread, Transaction
 from core.models import RUNNING, FINISHED
@@ -88,7 +90,7 @@ class DjendMixin(object):
 
     def connection(self, request):
         logger.debug("Creating connection for %s" % request.user)
-        return Connection(request.user.authprofile.access_token)
+        return Connection(request.user.authprofile.dropbox_access_token)
 
 
 class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
@@ -115,14 +117,15 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
             if request.method == "POST":
                 if key in post_dict:
                     del get_dict[key]
+        token = create_jwt(request)
         request_data.update({'request': {
                 'method': request.method,
                 'content_type': request.META.get('Content-Type'),
                 'GET': get_dict.dict(),
                 'POST': post_dict.dict(),
-                'user': {'username': request.user.username},
                 'UUID': exec_model.base.uuid,
-                'REMOTE_ADDR': request.META.get('REMOTE_ADDR')
+                'REMOTE_ADDR': request.META.get('REMOTE_ADDR'),
+                'token': token
             }
             })
         logger.debug("REQUEST-data: %s" % request_data)
@@ -607,15 +610,16 @@ def dropbox_auth_start(request):
 # URL handler for /dropbox-auth-finish
 def dropbox_auth_finish(request):
     try:
-        access_token, user_id, url_state = get_dropbox_auth_flow(request.session).finish(request.GET)
+        dropbox_access_token, user_id, url_state = get_dropbox_auth_flow(request.session).finish(request.GET)
         auth, created = AuthProfile.objects.get_or_create(user=request.user)
-        # store access_token
-        auth.access_token = access_token
+        # store dropbox_access_token
+        print dropbox_access_token
+        auth.dropbox_access_token = dropbox_access_token
         auth.dropbox_userid = user_id
         auth.user = request.user
         auth.save()
 
-        return HttpResponseRedirect("/fastapp/")
+        return HttpResponseRedirect("/profile/")
     except dropbox.client.DropboxOAuth2Flow.BadRequestException, e:
         return HttpResponseBadRequest(e)
     except dropbox.client.DropboxOAuth2Flow.BadStateException, e:
@@ -630,7 +634,7 @@ def dropbox_auth_finish(request):
 
 # URL handler for /dropbox-auth-start
 def dropbox_auth_disconnect(request):
-    request.user.authprofile.access_token = ""
+    request.user.authprofile.dropbox_access_token = ""
     request.user.authprofile.save()
     return HttpResponseRedirect("/profile/")
 
@@ -746,7 +750,7 @@ def process_file(path, metadata, client, user):
 
 def process_user(uid):
     auth_profile = AuthProfile.objects.filter(dropbox_userid=uid)[0]
-    token = auth_profile.access_token
+    token = auth_profile.dropbox_access_token
     user = auth_profile.user
     logger.info("START process user '%s'" % user)
     logger.info("Process change notfication for user: %s" % user.username)
@@ -855,3 +859,26 @@ def load_json(s):
 	elif type(s) is dict:
 		r = s
 	return r
+
+@login_required
+def change_password(request):
+
+    if request.is_ajax():
+        try:
+            # extract new_password value from POST/JSON here, then
+
+            user = User.objects.get(username=request.user.username)
+        except User.DoesNotExist:
+            return HttpResponse(status = 400)
+        else:
+            password1 = request.POST['password1']
+            password2 = request.POST['password2']
+            if password1 == password2 and len(password1) > 8:
+                user.set_password(password1)
+                user.save()
+            else:
+                return HttpResponse("Passwort could not be changed", status = 400)
+
+        return HttpResponse("OK")
+    else:
+        return HttpResponse(status = 400)

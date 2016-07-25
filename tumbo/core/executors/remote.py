@@ -13,9 +13,10 @@ from django.conf import settings
 
 from core.queue import connect_to_queuemanager, CommunicationThread
 from core.queue import connect_to_queue
-from core.utils import load_setting, profileit
+from core.utils import load_setting, profileit, read_jwt
 from core.plugins import PluginRegistry
 from core import responses
+
 
 logger = logging.getLogger(__name__)
 
@@ -399,6 +400,14 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
 
         response_class = None
 
+        try:
+            token, payload = read_jwt(request['token'])
+        except Exception, e:
+            logger.error(e)
+            raise e
+
+        del request['token']
+
         # worker does not know apy
         if model['fields']['name'] not in functions:
             status = STATE_NOT_FOUND
@@ -408,12 +417,12 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
         else:
             func = functions[model['fields']['name']]
             logger.debug("do %s" % request)
-            username = copy.copy(request['user']['username'])
+            identity = payload
 
             logger.debug("START DO")
             try:
 
-                func.username = username
+                func.identity = payload
                 func.request = request
 
                 func.rid = data['rid']

@@ -1,4 +1,4 @@
-import datetime
+import datetime, time
 import logging
 import dropbox
 import json
@@ -7,6 +7,7 @@ import hashlib
 import pika
 import os
 import re
+from jose import jws
 from django.contrib import messages
 from django.conf import settings
 from dropbox.rest import ErrorResponse
@@ -39,8 +40,8 @@ logger = logging.getLogger(__name__)
 
 class Connection(object):
 
-    def __init__(self, access_token):
-        self.client = dropbox.client.DropboxClient(access_token)
+    def __init__(self, dropbox_access_token):
+        self.client = dropbox.client.DropboxClient(dropbox_access_token)
         super(Connection, self).__init__()
 
     def info(self):
@@ -370,3 +371,29 @@ def totimestamp(t):
 def fromtimestamp(t):
     logger.info("fromtimestamp: %s" % t)
     return datetime.datetime.fromtimestamp(t)
+
+def create_jwt(request): 
+    """ the above token need to be saved in database, and a one-to-one relation should exist with the username/user_pk """ 
+    #username = request.POST['username'] 
+    #password = request.POST['password'] 
+
+    expiry = datetime.datetime.now() + datetime.timedelta(seconds=30) 
+    expiry_s = time.mktime(expiry.timetuple())
+    if request.user.is_authenticated():
+        print "AAAA"
+        token = jws.sign({'username': request.user.username, 'expiry':expiry_s, 'type': "AuthenticatedUser", 'internalid': request.user.authprofile.internalid}, 'seKre8', algorithm='HS256') 
+    else:
+        print "BBBB"
+        token = jws.sign({'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': 0}, 'seKre8', algorithm='HS256') 
+    return token
+
+def read_jwt(payload):
+    decoded_dict = json.loads(jws.verify(payload, 'seKre8', algorithms=['HS256']))
+    print decoded_dict
+    print type(decoded_dict)
+    username = decoded_dict.get('username', None) 
+    expiry = decoded_dict.get('expiry', None) 
+
+    #if datetime.datetime.utcfromtimestamp(expiry) < datetime.datetime.now(): 
+    #    raise Exception("AuthenticationFailed: (_('Token Expired.')")
+    return (username, decoded_dict)

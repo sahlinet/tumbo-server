@@ -41,7 +41,7 @@
 					<p>Dropbox</p>
 				</div>
 				<div class="col-md-2">
-					{% if user.authprofile.access_token %}
+					{% if user.authprofile.dropbox_access_token %}
 						<code>linked</code>
 						<a href="/fastapp/dropbox_auth_disconnect/">unlink app</a>
 					{% else %}
@@ -49,6 +49,35 @@
 					{% endif %}
 				</div>
 			</div>
+			<h2>Password</h2>
+
+            <form id="change_password" action="{% url 'change_password' %}">
+            {% csrf_token %}
+			<div class="row">
+				<div class="col-md-2">
+					<p>New Password</p>
+				</div>
+				<div class="col-md-4">
+                    <input type="password" class="input-m form-control" name="password1" id="password1" placeholder="New Password" autocomplete="off">
+				</div>
+			</div>
+			<div class="row padded">
+				<div class="col-md-2">
+					<p>Repeat Password</p>
+				</div>
+				<div class="col-md-4">
+                    <input type="password" class="input-m form-control" name="password2" id="password2" placeholder="Repeat Password" autocomplete="off">
+				</div>
+			</div>
+			<div class="row padded">
+				<div class="col-md-2">
+				</div>
+				<div class="col-md-4">
+                    <input type="submit" class="col-xs-12 btn btn-primary btn-load btn-m" data-loading-text="Changing Password..." id="change_password" value="Change Password">
+				</div>
+			</div>
+            </form>
+
 			<h2>Transport</h2>
 
 			<h3>Token</h3>
