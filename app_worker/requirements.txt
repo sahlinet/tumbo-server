@@ -25,3 +25,4 @@ django-extensions==1.6.7
 pyflakes==0.8.1
 django-redis-metrics==1.4.0
 PyYAML==3.11
+python-jose==1.1.0
