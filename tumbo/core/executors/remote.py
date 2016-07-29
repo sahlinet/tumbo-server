@@ -400,13 +400,7 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
 
         response_class = None
 
-        try:
-            token, payload = read_jwt(request['token'])
-        except Exception, e:
-            logger.error(e)
-            raise e
 
-        del request['token']
 
         # worker does not know apy
         if model['fields']['name'] not in functions:
@@ -417,10 +411,13 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
         else:
             func = functions[model['fields']['name']]
             logger.debug("do %s" % request)
-            identity = payload
 
             logger.debug("START DO")
             try:
+
+                token, payload = read_jwt(request['token'], os.environ.get('secret', None))
+                del request['token']
+                identity = payload
 
                 func.identity = payload
                 func.request = request
@@ -473,7 +470,7 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
 
                 # execution
                 returned = func(func)
-		logger.info("Returned is of type: %s" % type(returned))
+                logger.info("Returned is of type: %s" % type(returned))
                 if isinstance(returned, responses.Response):
                     # serialize
                     response_class = returned.__class__.__name__

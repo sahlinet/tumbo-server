@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
+    'django_extensions',
     # 'tumbo',
     'ui',
     'aaa',
@@ -110,7 +111,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(lineno)s %(process)d %(threadName)s %(message)s'
+            'format': '%(levelname)s %(asctime)s %(name)s %(module)s %(lineno)s %(process)d %(threadName)s %(message)s'
         },
         'standard': {
             'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
@@ -210,7 +211,7 @@ LOGGING = {
         },
         'sqlalchemy': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'WARNING',
             'propagate': True,
         },
         'sqlalchemy.pool': {
@@ -222,7 +223,13 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'WARNING',
             'propagate': True,
+        },
+        'apscheduler': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': True
         }
+
 
 
 

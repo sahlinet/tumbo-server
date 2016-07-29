@@ -94,7 +94,7 @@ urlpatterns = patterns('',
     url(r'^api-docs/', include('rest_framework_swagger.urls')),
 
     # metrics
-    url(r'^metrics/', include('redis_metrics.urls'))
+    #url(r'^metrics/', include('redis_metrics.urls'))
 )
 
 from rest_framework.urlpatterns import format_suffix_patterns

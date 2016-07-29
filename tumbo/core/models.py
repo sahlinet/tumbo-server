@@ -529,6 +529,7 @@ class Executor(models.Model):
     started = models.BooleanField(default=False)
     ip = models.GenericIPAddressField(null=True)
     ip6 = models.GenericIPAddressField(null=True)
+    secret = RandomCharField(length=8, include_alpha=True, editable=True)
 
     port = SequenceField(
         key='test.sequence.1',
@@ -575,6 +576,7 @@ class Executor(models.Model):
                 base_name=self.base.name,
                 username=self.base.name,
                 password=self.password,
+                secret=self.secret,
                 executor=self
                 )
         except KeyError, e:
@@ -609,6 +611,7 @@ class Executor(models.Model):
         self.started = True
 
         ips = self.implementation.addresses(self.pid, port=self.port)
+        logger.info("ips: %s" % str(ips))
         self.ip = ips['ip']
         self.ip6 = ips['ip6']
 

@@ -29,7 +29,7 @@ class ProcessAdmin(admin.ModelAdmin):
     list_display = ('name', 'rss', 'version', 'running')
 
 class ExecutorAdmin(admin.ModelAdmin):
-    list_display = ('base', 'pid', 'ip', 'ip6', 'port',)
+    list_display = ('base', 'pid', 'ip', 'ip6', 'port', 'secret')
 
 admin.site.register(Base, BaseAdmin)
 admin.site.register(Apy, ApyAdmin)

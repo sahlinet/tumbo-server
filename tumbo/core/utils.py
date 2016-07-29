@@ -372,23 +372,25 @@ def fromtimestamp(t):
     logger.info("fromtimestamp: %s" % t)
     return datetime.datetime.fromtimestamp(t)
 
-def create_jwt(request): 
+def create_jwt(request, secret): 
     """ the above token need to be saved in database, and a one-to-one relation should exist with the username/user_pk """ 
     #username = request.POST['username'] 
     #password = request.POST['password'] 
 
     expiry = datetime.datetime.now() + datetime.timedelta(seconds=30) 
     expiry_s = time.mktime(expiry.timetuple())
+    try:
+        internalid = request.user.authprofile.internalid
+    except:
+        internalid = 0
     if request.user.is_authenticated():
-        print "AAAA"
-        token = jws.sign({'username': request.user.username, 'expiry':expiry_s, 'type': "AuthenticatedUser", 'internalid': request.user.authprofile.internalid}, 'seKre8', algorithm='HS256') 
+        token = jws.sign({'username': request.user.username, 'expiry':expiry_s, 'type': "AuthenticatedUser", 'internalid': internalid}, secret, algorithm='HS256') 
     else:
-        print "BBBB"
         token = jws.sign({'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': 0}, 'seKre8', algorithm='HS256') 
     return token
 
-def read_jwt(payload):
-    decoded_dict = json.loads(jws.verify(payload, 'seKre8', algorithms=['HS256']))
+def read_jwt(payload, secret):
+    decoded_dict = json.loads(jws.verify(payload, secret, algorithms=['HS256']))
     print decoded_dict
     print type(decoded_dict)
     username = decoded_dict.get('username', None) 

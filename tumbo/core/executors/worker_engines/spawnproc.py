@@ -26,7 +26,10 @@ class SpawnExecutor(BaseExecutor):
         python_path = sys.executable
         try:
             MODELSPY = os.path.join(settings.PROJECT_ROOT, "../../app_worker")
-            env = os.environ.copy()
+            default_env = self.get_default_env()
+            env = {}
+            env.update(default_env)
+            env.update(os.environ.copy())
             env['EXECUTOR'] = "Spawn"
             env['FASTAPP_CORE_SENDER_PASSWORD'] = load_setting("FASTAPP_CORE_SENDER_PASSWORD")
             env['FASTAPP_WORKER_THREADCOUNT'] = str(load_setting("FASTAPP_WORKER_THREADCOUNT"))

@@ -40,14 +40,18 @@
     <div class="row">
         <div class="col-md-12" >
             <h3>Runtime Information</h3>
-            {% verbatim %}
+            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS }}</a></p>
             <p>Port: </p>
+            {% verbatim %}
             <p><a target="_blank" href="http://{{ base.executors[0].ip }}:{{ base.executors[0].port }}">http://{{ base.executors[0].ip }}:{{ base.executors[0].port }}</a></p>
+            {% endverbatim %}
+            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS_V4 }}</a></p>
+            {% if active_base.executors.executors.0.ip6 %}
+            {% verbatim %}
             <p><a target="_blank" href="http://[{{ base.executors[0].ip6 }}]:{{ base.executors[0].port }}">http://[{{ base.executors[0].ip6 }}]:{{ base.executors[0].port }}</a></p>
             {% endverbatim %}
-            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS }}</a></p>
-            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS_V4 }}</a></p>
             <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS_V6 }}</a></p>
+            {% endif %}
 
         </div>
     </div>

@@ -111,6 +111,8 @@ class DockerExecutor(BaseExecutor):
             ip = self.api.port(id, port)[0]['HostIp']
         else:
             ip = container['NetworkSettings']['IPAddress']
+        if ip in ["0.0.0.0", "127.0.0.1"]:
+            ip = self._get_public_ipv4_address()
         ip6 = container['NetworkSettings']['GlobalIPv6Address']
         return {
             'ip': ip,
