@@ -49,7 +49,10 @@ class DockerExecutor(BaseExecutor):
             logger.info("Create container for %s" % self.vhost)
             import docker
 
-            env = {
+            default_env = self.get_default_env()
+            env = {}
+            env.update(default_env)
+            env.update({
                     'RABBITMQ_HOST': settings.WORKER_RABBITMQ_HOST,
                     'RABBITMQ_PORT': settings.WORKER_RABBITMQ_PORT,
                     'FASTAPP_WORKER_THREADCOUNT': settings.FASTAPP_WORKER_THREADCOUNT,
@@ -58,14 +61,13 @@ class DockerExecutor(BaseExecutor):
                     'EXECUTOR': "docker",
                     'SERVICE_PORT': self.executor.port,
                     'SERVICE_IP': self.executor.ip
-                }
+                })
             try:
                 for var in settings.PROPAGATE_VARIABLES:
                     if os.environ.get(var, None):
                         env[var] = os.environ[var]
             except AttributeError:
                 pass
-
 
             if self.executor.ip6:
                 env['SERVICE_IP6'] = self.executor.ip6
