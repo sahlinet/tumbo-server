@@ -13,7 +13,9 @@ from core.views.static import DjendStaticView
 from rest_framework import routers
 
 #from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, ServerConfigViewSet
-from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, ApyPublicExecutionViewSet
+from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, ApyPublicExecutionViewSet, ServerConfigViewSet
+
+from django.contrib import admin
 
 from django.views.decorators.cache import never_cache
 
@@ -23,6 +25,18 @@ router.register(r'apy', ApyViewSet)
 router.register(r'base', BaseViewSet)
 
 urlpatterns = patterns('',
+
+    # used for login scope -> SESSION_COOKIE_PATH
+    url(r'^$', 'aaa.views.dummy', name='root'),
+
+    url(r'login/$', 'aaa.views.login', name='login'),
+    url(r'logout/$', 'aaa.views.logout', name='core-logout'),
+    url(r'done/$', 'aaa.views.done', name='done'),
+    url(r'profile/$', 'ui.views.profile', name='core-profile'),
+
+    url(r'admin/', include(admin.site.urls)),
+    #url(r'dashboard/', include('core.urls')),
+    url(r'api/', include('core.api_urls')),
 
     # dropbox auth
     url(r'dropbox_auth_start/?$',dropbox_auth_start),
@@ -47,7 +61,7 @@ urlpatterns = patterns('',
     url(r'(?P<base>[\w-]+)/delete/(?P<id>\w+)/$', \
                                             login_required(DjendExecDeleteView.as_view())),
 
-    # static
+    # static (userland)
     url(r'(?P<base>[\w-]+)/static/(?P<name>.+)$', \
                                             login_or_sharedkey(DjendStaticView.as_view())),
     # api
@@ -56,15 +70,12 @@ urlpatterns = patterns('',
     url(r'^api/base/$', BaseViewSet.as_view({'get': 'list', 'post': 'create'}), name='base-list'),
 
     url(r'^api/base/import/$', csrf_exempt(BaseImportViewSet.as_view({'post': 'imp'})), name='base-import'),
-
-    # Base CRUD operations
     url(r'^api/base/(?P<name>[\w-]+)/$', BaseViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='base-detail'),
 
-    #url(r'^api/config/$', ServerConfigViewSet.as_view(), name='settings'),
+    url(r'^api/config/$', ServerConfigViewSet.as_view(), name='settings'),
 
     url(r'^api/base/destroy_all/$', BaseAdminViewSet.as_view({'get': 'destroy_all'}), name='bases-destroy'),
     url(r'^api/base/recreate_all/$', BaseAdminViewSet.as_view({'get': 'recreate_all'}), name='bases-recreate'),
-
     url(r'^api/base/(?P<name>[\w-]+)/start/$', BaseViewSet.as_view({'post': 'start'}), name='base-start'),
     url(r'^api/base/(?P<name>[\w-]+)/stop/$', BaseViewSet.as_view({'post': 'stop'}), name='base-start'),
     url(r'^api/base/(?P<name>[\w-]+)/log/$', BaseLogViewSet.as_view({'get': 'log'}), name='base-log'),
@@ -88,14 +99,14 @@ urlpatterns = patterns('',
     url(r'^api-token-auth/', 'rest_framework.authtoken.views.obtain_auth_token'),
 
     # home
-    url(r'^$', DjendView.as_view(template_name="fastapp/base_list.html"), name="console"),
+    url(r'^dashboard/$', DjendView.as_view(template_name="fastapp/base_list.html"), name="console"),
 
     # api-docs
-    url(r'^api-docs/', include('rest_framework_swagger.urls')),
+    #url(r'^api-docs/', include('rest_framework_swagger.urls')),
 
     # metrics
     #url(r'^metrics/', include('redis_metrics.urls'))
 )
 
-from rest_framework.urlpatterns import format_suffix_patterns
-urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'api'])
+#from rest_framework.urlpatterns import format_suffix_patterns
+#urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'api'])

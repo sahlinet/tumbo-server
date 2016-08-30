@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from jsonfield import JSONField
 
 
+from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.template import Template
 from django_extensions.db.fields import UUIDField, ShortUUIDField, RandomCharField
@@ -334,7 +335,8 @@ class Apy(models.Model):
         self.counter.save()
 
     def get_exec_url(self):
-        return "/fastapp/base/%s/exec/%s/?json=" % (self.base.name, self.id)
+        #return "/userland/%s/api/base/%s/exec/%s/?json=" % (self.base.user.username, self.base.name, self.id)
+        return reverse("userland-apy-public-exec", args=[self.base.user.username, self.base.name, self.name]) + "?json="
 
     def save_and_sync(self, **kwargs):
         ready_to_sync.send(self.__class__, instance=self)
@@ -708,7 +710,10 @@ def synchronize_to_storage(sender, *args, **kwargs):
                                                    instance.name),
                                      instance.module)
         queryset = Apy.objects.all()
-        queryset.filter(pk=instance.pk).update(rev=result['rev'])
+        #print result['rev']
+        #queryset.get(pk=instance.pk).update(rev=result['rev'])
+        instance.rev=result['rev']
+        instance.save()
 
         # update app.config for saving description
         result = connection.put_file("%s/%s/app.config" % (instance.base.user.username, 

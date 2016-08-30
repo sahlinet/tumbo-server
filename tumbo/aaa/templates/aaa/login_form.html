@@ -1,5 +1,6 @@
 
 <form class="form-signin" id="login_form" method="post" action="{% url 'login' %}">
+<!--<form class="form-signin" id="login_form" method="post" action="/cas/complete/username/">-->
     {% csrf_token %}
 
     <label for="inputUsername" class="sr-only">Username</label>

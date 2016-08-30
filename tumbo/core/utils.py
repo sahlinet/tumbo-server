@@ -372,7 +372,8 @@ def fromtimestamp(t):
     logger.info("fromtimestamp: %s" % t)
     return datetime.datetime.fromtimestamp(t)
 
-def create_jwt(request, secret): 
+def create_jwt(user, secret): 
+    logger.info("Create JWT with secret %s" % secret)
     """ the above token need to be saved in database, and a one-to-one relation should exist with the username/user_pk """ 
     #username = request.POST['username'] 
     #password = request.POST['password'] 
@@ -383,16 +384,23 @@ def create_jwt(request, secret):
         internalid = request.user.authprofile.internalid
     except:
         internalid = 0
-    if request.user.is_authenticated():
-        token = jws.sign({'username': request.user.username, 'expiry':expiry_s, 'type': "AuthenticatedUser", 'internalid': internalid}, secret, algorithm='HS256') 
+    if user.is_authenticated():
+        payload = {'username': user.username, 'expiry':expiry_s, 'type': "AuthenticatedUser", 'internalid': internalid}
+        token = jws.sign(payload, secret, algorithm='HS256') 
     else:
-        token = jws.sign({'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': 0}, 'seKre8', algorithm='HS256') 
+        payload = {'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': 0}
+        token = jws.sign(payload, secret, algorithm='HS256') 
+    logger.info("Payload: %s" % payload)
+    logger.info("Token: %s" % token)
     return token
 
 def read_jwt(payload, secret):
+    logger.info("Read JWT with secret %s" % secret)
+    logger.info("Payload: %s" % payload)
     decoded_dict = json.loads(jws.verify(payload, secret, algorithms=['HS256']))
-    print decoded_dict
-    print type(decoded_dict)
+    logger.info("Identity: %s" % decoded_dict)
+    #print decoded_dict
+    #print type(decoded_dict)
     username = decoded_dict.get('username', None) 
     expiry = decoded_dict.get('expiry', None) 
 

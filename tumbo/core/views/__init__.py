@@ -117,7 +117,7 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
             if request.method == "POST":
                 if key in post_dict:
                     del get_dict[key]
-        token = create_jwt(request, exec_model.base.executor.secret)
+        token = create_jwt(request.user, exec_model.base.executor.secret)
         request_data.update({'request': {
                 'method': request.method,
                 'content_type': request.META.get('Content-Type'),
@@ -787,6 +787,7 @@ class DropboxNotifyView(View):
         try:
             challenge = request.GET['challenge']
         except:
+            logger.info("DropboxNotifyView called without challenge")
             return HttpResponseNotFound("Not Found")
         return HttpResponse(challenge)
 

@@ -229,7 +229,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
     def _setup_context(self, request, base_model):
         data = dict((s.key, s.value) for s in base_model.setting.all())
 
-        data['FASTAPP_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base_model.name)
+        data['FASTAPP_STATIC_URL'] = "/%s/%s/%s/static/" % ("userland", base_model.user.username, base_model.name)
 
         try:
             logger.debug("Setup datastore for context starting")

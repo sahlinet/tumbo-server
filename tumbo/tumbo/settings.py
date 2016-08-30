@@ -42,8 +42,8 @@ INSTALLED_APPS = (
     'django_extensions',
     # 'tumbo',
     'ui',
-    'aaa',
     'core',
+    'aaa',
     'django_gravatar',
     'rest_framework',
     'rest_framework.authtoken',
@@ -56,7 +56,8 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'aaa.cas.middleware.CasSessionMiddleware',
+    #'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -228,7 +229,13 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'WARNING',
             'propagate': True
+        },
+        'aaa': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True
         }
+
 
 
 
@@ -268,7 +275,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.static",
     "django.core.context_processors.tz",
     "django.contrib.messages.context_processors.messages",
-    "core.context_processors.versions"
+    "django.core.context_processors.request",
+    "core.context_processors.versions",
 )
 
 # compressor
@@ -299,21 +307,44 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 PROPAGATE_VARIABLES=os.environ.get("PROPAGATE_VARIABLES", "").split("|")
 
 # social auth
+if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
 
-INSTALLED_APPS += (
-    'social.apps.django_app.default',
-)
+    INSTALLED_APPS += (
+        'social.apps.django_app.default',
+    )
 
-AUTHENTICATION_BACKENDS = (
-    'social.backends.github.GithubOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-)
+    AUTHENTICATION_BACKENDS = (
+        'social.backends.github.GithubOAuth2',
+        'social.backends.username.UsernameAuth',
+        'django.contrib.auth.backends.ModelBackend',
+    )
 
-TEMPLATE_CONTEXT_PROCESSORS += (
-    'social.apps.django_app.context_processors.backends',
-    'social.apps.django_app.context_processors.login_redirect',
-)
+    TEMPLATE_CONTEXT_PROCESSORS += (
+        'social.apps.django_app.context_processors.backends',
+        'social.apps.django_app.context_processors.login_redirect',
+    )
 
-SOCIAL_AUTH_GITHUB_KEY = '367fc54a95e4953e6ee9'
-SOCIAL_AUTH_GITHUB_SECRET = '35949713f8ef99eb4a1183c67474440df5907335'
-LOGIN_REDIRECT_URL = '/profile/'
+    SOCIAL_AUTH_GITHUB_KEY = '367fc54a95e4953e6ee9'
+    SOCIAL_AUTH_GITHUB_SECRET = '35949713f8ef99eb4a1183c67474440df5907335'
+    LOGIN_REDIRECT_URL = '/core/profile/'
+
+    SOCIAL_AUTH_PIPELINE = (
+        'social.pipeline.social_auth.social_details',
+        'social.pipeline.social_auth.social_uid',
+        'social.pipeline.social_auth.auth_allowed',
+        'social.pipeline.social_auth.social_user',
+        'social.pipeline.user.get_username',
+        'social.pipeline.user.create_user',
+        'aaa.pipeline.restrict_user',
+        'social.pipeline.social_auth.associate_user',
+        'social.pipeline.social_auth.load_extra_data',
+        'social.pipeline.user.user_details',
+        'aaa.cas.pipeline.create_ticket',
+    )
+
+
+
+from django.core.urlresolvers import reverse_lazy
+SESSION_COOKIE_PATH = reverse_lazy('root')
+#SESSION_COOKIE_PATH="/core"
+CSRF_COOKIE_PATH="/core/"

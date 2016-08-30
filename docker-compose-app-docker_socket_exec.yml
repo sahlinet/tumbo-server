@@ -1,5 +1,6 @@
 app:
   build: .
+  #image: philipsahli/tumbo-server:social-auth
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb
@@ -7,7 +8,7 @@ app:
    - tumboserver_queue_1:queue
    - tumboserver_cache_1:cache
   ports:
-   - "80"
+   - "8000:80"
   environment:
    - MODE=web
    - ADMIN_PASSWORD=tumbo
@@ -36,14 +37,16 @@ app:
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
    - FASTAPP_DOCKER_MEM_LIMIT="128m"
-   - FASTAPP_DOCKER_IMAGE=philipsahli/tumbo-worker:develop
+   - FASTAPP_DOCKER_IMAGE=philipsahli/tumbo-worker:social-auth
    - DEBUG=False
    - ALLOWED_HOSTS=*
+   - DIGITALOCEAN_CONFIG
+   - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
 background:
-  build: .
-  #image: philipsahli/skyblue-planet-lite:develop
+  #build: .
+  image: philipsahli/tumbo-server:social-auth
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb
@@ -52,8 +55,6 @@ background:
    - tumboserver_cache_1:cache
   links:
    - app
-  ports:
-   - "8000:80"
   environment:
    - MODE=background
    - ADMIN_PASSWORD=tumbo
@@ -77,8 +78,10 @@ background:
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
    - FASTAPP_DOCKER_MEM_LIMIT="128m"
-   - FASTAPP_DOCKER_IMAGE=philipsahli/tumbo-worker:develop
+   - FASTAPP_DOCKER_IMAGE=philipsahli/tumbo-worker:social-auth
    - DEBUG=True
+   - DIGITALOCEAN_CONFIG
+   - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
 lb:

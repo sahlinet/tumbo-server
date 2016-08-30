@@ -145,7 +145,7 @@
           };
 
           $scope.updatePublicity = function(base) {
-              $.post("/fastapp/" + base.name + "/sync/", {
+              $.post("/core/dashboard/" + base.name + "/sync/", {
                   public: base.public,
                   static_public: base.static_public
               });
@@ -194,7 +194,7 @@
               for (var i = 0; i < $files.length; i++) {
                   var file = $files[i];
                   $scope.upload = $upload.upload({
-                      url: '/fastapp/api/base/import', //upload.php script, node.js route, or servlet url
+                      url: '/core/api/base/import', //upload.php script, node.js route, or servlet url
                       //method: 'POST' or 'PUT',
                       //headers: {'header-key': 'header-value'},
                       //withCredentials: true,
@@ -219,7 +219,7 @@
                       config) {
                       // file is uploaded successfully
                       console.log(data);
-                      $window.location = "/fastapp/" + data
+                      $window.location = "/core/" + data
                           .name + "/index/";
 
                   });
@@ -377,7 +377,7 @@
           };
 
           $scope.executeNewWindow = function(apy) {
-              window.open("/fastapp/api/base/" + window.active_base +
+              window.open("/core/api/base/" + window.active_base +
                   "/apy/" + apy.name + "/execute/?json=",
                   "_blank");
           };
@@ -388,14 +388,14 @@
               add_client_message("user:   curl -u " + window.username +
                   " -H'Cookie: " + document.cookie + "' \"" +
                   parser.protocol + "//" +
-                  parser.host + "/fastapp/" + window.active_base +
+                  parser.host + "/core/" + window.active_base +
                   "/exec/" + apy.name +
                   "/?json=\"");
               shared_key = window.shared_key_link.split("?")[1];
               add_client_message("anonym: curl \"" + parser.protocol +
                   "//" + parser
                   .host +
-                  "/fastapp/base/" + window.active_base +
+                  "/core/base/" + window.active_base +
                   "/exec/" + apy.name +
                   "/?json=&" + shared_key + "\"");
           };

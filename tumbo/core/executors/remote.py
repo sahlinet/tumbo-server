@@ -415,7 +415,7 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
             logger.debug("START DO")
             try:
 
-                token, payload = read_jwt(request['token'], os.environ.get('secret', None))
+                token, payload = read_jwt(request['token'], os.environ.get('secret'))
                 del request['token']
                 identity = payload
 

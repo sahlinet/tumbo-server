@@ -52,6 +52,9 @@
             {% endverbatim %}
             <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS_V6 }}</a></p>
             {% endif %}
+            <h4>URL's</h4>
+            Static: <a href="{% url 'userland-static' active_base.user.username active_base.name 'index.html' %}">{% url 'userland-static' active_base.user.username active_base.name 'index.html' %}</a><br/>
+            Execution: <a href="{% url 'userland-apy-public-exec' active_base.user.username active_base.name 'example' %}">{% url 'userland-apy-public-exec' active_base.user.username active_base.name 'example' %}</a>
 
         </div>
     </div>
@@ -135,7 +138,7 @@
                     tabMode: "shift",
                 });
                 editor.on("blur", function(cm, cmChangeObject) {
-                    $.post("/fastapp/{{ active_base.name }}/sync/", {
+                    $.post("/core/dashboard/{{ active_base.name }}/sync/", {
                         content: cm.getValue()
                     });
                     $('body > div.container > div.row.rendered').html(cm.getValue());

@@ -2,7 +2,7 @@ var baseServices = angular.module('baseServices', ['ngResource', 'ngCookies']);
 
 // bases
 baseServices.factory('Bases', ['$resource', function($resource) {
-	return $resource('/fastapp/api/base/', {}, {
+	return $resource('/core/api/base/', {}, {
 		all: {
 			method: 'GET',
 			isArray: true
@@ -18,7 +18,7 @@ baseServices.factory('Bases', ['$resource', function($resource) {
 }]);
 baseServices.factory('Base', ['$resource', '$cookies', function($resource,
 	$cookies) {
-	return $resource('/fastapp/api/base/:name/', {}, {
+	return $resource('/core/api/base/:name/', {}, {
 		get: {
 			method: 'GET',
 			params: {
@@ -42,7 +42,7 @@ baseServices.factory('Base', ['$resource', '$cookies', function($resource,
 			headers: {
 				'X-CSRFToken': $cookies.csrftoken
 			},
-			url: '/fastapp/api/base/:name/start'
+			url: '/core/api/base/:name/start'
 		},
 		stop: {
 			method: 'POST',
@@ -53,7 +53,7 @@ baseServices.factory('Base', ['$resource', '$cookies', function($resource,
 			headers: {
 				'X-CSRFToken': $cookies.csrftoken
 			},
-			url: '/fastapp/api/base/:name/stop'
+			url: '/core/api/base/:name/stop'
 		},
 		restart: {
 			method: 'POST',
@@ -64,7 +64,7 @@ baseServices.factory('Base', ['$resource', '$cookies', function($resource,
 			headers: {
 				'X-CSRFToken': $cookies.csrftoken
 			},
-			url: '/fastapp/api/base/:name/restart'
+			url: '/core/api/base/:name/restart'
 		},
 		destroy: {
 			method: 'POST',
@@ -75,7 +75,7 @@ baseServices.factory('Base', ['$resource', '$cookies', function($resource,
 			headers: {
 				'X-CSRFToken': $cookies.csrftoken
 			},
-			url: '/fastapp/api/base/:name/destroy'
+			url: '/core/api/base/:name/destroy'
 		},
 		transport: {
 			method: 'POST',
@@ -86,7 +86,7 @@ baseServices.factory('Base', ['$resource', '$cookies', function($resource,
 			headers: {
 				'X-CSRFToken': $cookies.csrftoken
 			},
-			url: '/fastapp/api/base/:name/transport'
+			url: '/core/api/base/:name/transport'
 		},
 	});
 }]);
@@ -94,7 +94,7 @@ baseServices.factory('Base', ['$resource', '$cookies', function($resource,
 // apy
 baseServices.factory('Apy', ['$resource', '$cookies', function($resource,
 	$cookies) {
-	return $resource('/fastapp/api/base/:name/apy', {}, {
+	return $resource('/core/api/base/:name/apy', {}, {
 		all: {
 			method: 'GET',
 			params: {
@@ -118,7 +118,7 @@ baseServices.factory('Apy', ['$resource', '$cookies', function($resource,
 // apy
 baseServices.factory('PublicApy', ['$resource', '$cookies', function($resource,
 	$cookies) {
-	return $resource('/fastapp/api/public-apy', {}, {
+	return $resource('/core/api/public-apy', {}, {
 		all: {
 			method: 'GET',
 			isArray: true
@@ -129,7 +129,7 @@ baseServices.factory('PublicApy', ['$resource', '$cookies', function($resource,
 // apy
 baseServices.factory('Apy1', ['$resource', '$cookies', function($resource,
 	$cookies) {
-	return $resource('/fastapp/api/base/:name/apy/:id', {}, {
+	return $resource('/core/api/base/:name/apy/:id', {}, {
 		update: {
 			method: 'PUT',
 			params: {
@@ -173,7 +173,7 @@ baseServices.factory('Apy1', ['$resource', '$cookies', function($resource,
 			headers: {
 				'X-CSRFToken': $cookies.csrftoken
 			},
-			url: '/fastapp/api/base/:baseId/apy/:id/clone'
+			url: '/core/api/base/:baseId/apy/:id/clone'
 		},
 	});
 }]);
@@ -181,7 +181,7 @@ baseServices.factory('Apy1', ['$resource', '$cookies', function($resource,
 // settings
 baseServices.factory('Settings', ['$resource', '$cookies', function($resource,
 	$cookies) {
-	return $resource('/fastapp/api/base/:name/setting', {}, {
+	return $resource('/core/api/base/:name/setting', {}, {
 		all: {
 			method: 'GET',
 			params: {
@@ -203,7 +203,7 @@ baseServices.factory('Settings', ['$resource', '$cookies', function($resource,
 }]);
 baseServices.factory('Setting', ['$resource', '$cookies', function($resource,
 	$cookies) {
-	return $resource('/fastapp/api/base/:name/setting/:id', {}, {
+	return $resource('/core/api/base/:name/setting/:id', {}, {
 		update: {
 			method: 'PUT',
 			params: {
@@ -230,7 +230,7 @@ baseServices.factory('Setting', ['$resource', '$cookies', function($resource,
 }]);
 /*
 baseServices.factory('Settings', ['$resource', function($resource){
-    return $resource('/fastapp/api/base/:baseId/setting\\/', {}, {
+    return $resource('/core/api/base/:baseId/setting\\/', {}, {
       create: {method:'POST', params:{baseId: 'id', key: '@key', value: '@value'}, isArray:false}
    });
 }]);
@@ -242,7 +242,7 @@ baseServices.factory('Settings', ['$resource', function($resource){
 */
 
 baseServices.factory('TransportEndpoints', ['$resource', function($resource) {
-	return $resource('/fastapp/api/transportendpoints/:id/', null, {
+	return $resource('/core/api/transportendpoints/:id/', null, {
 		'update': {
 			method: 'PUT'
 		}

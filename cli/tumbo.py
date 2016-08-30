@@ -130,7 +130,7 @@ class Env(object):
         return r.status_code, response
 
     def _gettoken(self):
-        url = self.url + "/fastapp/api-token-auth/"
+        url = self.url + "/core/api-token-auth/"
         r = requests.post(url, data={'username': self.user, 'password': self.password})
 
         if r.status_code != 200:
@@ -222,13 +222,13 @@ class Env(object):
     def open_browser(self, base=None):
         import webbrowser
         if not base:
-            url = "%s/fastapp" % self.config_data['url']
+            url = "%s/core" % self.config_data['url']
         else:
-            url = "%s/fastapp/base/%s/index" % (self.config_data['url'], base)
+            url = "%s/core/base/%s/index" % (self.config_data['url'], base)
         webbrowser.open(url+"/")
 
     def projects_list(self):
-        status_code, projects = self._call_api("/fastapp/api/base/")
+        status_code, projects = self._call_api("/core/api/base/")
         table = []
         for project in projects:
             state = "Running" if project['state'] else "Stopped"
@@ -236,20 +236,20 @@ class Env(object):
         print tabulate(table, headers=["Projectname", "State"])
 
     def project_stop(self, name):
-        status_code, projects = self._call_api("/fastapp/api/base/%s/stop/" % name, method="POST")
+        status_code, projects = self._call_api("/core/api/base/%s/stop/" % name, method="POST")
 
     def project_start(self, name):
-        status_code, projects = self._call_api("/fastapp/api/base/%s/start/" % name, method="POST")
+        status_code, projects = self._call_api("/core/api/base/%s/start/" % name, method="POST")
 
     def project_destroy(self, name):
-        status_code, projects = self._call_api("/fastapp/api/base/%s/destroy/" % name, method="POST")
+        status_code, projects = self._call_api("/core/api/base/%s/destroy/" % name, method="POST")
 
     def project_delete(self, name):
-        status_code, projects = self._call_api("/fastapp/base/%s/delete/" % name, method="POST")
+        status_code, projects = self._call_api("/core/base/%s/delete/" % name, method="POST")
 
     def project_show(self, name):
 
-        status_code, project = self._call_api("/fastapp/api/base/%s/" % name)
+        status_code, project = self._call_api("/core/api/base/%s/" % name)
         print "\nStatus\n******"
         state = "Running" if project['state'] else "Stopped"
         print state
@@ -265,12 +265,12 @@ class Env(object):
 
         print tabulate(table, headers=["Port", "IPv4", "IPv6"])
 
-        status_code, functions = self._call_api("/fastapp/api/base/%s/apy/" % name)
+        status_code, functions = self._call_api("/core/api/base/%s/apy/" % name)
         if status_code == 404:
             print "Project does not exist"
             return
 
-        status_code, settings = self._call_api("/fastapp/api/base/%s/setting/" % name)
+        status_code, settings = self._call_api("/core/api/base/%s/setting/" % name)
         print "\nSettings\n********"
         table = []
         for setting in settings:
@@ -300,7 +300,7 @@ class Env(object):
 	data={}
 	if tid:
 		data['rid'] = tid
-        status_code, transactions = self._call_api("/fastapp/api/base/%s/transactions/" % name, method="GET", data=data)
+        status_code, transactions = self._call_api("/core/api/base/%s/transactions/" % name, method="GET", data=data)
 	import pprint
 	logs_only = arguments.get('--logs', False)
 	for transaction in transactions:
@@ -341,9 +341,9 @@ class Env(object):
 
     def execute(self, project_name, function_name, async=False):
         if not async:
-            status_code, response = self._call_api("/fastapp/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
+            status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
         else:
-            status_code, response = self._call_api("/fastapp/api/base/%s/apy/%s/execute/?json=&async=" % (project_name, function_name))
+            status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json=&async=" % (project_name, function_name))
         state_url = response.get('url', None)
         print "Started with id '%s'" % response['rid']
         if not state_url and response['status'] == "OK":
@@ -516,9 +516,14 @@ if __name__ == '__main__':
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
 
-                cmd = "tumbo/manage.py migrate core --settings=tumbo.dev"
+                cmd = "tumbo/manage.py migrate --settings=tumbo.dev"
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
+
+                #cmd = "tumbo/manage.py migrate aaa --settings=tumbo.dev"
+                #migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                #migrate.wait()
+
 
                 try:
                 	cmd = "tumbo/manage.py create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev"
@@ -530,11 +535,11 @@ if __name__ == '__main__':
                 cmd = "tumbo/manage.py import_base --username=admin --file example_bases/generics.zip  --name=generics --settings=tumbo.dev"
                 generics_import = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
 
-                cmd = "tumbo/manage.py runserver 0.0.0.0:8000 --settings=tumbo.dev"
-                app = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
-
                 cmd = "tumbo/manage.py heartbeat --settings=tumbo.dev"
                 background = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+
+                cmd = "tumbo/manage.py runserver 0.0.0.0:8000 --settings=tumbo.dev"
+                app = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _tty_in=True, _in=sys.stdin, _bg=True)
 
                 if arguments['--ngrok-hostname'] and arguments['docker']:
                     if not ngrok:
@@ -550,16 +555,16 @@ if __name__ == '__main__':
             if arguments['test']:
                 print "Testing example on docker"
 
-                r = requests.post("http://localhost:8000/fastapp/api-token-auth/", data={'username': "admin", 'password': "admin"})
+                r = requests.post("http://localhost:8000/core/api-token-auth/", data={'username': "admin", 'password': "admin"})
                 token = r.json()['token']
                 print token
-                r = requests.post("http://localhost:8000/fastapp/api/base/87/start/", headers={
+                r = requests.post("http://localhost:8000/core/api/base/87/start/", headers={
                     'Authorization': "Token " + token
                 })
                 print r.text
                 print r.status_code
                 time.sleep(5)
-                r = requests.get("http://localhost:8000/fastapp/base/example/exec/foo/?json", headers={
+                r = requests.get("http://localhost:8000/core/base/example/exec/foo/?json", headers={
                     'Authorization': "Token " + token
                 })
                 print r.text
@@ -606,7 +611,7 @@ if __name__ == '__main__':
                 try:
                     cmd = "-f docker-compose-base.yml up -d --no-recreate"
                     base = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
-                    time.sleep(15)
+                    time.sleep(40)
 
                     cmd = "-f docker-compose-app-docker_socket_exec.yml up"
                     app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True, _env=os.environ)

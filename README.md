@@ -16,3 +16,7 @@ See [https://tumbo.io](https://tumbo.io)
 
     coverage run --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
 
+
+### Social Auth Login
+
+    export RESTRICTED_TO_USERS="philip@sahli.net"
