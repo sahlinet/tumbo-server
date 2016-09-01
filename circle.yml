@@ -81,8 +81,9 @@ deployment:
     commands:
       # publish develop tag
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - docker tag tumboserver_app philipsahli/tumbo-server:$CIRCLE_BRANCH
-      - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_BRANCH
+      - docker images
+      - docker tag -f tumboserver_app philipsahli/tumbo-server:$CIRCLE_BRANCH
+      - docker tag -f philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_BRANCH
       - docker images
       - docker push philipsahli/tumbo-server:$CIRCLE_BRANCH
       - docker push philipsahli/tumbo-worker:$CIRCLE_BRANCH
