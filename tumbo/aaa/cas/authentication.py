@@ -1,4 +1,5 @@
 import logging
+import requests
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
@@ -8,6 +9,7 @@ from django.contrib.auth import login as auth_login
 
 from core.models import Base
 from core.utils import read_jwt
+from aaa.cas.views import verify
 
 User = get_user_model()
 
@@ -19,10 +21,8 @@ def cas_login(function):
         user=request.user
 
         # if logged in
-        print request.path_info
-        print request.GET
         if request.user.is_authenticated():
-            print "user.is_authenticatd"
+            logger.debug("user.is_authenticated")
             return function(request, *args, **kwargs)
 
         base = Base.objects.get(user__username=kwargs['username'], name=kwargs['base'])
@@ -31,11 +31,9 @@ def cas_login(function):
 
         ticket = request.GET.get("ticket", None)
         if ticket:
-            from aaa.cas.views import verify
 
             cas_ticketverify=reverse('cas-ticketverify')
             cas_ticketverify+="?ticket=%s&service=%s" % (ticket, service)
-            import requests
             response = requests.get("https://codeanywhere.sahli.net"+cas_ticketverify)
             logger.info("Response from verify: "+str(response.status_code))
             logger.info("Response from verify: "+response.text)

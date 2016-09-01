@@ -13,7 +13,7 @@ from core.views import DjendBaseView, DjendBaseDeleteView, \
 from core.views.static import DjendStaticView
 from rest_framework import routers
 
-from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, ApyPublicExecutionViewSet
+from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet
 
 from django.views.decorators.cache import never_cache
 
@@ -28,7 +28,7 @@ urlpatterns = patterns('',
     #                                        csrf_exempt(login_or_sharedkey(DjendExecView.as_view())), name='exec'),
     url(r'^(?P<username>[\w-]+)/(?P<base>[\w-]+)/static/(?P<name>.+)$', \
                                             cas_login(DjendStaticView.as_view()), name="userland-static"),
-    url(r'^(?P<username>[\w-]+)/api/base/(?P<name>[\w-]+)/apy/(?P<apy_name>[\w-]+)/execute/$', ApyPublicExecutionViewSet.as_view({'post': 'execute', 'get': 'execute'}), name='userland-apy-public-exec'),
+    url(r'^(?P<username>[\w-]+)/api/base/(?P<name>[\w-]+)/apy/(?P<apy_name>[\w-]+)/execute/$', ApyExecutionViewSet.as_view({'post': 'execute', 'get': 'execute'}), name='userland-apy-public-exec'),
     url(r'^(?P<username>[\w-]+)/(?P<base>[\w-]+)/login$', 'aaa.views.loginpage_userland', name='userland-cas-ticketlogin'),
     url(r'^(?P<username>[\w-]+)/(?P<base>[\w-]+)/logout$', 'aaa.views.logout_userland', name='userland-logout'),
     #url(r'^(?P<username>[\w-]+)/(?P<base>[\w-]+)/login$', 'aaa.views.loginpage_userland', name='userland-loginpage'),

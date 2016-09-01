@@ -335,7 +335,6 @@ class Apy(models.Model):
         self.counter.save()
 
     def get_exec_url(self):
-        #return "/userland/%s/api/base/%s/exec/%s/?json=" % (self.base.user.username, self.base.name, self.id)
         return reverse("userland-apy-public-exec", args=[self.base.user.username, self.base.name, self.name]) + "?json="
 
     def save_and_sync(self, **kwargs):
