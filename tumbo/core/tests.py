@@ -205,7 +205,6 @@ class ApyExecutionTestCase(BaseTestCase):
     #        call_rpc_client_mock.return_value = json.dumps({u'status': u'OK', u'exception': None, u'returned': [{u'_encoding': u'utf-8', u'_mutable': False}, True], u'response_class': None, 'time_ms': '668', 'id': u'send_mail'})
     #        send_client_mock.return_value = True
     #        url = self.base1_apy1_not_everyone.get_exec_url()
-    #        import pdb; pdb.set_trace()
     #        #response = self.client3.get(url, HTTP_ACCEPT='application/xml')
     #        response = self.client3.get(url)
     #        self.assertEqual(404, response.status_code)

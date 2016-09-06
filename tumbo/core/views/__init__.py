@@ -877,7 +877,7 @@ def change_password(request):
                 user.set_password(password1)
                 user.save()
             else:
-                return HttpResponse("Passwort could not be changed", status = 400)
+                return HttpResponse("Password could not be changed (mininum l", status = 400)
 
         return HttpResponse("OK")
     else:

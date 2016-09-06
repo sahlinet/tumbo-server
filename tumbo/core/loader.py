@@ -11,7 +11,7 @@ from django.template.loader import BaseLoader
 from dropbox.rest import ErrorResponse
 from core.utils import Connection
 from django.core.exceptions import SuspiciousFileOperation
-from django.template import Origin, TemplateDoesNotExist
+from django.template import TemplateDoesNotExist
 from django.utils._os import safe_join
 
 from django.conf import settings

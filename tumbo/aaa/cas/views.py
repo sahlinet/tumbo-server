@@ -36,7 +36,7 @@ def login(request):
 
         request.session['next'] = service
 
-        return render(request, 'aaa/login_form_userland.html', {'user': user, 'userland': username, 'basename': basename
+        return render(request, 'aaa/cas_loginpage.html', {'user': user, 'userland': username, 'basename': basename
                 , 'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS)})
 
     elif request.method == "POST":

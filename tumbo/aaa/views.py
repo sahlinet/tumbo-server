@@ -40,7 +40,7 @@ def done(request):
 
 def loginpage_userland(request, username, base):
     base = get_object_or_404(Base, name=base)
-    return render(request, 'aaa/login_form_userland.html', {'userland': username, 'base': base.name
+    return render(request, 'aaa/cas_loginpage.html', {'userland': username, 'base': base.name
                 , 'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS)})
 
 def login(request):

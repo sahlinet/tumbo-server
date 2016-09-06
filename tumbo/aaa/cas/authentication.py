@@ -22,16 +22,19 @@ def cas_login(function):
 
         # if logged in
         if request.user.is_authenticated():
-            logger.debug("user.is_authenticated")
+            logger.info("user.is_authenticated with user %s" % request.user.username)
             return function(request, *args, **kwargs)
 
         base = Base.objects.get(user__username=kwargs['username'], name=kwargs['base'])
+        if base.public or base.static_public:
+            return function(request, *args, **kwargs)
+
         service = reverse('userland-static', args=[kwargs['username'], kwargs['base'], "index.html"])
         url = reverse('cas-login')+"?service=%s" % service
 
         ticket = request.GET.get("ticket", None)
+        logger.info("Using ticket from GET %s" % ticket)
         if ticket:
-
             cas_ticketverify=reverse('cas-ticketverify')
             cas_ticketverify+="?ticket=%s&service=%s" % (ticket, service)
             response = requests.get("https://codeanywhere.sahli.net"+cas_ticketverify)
@@ -47,9 +50,7 @@ def cas_login(function):
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             auth_login(request, user)
 
-            #if response.status_code == 200:
-            #    logger.info("Verify ticket %s for service %s" % (ticket, service))
-            request.session['cookie_path'] = "/userland/admin/httptest"
+            request.session['cookie_path'] = "/userland/%s/%s" % (base.user.username, base.name)
             return HttpResponseRedirect(service)
 
         logger.info("Redirecting to CAS login %s" % url)

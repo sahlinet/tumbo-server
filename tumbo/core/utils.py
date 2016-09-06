@@ -380,18 +380,15 @@ def create_jwt(user, secret):
 
     expiry = datetime.datetime.now() + datetime.timedelta(seconds=30) 
     expiry_s = time.mktime(expiry.timetuple())
-    try:
-        internalid = request.user.authprofile.internalid
-    except:
-        internalid = 0
     if user.is_authenticated():
-        payload = {'username': user.username, 'expiry':expiry_s, 'type': "AuthenticatedUser", 'internalid': internalid}
+        internalid = user.authprofile.internalid
+        payload = {'username': user.username, 'expiry':expiry_s, 'type': "AuthenticatedUser", 'internalid': internalid, 'email': user.email}
         token = jws.sign(payload, secret, algorithm='HS256') 
     else:
-        payload = {'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': 0}
+        payload = {'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': None, 'email': None}
         token = jws.sign(payload, secret, algorithm='HS256') 
     logger.info("Payload: %s" % payload)
-    logger.info("Token: %s" % token)
+    #logger.info("Token: %s" % token)
     return token
 
 def read_jwt(payload, secret):

@@ -48,7 +48,6 @@ class SpawnExecutor(BaseExecutor):
 
             try:
                 for var in settings.PROPAGATE_VARIABLES:
-                    #import pdb; pdb.set_trace()
                     if os.environ.get(var, None):
                         env[var] = os.environ[var]
             except AttributeError, e:

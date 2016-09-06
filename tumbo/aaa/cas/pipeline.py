@@ -13,12 +13,17 @@ def restrict_user(backend, user, response, *args, **kwargs):
             return HttpResponse("Not allowed to login")
 
 def create_ticket(backend, user, response, *args, **kwargs):
-    logger.info("create_ticket pipeline")
+    # workaround for creating internalid
+    user.authprofile.internalid = user.authprofile.internalid
+    user.authprofile.save()
+    logger.info("create_ticket pipeline for user %s" % user.username)
     if "next" in backend.strategy.session:
         next = backend.strategy.session['next']
 
         ticket = Ticket.objects.create_ticket(user=user)
+        logger.info("Create ticket for user %s" % user.username)
 
         backend.strategy.session['next'] = "%s?ticket=%s" % (next, ticket.ticket)
         logger.info("Setting next URL: %s" % backend.strategy.session['next'])
-    #kwargs['request'].user.session['next']=kwargs['request'].user.session['next']+"?ticket=asdf"
+    else:
+        logger.info("Next missing")
