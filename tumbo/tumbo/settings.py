@@ -334,6 +334,7 @@ if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
         'social.pipeline.social_auth.auth_allowed',
         'social.pipeline.social_auth.social_user',
         'social.pipeline.user.get_username',
+        'social.pipeline.social_auth.associate_by_email',
         'social.pipeline.user.create_user',
         'aaa.pipeline.restrict_user',
         'social.pipeline.social_auth.associate_user',
@@ -347,4 +348,6 @@ if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
 from django.core.urlresolvers import reverse_lazy
 SESSION_COOKIE_PATH = reverse_lazy('root')
 #SESSION_COOKIE_PATH="/core"
-CSRF_COOKIE_PATH="/core/"
+CSRF_COOKIE_PATH="/"
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
