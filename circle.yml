@@ -35,8 +35,8 @@ test:
     - python cli/tumbo.py server docker pull
     - python cli/tumbo.py server docker build
     # Tests
-    - docker run -e CIRCLECI=True -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test core --settings=tumbo.dev
-    - docker run -e CIRCLECI=True -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test aaa --settings=tumbo.dev
+    - docker run -e CIRCLECI=True -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test core --settings=tumbo.dev
+    - docker run -e CIRCLECI=True -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test aaa --settings=tumbo.dev
     - python cli/tumbo.py server docker run:
         background: true
         timeout: 360
