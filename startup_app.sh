@@ -47,8 +47,8 @@ if [ "$MODE" == "web" ]; then
     fi
 
     # NGinx
-    /home/tumbo/.virtualenvs/tumbo/bin/j2 /etc/nginx/conf.d/tumbo.conf | sponge /etc/nginx/conf.d/tumbo.conf
-    /usr/sbin/nginx -g "daemon off;" &
+    /home/tumbo/.virtualenvs/tumbo/bin/j2 /etc/nginx/conf.d/tumbo.conf | sudo sponge /etc/nginx/conf.d/tumbo.conf
+    sudo /usr/sbin/nginx -g "daemon off;" &
 
     # Django
     /home/tumbo/.virtualenvs/tumbo/bin/gunicorn tumbo.wsgi:application localhost:8000 --max-requests=600 --workers=2 --env DJANGO_SETTINGS_MODULE=tumbo.container

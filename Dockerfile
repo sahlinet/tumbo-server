@@ -1,6 +1,8 @@
 FROM philipsahli/centos-v2:latest
 
-RUN yum install -y postgresql-devel python-virtualenv libevent-devel gcc libffi-devel openssl-devel wget tar
+RUN yum install -y postgresql-devel python-virtualenv libevent-devel gcc libffi-devel openssl-devel wget tar sudo
+
+RUN echo "tumbo ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 
 ENV PIP /home/tumbo/.virtualenvs/tumbo/bin/pip
 ENV CODE_DIR /home/tumbo/code
@@ -53,4 +55,6 @@ RUN mkdir /static && chown tumbo:tumbo /static && chmod 755 /startup_app.sh
 RUN yum remove -y postgresql-devel libevent-devel gcc openssl-devel wget tar && yum clean all
 
 EXPOSE 80
+USER tumbo
+
 CMD ["/startup.sh"]
