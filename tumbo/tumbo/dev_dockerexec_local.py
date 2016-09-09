@@ -23,6 +23,6 @@ FASTAPP_PLUGINS_CONFIG = {
     'fastapp.plugins.dnsname': {
         'provider': "DigitalOcean",
         'token': os.environ['DIGITALOCEAN_CONFIG'],
-        'zone': "hosts.planet-lite-test.sahli.net"
+        'zone': os.environ['DIGITALOCEAN_ZONE']
     }
 }

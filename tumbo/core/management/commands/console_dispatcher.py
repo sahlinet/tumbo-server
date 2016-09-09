@@ -11,6 +11,7 @@ from core.console import PusherSenderThread
 
 logger = logging.getLogger("core.executors.console")
 
+
 class Command(BaseCommand):
     args = '<poll_id poll_id ...>'
     help = 'Closes the specified poll for voting'
@@ -21,9 +22,9 @@ class Command(BaseCommand):
         threads = []
 
 
-        host = getattr(settings, "RABBITMQ_HOST", "localhost")            
+        host = getattr(settings, "RABBITMQ_HOST", "localhost")
         port = getattr(settings, "RABBITMQ_PORT", 5672)
-        username = getattr(settings, "RABBITMQ_ADMIN_USER", "guest")            
+        username = getattr(settings, "RABBITMQ_ADMIN_USER", "guest")
         password = getattr(settings, "RABBITMQ_ADMIN_PASSWORD", "guest")
 
         # create connection to pusher_queue

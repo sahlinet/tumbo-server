@@ -19,6 +19,12 @@ def get_var(var_name, fail=True):
 
 DEBUG = bool(os.environ.get('DEBUG', "false").lower() in ["true", "yes"])
 
+ALLOWED_HOSTS = [os.environ['ALLOWED_HOSTS']]
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
+STATIC_ROOT = "/static/"
+
 DATABASES['default']['ENGINE'] = "django.db.backends.postgresql_psycopg2"
 DATABASES['default']['NAME'] = get_var('DB_NAME')
 DATABASES['default']['USER'] = get_var('DB_USER')
@@ -39,6 +45,7 @@ try:
     CACHE_TCP_ADDR = os.environ['CACHE_1_PORT_6379_TCP_ADDR']
 except KeyError, e:
     CACHE_TCP_ADDR = os.environ['CACHE_PORT_6379_TCP_ADDR']
+
 REDIS_URL = "redis://:%s@%s:6379/1" % (os.environ['CACHE_ENV_REDIS_PASS'], CACHE_TCP_ADDR)
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
@@ -66,32 +73,18 @@ DROPBOX_REDIRECT_URL = get_var('DROPBOX_REDIRECT_URL')
 
 FASTAPP_WORKER_IMPLEMENTATION = get_var('FASTAPP_WORKER_IMPLEMENTATION')
 FASTAPP_DOCKER_IMAGE = get_var('FASTAPP_DOCKER_IMAGE')
+
 if "rancher" in FASTAPP_WORKER_IMPLEMENTATION.lower():
     RANCHER_ACCESS_KEY = get_var('RANCHER_ACCESS_KEY')
     RANCHER_ACCESS_SECRET = get_var('RANCHER_ACCESS_SECRET')
     RANCHER_ENVIRONMENT_ID = get_var('RANCHER_ENVIRONMENT_ID')
     RANCHER_URL = get_var('RANCHER_URL')
 
-# "core.executors.local.RemoteDockerExecutor"
-# DOCKER_LOGIN_USER = get_var("DOCKER_LOGIN_USER")
-# DOCKER_LOGIN_PASS = get_var("DOCKER_LOGIN_PASS")
-# DOCKER_LOGIN_EMAIL = get_var("DOCKER_LOGIN_EMAIL")
-# DOCKER_LOGIN_HOST= get_var("DOCKER_LOGIN_HOST")
 DOCKER_TLS_URL = get_var('DOCKER_TLS_URL', False)
-#DOCKER_CLIENT_CERT = load_var_to_file("DOCKER_CLIENT_CERT")     # $HOME/.docker/xy/certs/cert.pem
-#DOCKER_CLIENT_KEY = load_var_to_file("DOCKER_CLIENT_KEY")        # $HOME/.docker/xy/certs/key.pem
-#DOCKER_CLIENT_CA = load_var_to_file("DOCKER_CLIENT_CA")         # $HOME/.docker/xy/certs/ca.pem
-
 
 FASTAPP_CORE_SENDER_PASSWORD = "h8h9h0h1h2h3"
 FASTAPP_CORE_RECEIVER_PASSWORD = "h8h9h0h1h2h3"
 
-ALLOWED_HOSTS = [os.environ['ALLOWED_HOSTS']]
-
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-STATIC_URL = "/static/"
-MEDIA_URL = "/media/"
-STATIC_ROOT = "/static/"
 
 WORKER_RABBITMQ_HOST = os.environ.get('WORKER_RABBITMQ_HOST', None)
 WORKER_RABBITMQ_PORT = os.environ.get('WORKER_RABBITMQ_PORT', None)
@@ -103,41 +96,6 @@ STORE_DB_PORT = os.environ.get('STORE_DB_PORT', None)
 # TODO: Get them dynamically from API
 if WORKER_RABBITMQ_HOST:
         print "WORKER_RABBITMQ_HOST and probably more is set"
-
-# Hack for tutum, attention, this allows only to run RemoteDocker-Implementation...!
-elif os.environ.get('TUTUM_SERVICE_HOSTNAME', None):
-    try:
-        # QUEUE_1_ENV_TUTUM_CONTAINER_API_URL
-        import requests
-        r = requests.get(os.environ['QUEUE_1_ENV_TUTUM_CONTAINER_API_URL'],
-                         headers={'Authorization': os.environ['TUTUM_AUTH']})
-        port = r.json()['container_ports'][1]['outer_port']
-        if not port:
-            port = r.json()['container_ports'][0]['outer_port']
-        WORKER_RABBITMQ_PORT = port
-        if not port:
-            raise Exception("Could not detect port from QUEUE_1_ENV_TUTUM_CONTAINER_API_URL")
-        WORKER_RABBITMQ_HOST = os.environ['QUEUE_1_ENV_TUTUM_CONTAINER_FQDN']
-    except Exception, e:
-        #logger.error("Could not get outer_port for queue container from Tutum API.")
-        print e
-        logger.error("Could not get outer_port for queue container from Tutum API.")
-        WORKER_RABBITMQ_PORT = os.environ['RABBITMQ_PORT']
-    try:
-        # QUEUE_1_ENV_TUTUM_CONTAINER_API_URL
-        import requests
-        r = requests.get(os.environ['STORE_1_ENV_TUTUM_CONTAINER_API_URL'],
-                         headers={'Authorization': os.environ['TUTUM_AUTH']})
-        port = r.json()['container_ports'][1]['outer_port']
-        STORE_DB_PORT = port
-        STORE_DB_HOST = os.environ['STORE_1_ENV_TUTUM_CONTAINER_FQDN']
-        if not port:
-            raise Exception("Could not detect port from STORE_1_ENV_TUTUM_CONTAINER_API_URL")
-    except Exception, e:
-        #logger.error("Could not get outer_port for queue container from Tutum API.")
-        print e
-        print "Could not get outer_port for queue container from Tutum API."
-        STORE_DB_PORT = os.environ['STORE_PORT']
 
 else:
     WORKER_RABBITMQ_HOST = os.environ['QUEUE_PORT_5672_TCP_ADDR']
@@ -215,13 +173,6 @@ if os.environ.get('DIGITALOCEAN_CONFIG', None):
                     'zone': os.environ['DIGITALOCEAN_ZONE']
                 }
         }
-    )
-
-if os.environ.has_key("TUTUM_SERVICE_API_URI"):
-    FASTAPP_PLUGINS_CONFIG.update(
-            {
-                'core.plugins.tutumlogs': {}
-            }
     )
 
 # redis-metrics

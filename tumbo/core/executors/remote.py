@@ -7,13 +7,14 @@ import logging
 import sys
 import traceback
 import base64
+
 from bunch import Bunch
 
 from django.conf import settings
 
 from core.queue import connect_to_queuemanager, CommunicationThread
 from core.queue import connect_to_queue
-from core.utils import load_setting, profileit, read_jwt
+from core.utils import load_setting, read_jwt
 from core.plugins import PluginRegistry
 from core import responses
 
@@ -385,7 +386,6 @@ def error(tid, msg):
     log_to_queue(tid, logging.ERROR, msg)
 
 
-#@profileit
 def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfig={}):
         exception = None
         exception_message = None
@@ -417,7 +417,6 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
 
                 token, payload = read_jwt(request['token'], os.environ.get('secret'))
                 del request['token']
-                identity = payload
 
                 func.identity = payload
                 func.request = request
@@ -641,8 +640,7 @@ class StaticServerThread(CommunicationThread):
                                         delivery_mode=1,
                                         ),
                                      body=json.dumps(response_data))
-                    #logger.info("message published: %s" % str(publish_result))
-                    #logger.info("ack message")
+                    logger.debug("message published: %s" % str(publish_result))
                     ch.basic_ack(delivery_tag=method.delivery_tag)
                     logger.debug("Static-Request %s response in %s (%s)" % (body['path'], self.name, rc))
         except Exception, e:

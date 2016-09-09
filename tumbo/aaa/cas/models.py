@@ -1,21 +1,17 @@
 from __future__ import unicode_literals
 
-from datetime import timedelta
 import logging
-import os
-import re
 import time
+
+from datetime import timedelta
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
 from django.utils.crypto import get_random_string
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
 
-import requests
 
 logger = logging.getLogger(__name__)
 

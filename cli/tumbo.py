@@ -12,7 +12,6 @@ Usage:
   tumbo.py server docker pull
   tumbo.py server docker url
   tumbo.py server docker logs
-  tumbo.py server tutum run [--worker=worker] [--ngrok-hostname=host] [--ngrok-authtoken=token]
   tumbo.py env list
   tumbo.py env <env-id> login <url>
   tumbo.py env <env-id> logout
@@ -52,7 +51,6 @@ import requests
 import getpass
 import json
 import pprint
-import thread
 import logging
 
 from pygments import highlight

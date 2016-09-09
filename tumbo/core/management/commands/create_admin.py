@@ -1,13 +1,9 @@
 import logging
-import sys
+
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-from django.conf import settings
 
-from core.executors.remote import ExecutorServerThread, StaticServerThread
-from core.executors.heartbeat import HeartbeatThread, HEARTBEAT_QUEUE
-from core.utils import load_setting
 
 logger = logging.getLogger("core.executors.remote")
 

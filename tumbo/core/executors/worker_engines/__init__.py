@@ -1,13 +1,8 @@
-import sys
-import os
 import logging
 import random
 
-from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.exceptions import ImproperlyConfigured
 
-from core.utils import load_setting, load_var_to_file
 from core.plugins import call_plugin_func
 
 logger = logging.getLogger(__name__)

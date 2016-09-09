@@ -6,7 +6,6 @@ import json
 from django.conf import settings
 
 from core.plugins import register_plugin, Plugin
-from core.models import Transaction
 from core.queue import RabbitmqAdmin
 
 logger = logging.getLogger(__name__)

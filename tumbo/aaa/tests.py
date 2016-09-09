@@ -1,22 +1,12 @@
-import json
-import os
-import logging
-import StringIO
-import zipfile
 from urlparse import urlparse
-from mock import patch
 from unittest import skip
-from django.test import TransactionTestCase, Client
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.db import IntegrityError
-from core.models import AuthProfile
-from core.tests import BaseTestCase
-from django.db.models.signals import post_save, post_delete
-
 from django.contrib.auth import get_user_model
+
+from core.tests import BaseTestCase
 from core.utils import read_jwt
-from django.conf import settings
 
 User = get_user_model()
 

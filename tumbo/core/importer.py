@@ -5,16 +5,11 @@ from configobj import ConfigObj
 
 from core.models import Base, Setting, Apy
 from core.utils import Connection
-from StringIO import StringIO
 
 logger = logging.getLogger(__name__)
 
 def _read_config(app_config):
-    # read app.config
-    #app_config_file = StringIO()
-    #app_config_file.write(app_config)
     appconfig = ConfigObj(app_config)
-    #app_config_file.close()
     return appconfig
 
 def _handle_settings(settings, base_obj, override_public=False, override_private=False):

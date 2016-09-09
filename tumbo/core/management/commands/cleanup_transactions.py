@@ -9,6 +9,7 @@ from core.models import Transaction, LogEntry
 
 logger = logging.getLogger("core.executors.remote")
 
+
 class Command(BaseCommand):
     help = 'Cleanup old transactions and logs'
 

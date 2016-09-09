@@ -1,20 +1,21 @@
-import datetime, time
+import datetime
+import time
 import logging
 import dropbox
 import json
 import StringIO
 import hashlib
-import pika
 import os
 import re
+
 from jose import jws
+from dropbox.rest import ErrorResponse
+
 from django.contrib import messages
 from django.conf import settings
-from dropbox.rest import ErrorResponse
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth import get_user_model
 
-from core.queue import connect_to_queue
 from core import defaults
 
 import sys
@@ -148,86 +149,6 @@ def sign(data):
     m.update(data)
     m.update(settings.SECRET_KEY)
     return "%s-%s" % (data, m.hexdigest()[:10])
-
-
-def channel_name_for_user(request):
-    if request.user.is_authenticated():
-        channel_name = "%s-%s" % (request.user.username, sign(request.user.username))
-    else:
-        #channel_name = "anon-%s" % sign(request.session.session_key)
-        # TODO: find a way to identify anonymous user
-        #     problem on initial
-        channel_name = "anon-%s" % sign(request.META['REMOTE_ADDR'])
-    logger.debug("channel_name: %s" % channel_name)
-    return channel_name
-
-
-def channel_name_for_user_by_user(user):
-    channel_name = "%s-%s" % (user.username, sign(user.username))
-    logger.debug("channel_name: %s" % channel_name)
-    return channel_name
-
-
-def send_client(channel_name, event, data):
-    return
-    logger.debug("START EVENT_TO_QUEUE %s"   % event)
-
-    host = settings.RABBITMQ_HOST
-    port = int(settings.RABBITMQ_PORT)
-    user = getattr(settings, "RABBITMQ_ADMIN_USER", "guest")
-    password = getattr(settings, "RABBITMQ_ADMIN_PASSWORD", "guest")
-
-    #channel = pusher
-    channel = connect_to_queue(host, 'pusher_events', "/", username=user, password=password, port=port)
-    payload = {
-        'channel': channel_name,
-        'event': event,
-        'data': data,
-    }
-
-    channel.basic_publish(exchange='',
-                          routing_key='pusher_events',
-                          body=json.dumps(payload),
-                          properties=pika.BasicProperties(
-                            delivery_mode=1,
-                         ),
-                        )
-    logger.debug("END EVENT_TO_QUEUE %s" % event)
-    channel.close()
-    channel.connection.close()
-    del channel.connection
-    del channel
-
-def user_message(level, channel_name, message):
-
-    #channel = username
-    # TODO: strip message to max 10KB
-    # http://pusher.com/docs/server_api_guide/server_publishing_events
-
-    #p = get_pusher()
-
-    now = datetime.datetime.now()
-    if level == logging.INFO:
-        class_level = "info"
-    elif level == logging.DEBUG:
-        class_level = "debug"
-    elif level == logging.WARNING:
-        class_level = "warn"
-    elif level == logging.ERROR:
-        class_level = "error"
-    #logger.log(level, "to pusher: "+message)
-    data = {'datetime': str(now), 'message': str(message), 'class': class_level}
-    send_client(channel_name, "console_msg", data)
-
-
-def info(username, gmessage):
-        return user_message(logging.INFO, username, gmessage)
-def debug(username, gmessage):
-        return user_message(logging.DEBUG, username, gmessage)
-def error(username, gmessage):
-        return user_message(logging.ERROR, username, gmessage)
-def warn(username, gmessage):
-        return user_message(logging.WARN, username, gmessage)
 
 
 def check_code(code, name):

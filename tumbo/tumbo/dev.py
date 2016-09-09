@@ -6,8 +6,7 @@ CACHES = {
     }
 }
 REDIS_URL = "redis://:asdf123asdf123567sdf1238908898989@127.0.0.1:6379/1"
-#SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-#SESSION_CACHE_ALIAS = "default"
+
 CACHES = {
    "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -40,7 +39,6 @@ RANCHER_ACCESS_SECRET="8jHYKwWw5RSE72fGGvEF8UgbmtXLj62BzGKZwRvJ"
 RANCHER_ENVIRONMENT_ID="1e1"
 RANCHER_URL="http://192.168.99.1:8080"
 
-
 FASTAPP_CORE_SENDER_PASSWORD = "h8h9h0h1h2h3"
 FASTAPP_CORE_RECEIVER_PASSWORD = "h8h9h0h1h2h3"
 
@@ -65,11 +63,10 @@ FASTAPP_PLUGINS_CONFIG = {
     'core.plugins.dnsname': {
         'provider': "DigitalOcean",
         'token': os.environ.get('DIGITALOCEAN_CONFIG', None),
-        'zone': "hosts-dev.planet-lite-test.sahli.net"
+        'zone': os.environ.get('DIGITALOCEAN_ZONE', None)
     },
     'core.plugins.datastore': {
         'ENGINE': "django.db.backends.postgresql_psycopg2",
-        #'HOST': "192.168.99.1",
         'HOST': "127.0.0.1",
         'PORT': "15432",
         'NAME': "store",
@@ -77,13 +74,6 @@ FASTAPP_PLUGINS_CONFIG = {
         'PASSWORD': "store123"
     }
 }
-
-if "TUTUM_SERVICE_API_URI" in os.environ:
-    FASTAPP_PLUGINS_CONFIG.update(
-        {
-            'core.plugins.tutumlogs': {}
-        }
-    )
 
 FASTAPP_SCHEDULE_JOBSTORE = "sqlite:////tmp/jobstore.db"
 

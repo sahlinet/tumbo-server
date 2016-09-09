@@ -1,22 +1,19 @@
 import re
 import logging
 
-from django.contrib.auth import authenticate
+from social.backends.utils import load_backends
+
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.shortcuts import redirect, render
-from django.views.generic import View
-from django.views.decorators.cache import never_cache
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponse
 from django.conf import settings
-
-from social.backends.utils import load_backends
 
 from core.utils import create_jwt
 from core.models import Base
 from aaa.cas.models import Ticket
 
-from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
@@ -29,7 +26,7 @@ def login(request):
         m = re.match(r".*/userland/(?P<username>.*?)/(?P<basename>.*?)/", service)
         username = m.group('username')
         basename = m.group('basename')
-        base = Base.objects.get(name=basename, user__username=username)
+        Base.objects.get(name=basename, user__username=username)
 
         if request.user.is_authenticated:
             user = request.user

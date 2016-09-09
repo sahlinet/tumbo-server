@@ -1,15 +1,9 @@
-from settings import *
 import os
 
-"""
-Django settings for tumbo project.
+from django.core.urlresolvers import reverse_lazy
 
-For more information on this file, see
-https://docs.djangoproject.com/en/1.7/topics/settings/
+from settings import *
 
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.7/ref/settings/
-"""
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -40,7 +34,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.humanize',
     'django_extensions',
-    # 'tumbo',
     'ui',
     'core',
     'aaa',
@@ -57,7 +50,6 @@ INSTALLED_APPS = (
 
 MIDDLEWARE_CLASSES = (
     'aaa.cas.middleware.CasSessionMiddleware',
-    #'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -235,11 +227,6 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True
         }
-
-
-
-
-
     }
 }
 
@@ -289,7 +276,6 @@ STATICFILES_FINDERS = (
 
 # redis-metrics
 REDIS_METRICS = {
-   # 'MIN_GRANULARITY': 'hourly',
    'MIN_GRANULARITY': 'minutes',
    'MAX_GRANULARITY': 'monthly',
    'MONDAY_FIRST_DAY_OF_WEEK': True
@@ -300,7 +286,6 @@ TEMPLATE_LOADERS = (
      'django.template.loaders.app_directories.Loader',
      'core.loader.RemoteWorkerLoader',
 )
-
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -343,9 +328,6 @@ if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
         'aaa.cas.pipeline.create_ticket',
     )
 
-
-
-from django.core.urlresolvers import reverse_lazy
 SESSION_COOKIE_PATH = reverse_lazy('root')
 #SESSION_COOKIE_PATH="/core"
 CSRF_COOKIE_PATH="/"

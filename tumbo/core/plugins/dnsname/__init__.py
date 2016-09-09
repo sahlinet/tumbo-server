@@ -5,7 +5,6 @@ import inspect
 from django.conf import settings
 
 from core.plugins import Plugin
-from core.plugins.singleton import Singleton
 from core.plugins.registry import register_plugin
 
 logger = logging.getLogger(__name__)
@@ -13,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 class DigitaloceanDns():
 
-	def __init__(self, token, domain):
-		# update dns record
-		self.URL = "https://api.digitalocean.com/v2/domains/%s/records" % domain
-		self.headers = {'Authorization': "Bearer %s" % token}
+    def __init__(self, token, domain):
+        # update dns record
+        self.URL = "https://api.digitalocean.com/v2/domains/%s/records" % domain
+        self.headers = {'Authorization': "Bearer %s" % token}
 
 
 	def update(self, hostname, ip, type="A"):

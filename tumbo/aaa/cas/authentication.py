@@ -1,7 +1,7 @@
 import logging
 import requests
 
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 from django.conf import settings
@@ -9,11 +9,11 @@ from django.contrib.auth import login as auth_login
 
 from core.models import Base
 from core.utils import read_jwt
-from aaa.cas.views import verify
 
 User = get_user_model()
 
 logger = logging.getLogger(__name__)
+
 
 def cas_login(function):
     def wrapper(request, *args, **kwargs):

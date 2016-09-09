@@ -1,14 +1,10 @@
 import time
 
-from importlib import import_module
-
 from django.conf import settings
 from django.shortcuts import redirect
 from django.utils.cache import patch_vary_headers
 from django.utils.http import cookie_date
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.core.urlresolvers import reverse_lazy
-#from django.contrib.sessions.backends.base import UpdateError
 
 import logging
 

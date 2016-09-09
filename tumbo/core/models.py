@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import urllib
-import ConfigParser
-import io
 import StringIO
 import gevent
 import json
@@ -14,7 +12,7 @@ import re
 from configobj import ConfigObj
 from datetime import datetime, timedelta
 from jsonfield import JSONField
-
+from sequence_field.fields import SequenceField
 
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
@@ -34,7 +32,6 @@ from core.utils import Connection
 from core.plugins import call_plugin_func
 from core.plugins import PluginRegistry
 
-from sequence_field.fields import SequenceField
 
 import logging
 logger = logging.getLogger(__name__)

@@ -1,7 +1,7 @@
 import logging
 import requests
-import time
 import os
+import time
 
 from django.conf import settings
 
@@ -202,7 +202,6 @@ class RancherApiExecutor(BaseExecutor):
             logger.debug(json_data)
             status_code, response = self._call_rancher("/", json_data)
             id = response['id']
-        import time
         time.sleep(3)
         status_code, response = self._call_rancher("/%s?action=activate" % id, force_post=True)
 
@@ -210,7 +209,6 @@ class RancherApiExecutor(BaseExecutor):
         c = 0
         while c < timeout:
             c=c+1
-            import time
             time.sleep(2)
 
             if self.state(id):

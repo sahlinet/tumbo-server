@@ -170,7 +170,7 @@ class DockerExecutor(BaseExecutor):
             login_email = load_setting("DOCKER_LOGIN_EMAIL", False)
             login_host = load_setting("DOCKER_LOGIN_HOST", False)
         except ImproperlyConfigured, e:
-            pass
+            logger.debug(e.msg)
 
         if login_user:
             self.api.login(

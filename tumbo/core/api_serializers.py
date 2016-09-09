@@ -1,8 +1,10 @@
+import logging
+
 from rest_framework import serializers
 from rest_framework.reverse import reverse
+
 from core.models import Base, Apy, Setting, Counter, TransportEndpoint, Transaction, LogEntry
 
-import logging
 logger = logging.getLogger(__name__)
 
 

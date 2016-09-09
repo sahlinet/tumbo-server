@@ -1,6 +1,11 @@
+from rest_framework import routers
+
+from django.views.decorators.cache import never_cache
 from django.conf.urls import patterns, url, include
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import admin
+
 from core.views import DjendBaseView, DjendBaseDeleteView, \
         DjendBaseSaveView, \
         DjendBaseCreateView, \
@@ -10,14 +15,9 @@ from core.views import DjendBaseView, DjendBaseDeleteView, \
         DjendBaseRenameView, CockpitView, DropboxNotifyView, \
         change_password
 from core.views.static import DjendStaticView
-from rest_framework import routers
 
-#from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, ServerConfigViewSet
-from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, ServerConfigViewSet
+from core.api_views import BaseViewSet, ApyViewSet
 
-from django.contrib import admin
-
-from django.views.decorators.cache import never_cache
 
 # Routers provide an easy way of automatically determining the URL conf
 router = routers.DefaultRouter(trailing_slash=True)
@@ -69,13 +69,4 @@ urlpatterns = patterns('',
 
     # home
     url(r'^dashboard/$', DjendView.as_view(template_name="fastapp/base_list.html"), name="console"),
-
-    # api-docs
-    #url(r'^api-docs/', include('rest_framework_swagger.urls')),
-
-    # metrics
-    #url(r'^metrics/', include('redis_metrics.urls'))
 )
-
-#from rest_framework.urlpatterns import format_suffix_patterns
-#urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'api'])

@@ -2,31 +2,17 @@ import logging
 import sys
 import threading
 
-
 from django.core.management.base import BaseCommand
+from django.conf import settings
 
 from core.executors.heartbeat import HeartbeatThread, inactivate, update_status, HEARTBEAT_QUEUE
 from core.executors.async import AsyncResponseThread
 from core.log import LogReceiverThread
-from django.conf import settings
 from core.queue import RabbitmqAdmin
-
 from core.utils import load_setting
 
 logger = logging.getLogger("core.executors.remote")
 
-import os
-
-#import psutil
-#import newrelic.agent
-#@newrelic.agent.data_source_generator(name='Memory Usage')
-#def memory_metrics():
-#    pid = os.getpid()
-#    p = psutil.Process(os.getpid())
-#    m = p.get_memory_info()
-#    yield ('Custom/Memory/Physical', float(m.rss)/(1024*1024))
-#    yield ('Custom/Memory/Virtual', float(m.vms)/(1024*1024))
-#newrelic.agent.register_data_source(memory_metrics)
 
 class Command(BaseCommand):
     args = '<poll_id poll_id ...>'

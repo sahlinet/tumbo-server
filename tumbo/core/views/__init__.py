@@ -24,14 +24,11 @@ from django.conf import settings
 from django.views.decorators.cache import never_cache
 from django.core import serializers
 from django.core.cache import cache
-from django.template import Template
-from django.contrib.auth import update_session_auth_hash
 
 
 from dropbox.rest import ErrorResponse
-from random import uniform
 
-from core.utils import UnAuthorized, Connection, NoBasesFound, message, info, warn, channel_name_for_user, send_client, create_jwt
+from core.utils import UnAuthorized, Connection, NoBasesFound, message, create_jwt
 from core.queue import generate_vhost_configuration
 from core.models import AuthProfile, Base, Apy, Setting, Executor, Process, Thread, Transaction
 from core.models import RUNNING, FINISHED
@@ -216,8 +213,6 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
                     },
                 'apy_id': exec_model.id
             }
-            #user = channel_name_for_user(request)
-            #send_client(user, "counter", cdata)
 
             if request.GET.has_key('callback'):
                 data = '%s(%s);' % (request.REQUEST['callback'], json.dumps(data))
@@ -262,7 +257,6 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
         try:
             exec_model = base_model.apys.get(id=kwargs['id'])
         except Apy.DoesNotExist:
-            #warning(channel_name_for_user(request), "404 on %s" % request.META['PATH_INFO'])
             return HttpResponseNotFound("'%s' not found"     % request.META['PATH_INFO'])
 
         rid = request.GET.get('rid', None)
@@ -347,9 +341,6 @@ class DjendSharedView(View, ContextMixin):
         context['active_base'] = base_model
         context['username'] = request.user.username
         context['FASTAPP_NAME'] = base_model.name
-        #context['DROPBOX_REDIRECT_URL'] = settings.DROPBOX_REDIRECT_URL
-        #context['PUSHER_KEY'] = settings.PUSHER_KEY
-        context['CHANNEL'] = channel_name_for_user(request)
         context['FASTAPP_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base_model.name)
 
         rs = base_model.template(context)
@@ -360,7 +351,6 @@ class DjendBaseCreateView(View):
 
     def post(self, request, *args, **kwargs):
 
-        # TODO: should be in full project and not core
         if use_plans:
             if get_user_quota(request.user).get('MAX_BASES_PER_USER') <= request.user.bases.count():
                 return HttpResponseForbidden("Too many bases for your plan.")

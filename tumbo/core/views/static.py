@@ -5,27 +5,22 @@ import logging
 import json
 import dropbox
 
+from dropbox.rest import ErrorResponse
+
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
-
 from django.views.generic import View
-
 from django.http import HttpResponseNotFound, HttpResponse, HttpResponseServerError, HttpResponseNotModified
-
 from django.conf import settings
-from dropbox.rest import ErrorResponse
 from django.core.cache import cache
-from django.template import Context, Template, RequestContext
+from django.template import Template, RequestContext
 
 from core.utils import totimestamp, fromtimestamp
-
 from core.queue import generate_vhost_configuration
 from core.models import Base
-
 from core.executors.remote import get_static
 from core.plugins.datastore import PsqlDataStore
-
 from core.views import ResponseUnavailableViewMixing
 
 

@@ -5,8 +5,7 @@ from django.conf import settings
 from pytz import utc
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
-from apscheduler.jobstores.memory import MemoryJobStore
+from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 from django.core.management import call_command
@@ -64,8 +63,6 @@ def start_scheduler():
 
     scheduler = BackgroundScheduler(executors=executors1, jobstores=jobstores, job_defaults=job_defaults, timezone=utc)
 
-    from pytz import timezone
-
     # Cleanup
     if hasattr(settings, "FASTAPP_CLEANUP_INTERVAL_MINUTES"):
         job_id = scheduler.add_job(call_command, 'interval', minutes=int(settings.FASTAPP_CLEANUP_INTERVAL_MINUTES), args=["cleanup_transactions"])
@@ -79,7 +76,7 @@ def start_scheduler():
         for apy in Apy.objects.all():
             try:
                 update_job(apy, scheduler)
-            except Exception, e:
+            except Exception:
                 if not apy.schedule:
                     logger.warn("Problem with schedule config for %s: %s" % (apy.name, apy.schedule))
         logger.debug("END rescheduling call_apy")

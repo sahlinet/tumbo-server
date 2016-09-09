@@ -96,7 +96,6 @@ def update_status(parent_name, thread_count, threads):
             proc = subprocess.Popen(args, stdout=subprocess.PIPE)
             (out, err) = proc.communicate()
             rss = str(out).rstrip().strip().lstrip()
-            # TODO: send metrics to newrelic
             process, created = Process.objects.get_or_create(name=parent_name)
             process.rss = int(rss)
             process.save()
@@ -286,7 +285,6 @@ class HeartbeatThread(CommunicationThread):
 
                     request_factory = RequestFactory()
                     request = request_factory.get(url, data={'base': base_obj.name, 'id': init.id})
-                    # TODO: fails if user admin does not exist
                     request.user = get_user_model().objects.get(username='admin')
 
                     view = DjendExecView()

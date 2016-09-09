@@ -1,21 +1,8 @@
 from django.conf.urls import patterns, url, include
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from core.views import DjendBaseView, DjendBaseDeleteView, \
-        DjendBaseSaveView, \
-        DjendBaseCreateView, \
-        DjendExecDeleteView, \
-        DjendExecView, \
-        login_or_sharedkey, dropbox_auth_finish, dropbox_auth_start, dropbox_auth_disconnect, DjendView, \
-        DjendBaseRenameView, CockpitView, DropboxNotifyView, \
-        change_password
-from core.views.static import DjendStaticView
 from rest_framework import routers
 
-#from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, ServerConfigViewSet
 from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, CoreApyExecutionViewSet
-
-from django.views.decorators.cache import never_cache
 
 # Routers provide an easy way of automatically determining the URL conf
 router = routers.DefaultRouter(trailing_slash=True)

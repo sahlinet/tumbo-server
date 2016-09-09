@@ -1,11 +1,6 @@
 from core.plugins.datastore.tests import *
 
 import unittest
-import os
-
-from django.conf import settings
-from django.test import TestCase
-from django.test.utils import override_settings
 
 from core.plugins import call_plugin_func
 from core.tests import BaseTestCase

@@ -8,6 +8,7 @@ from core.models import Base
 
 logger = logging.getLogger("core.executors.remote")
 
+
 class Command(BaseCommand):
     args = '<poll_id poll_id ...>'
     help = 'Recreate all stopped or running workers'
@@ -22,7 +23,7 @@ class Command(BaseCommand):
 
         transaction.set_autocommit(False)
         for base in Base.objects.filter(executor__pid__isnull=False).select_for_update(nowait=False):
-    		g = gevent.spawn(_handle_base, base)
-    		greenlets.append(g)
+            g = gevent.spawn(_handle_base, base)
+            greenlets.append(g)
         gevent.wait(greenlets)
         transaction.commit()

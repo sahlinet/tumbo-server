@@ -1,11 +1,13 @@
+import logging
+
 from django.http import HttpResponse
 from django.conf import settings
 
-import logging
+from aaa.cas.models import Ticket
+
 
 logger = logging.getLogger(__name__)
 
-from aaa.cas.models import Ticket
 
 def restrict_user(backend, user, response, *args, **kwargs):
     if hasattr(settings, "RESTRICTED_TO_USERS"):

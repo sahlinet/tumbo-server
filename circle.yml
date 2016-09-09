@@ -34,19 +34,18 @@ test:
     #
     - python cli/tumbo.py server docker pull
     - python cli/tumbo.py server docker build
+    # Tests
+    - docker run -e CIRCLECI=True -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test core --settings=tumbo.dev
+    - docker run -e CIRCLECI=True -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test aaa --settings=tumbo.dev
     - python cli/tumbo.py server docker run:
         background: true
         timeout: 360
     - sleep 240
     - docker images
-    - docker ps
     - docker ps -a
     - docker inspect tumboserver_app_1
     - curl --retry 10 --retry-delay 5 -v $(python cli/tumbo.py server docker url)
     - pkill python
-    # Tests
-    - docker run -e CIRCLECI=True -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test core --settings=tumbo.dev
-    - docker run -e CIRCLECI=True -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test aaa --settings=tumbo.dev
     #
     #- sudo pip install codecov==2.0.5
     #- codecov -t $CODECOV_KEY
@@ -55,8 +54,6 @@ test:
     - git config --global user.email "philip@sahli.net"
     - git config --global user.name "Philip Sahli"
     - git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
-    #
-    #- "PORT=$(docker-compose -f docker-compose-app-spawnproc.yml port lb 80|awk -F: '{print $2}'); curl --retry 10 --retry-delay 5 -v http://localhost:$PORT"
 deployment:
   release:
     branch: master
