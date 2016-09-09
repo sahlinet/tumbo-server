@@ -9,7 +9,7 @@ Open a shell with the user `tumbo`.
 
 # Install dependencies
 
-    sudo yum install wget gcc epel-release git python-pip python-virtualenv watchdog -y
+    sudo yum install wget gcc epel-release git python-pip python-virtualenv -y
     sudo yum install -y postgresql-devel libffi-devel openssl-devel
 
 # Checkout tumbo-server project

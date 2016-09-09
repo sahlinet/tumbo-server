@@ -231,3 +231,9 @@ Development only (runserver) for loading static files, root path used for loadin
 
 - Read more on [sahli.net](https://sahli.net/page/skyblue-platform)
 - Visit [http://localhost:8000/fastapp](http://localhost:8000/fastapp)
+
+## Social Auth Login
+
+# Restrict users
+
+    RESTRICTED_TO_USERS="philip@sahli.net"
