@@ -482,8 +482,7 @@ if __name__ == '__main__':
                     cmd_args = '-u postgres /usr/bin/postgres -D /var/lib/pgsql/data'
                     sudo = sh.Command("sudo")
                     cmd = sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
-                    #cmd.wait()
-                    
+
                     print "Starting redis"
                     cmd_args = "-u redis /usr/bin/redis-server /etc/redis.conf"
                     sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
@@ -491,7 +490,7 @@ if __name__ == '__main__':
                     print "Starting rabbitmq"
                     cmd_args = "-u rabbitmq /usr/sbin/rabbitmq-server"
                     sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
-                    #sys.exit(0)
+
                 print "Starting development server"
                 env = {}
                 env.update(os.environ)
@@ -504,12 +503,12 @@ if __name__ == '__main__':
                 print PROPAGATE_VARIABLES
                 if PROPAGATE_VARIABLES:
                     env['PROPAGATE_VARIABLES'] = PROPAGATE_VARIABLES
-                
+
 
                 cmd = "tumbo/manage.py syncdb --noinput --settings=tumbo.dev"
                 syncdb = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 syncdb.wait()
-              
+
                 cmd = "tumbo/manage.py makemigrations core --settings=tumbo.dev"
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
@@ -518,17 +517,17 @@ if __name__ == '__main__':
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
 
-                #cmd = "tumbo/manage.py migrate aaa --settings=tumbo.dev"
-                #migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
-                #migrate.wait()
+                cmd = "tumbo/manage.py migrate aaa --settings=tumbo.dev"
+                migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                migrate.wait()
 
 
                 try:
-                	cmd = "tumbo/manage.py create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev"
-                	adminuser = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/null", _bg=True)
-                	adminuser.wait()
+                    cmd = "tumbo/manage.py create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev"
+                    adminuser = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/null", _bg=True)
+                    adminuser.wait()
                 except:
-                	print "adminuser already exists?"
+                    print "adminuser already exists?"
 
                 cmd = "tumbo/manage.py import_base --username=admin --file example_bases/generics.zip  --name=generics --settings=tumbo.dev"
                 generics_import = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
@@ -551,7 +550,7 @@ if __name__ == '__main__':
                     stop()
 
             if arguments['test']:
-                print "Testing example on docker"
+                print "Testing example on Docker"
 
                 r = requests.post("http://localhost:8000/core/api-token-auth/", data={'username': "admin", 'password': "admin"})
                 token = r.json()['token']
@@ -568,7 +567,6 @@ if __name__ == '__main__':
                 print r.text
                 print r.json()
 
-
         if arguments['docker']:
             if arguments['pull']:
                 print "Docker images pull ..."
@@ -579,7 +577,7 @@ if __name__ == '__main__':
             if arguments['build']:
                 print "Build docker images"
 
-                cmd = "-f docker-compose-app-docker_socket_exec.yml build --pull --no-cache"
+                cmd = "-f docker-compose-app-docker_socket_exec.yml build --pull"
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
 
                 build.wait()
@@ -602,7 +600,7 @@ if __name__ == '__main__':
                 build.wait()
 
             if arguments['run']:
-                print "Starting Tumbo on docker"
+                print "Starting Tumbo on Docker"
                 if arguments['--stop-after']:
                     print "Will stop after %s seconds" % arguments['--stop-after']
 
@@ -644,8 +642,6 @@ if __name__ == '__main__':
                             sh.docker("rm", line.split()[0])
                     except sh.ErrorReturnCode_1:
                         pass
-
-
 
     if arguments['docker'] and arguments['url']:
         port = docker_compose("-f", "docker-compose-app-docker_socket_exec.yml", "port", "app", "80").split(":")[1]

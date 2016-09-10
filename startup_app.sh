@@ -13,16 +13,7 @@ for var in $(env); do
         fi
 done
 
-chown -R tumbo:tumbo /logs
 chown -R tumbo:tumbo /static
-
-
-#echo "Set docker permissions on /var/run/docker.sock"
-#if [ -e "/var/run/docker.sock" ] ; then
-#    groupadd docker
-#    usermod tumbo -G docker
-#    chown root:docker /var/run/docker.sock
-#fi
 
 export PYTHON_EGG_CACHE="/home/tumbo/.python-eggs"
 cd /home/tumbo/code/tumbo
@@ -38,12 +29,13 @@ if [ "$MODE" == "web" ]; then
 
     LOCKFILE=$HOME/init
     if [ ! -f "$LOCKFILE" ]; then
-    	if [ -z "$ADMIN_PASSWORD" ]; then
-    		ADMIN_PASSWORD=`pwgen  -ys 20 1`
-    	fi
-    	echo "from django.contrib.auth import get_user_model;  get_user_model().objects.create_superuser('admin', 'philip@sahli.net', '$ADMIN_PASSWORD')" | /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py shell --settings=tumbo.container
+        if [ -z "$ADMIN_PASSWORD" ]; then
+            ADMIN_PASSWORD=`pwgen  -ys 20 1`
+        fi
+        # TODO: make admin email configurable
+        echo "from django.contrib.auth import get_user_model;  get_user_model().objects.create_superuser('admin', 'philip@sahli.net', '$ADMIN_PASSWORD')" | /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py shell --settings=tumbo.container
 
-    	echo "Django Adminuser created with password: $ADMIN_PASSWORD"
+        echo "Django Adminuser created with password: $ADMIN_PASSWORD"
     fi
 
     # NGinx

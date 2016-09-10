@@ -3,6 +3,7 @@ FROM philipsahli/centos-v2:latest
 RUN yum install -y postgresql-devel python-virtualenv libevent-devel gcc libffi-devel openssl-devel wget tar sudo
 
 RUN echo "tumbo ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
+RUN sed -i -e 's/Defaults    requiretty.*/ #Defaults    requiretty/g' /etc/sudoers
 
 ENV PIP /home/tumbo/.virtualenvs/tumbo/bin/pip
 ENV CODE_DIR /home/tumbo/code

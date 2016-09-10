@@ -471,12 +471,10 @@ class DjendBaseSaveView(View):
             e = base.apys.get(name=exec_name)
             if len(content) > 8200:
                 pass
-                #error(channel_name_for_user(request), "Exec '%s' is to big." % exec_name)
             else:
                 e.module = content
                 e.description = request.POST.get('exec_description')
                 e.save()
-                info(channel_name_for_user(request), "Exec '%s' saved" % exec_name)
         # base
         else:
             logger.info("Save base")
@@ -484,8 +482,6 @@ class DjendBaseSaveView(View):
             if public: base.public = public
             if static_public: base.static_public = static_public
             base.save()
-            # save in database
-            #info(channel_name_for_user(request), "Base index '%s' saved" % base.name)
 
         return HttpResponse()
 
@@ -539,7 +535,6 @@ class DjendBaseView(TemplateView, ContextMixin):
                 context['FASTAPP_NAME'] = base
                 #context['DROPBOX_REDIRECT_URL'] = settings.DROPBOX_REDIRECT_URL
                 #context['PUSHER_KEY'] = settings.PUSHER_KEY
-                context['CHANNEL'] = channel_name_for_user(request)
                 context['FASTAPP_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base)
                 context['active_base'] = base_model
                 context['username'] = request.user.username
