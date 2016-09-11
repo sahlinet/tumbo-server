@@ -32,7 +32,7 @@ RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos
 
 ADD tumbo $CODE_DIR/tumbo
 ADD example_bases $CODE_DIR/examples
-ADD app_worker $CODE_DIR/app_worker
+#ADD worker $CODE_DIR/worker
 RUN cd $CODE_DIR/tumbo && $HOME/.virtualenvs/tumbo/bin/python setup.py install
 # workaround because setup.py installs django-rest-framework as egg and django migrate fails with "Not a directory" when looking up for migrations instructions
 RUN $PIP uninstall -y djangorestframework && $PIP install djangorestframework==2.4.3
