@@ -42,8 +42,8 @@ RUN echo cachebust_1470943960
 RUN $PIP install -e git+https://github.com/rpalacios/django-sequence-field.git@f1bdc48c897e6cd95a3182f8253665609a87a895#egg=django_sequence_field-master
 RUN $PIP install -e git+https://github.com/docker/docker-py.git@aa19d7b6609c6676e8258f6b900dea2eda1dbe95#egg=docker_py-master
 
-ADD nginx.conf /etc/nginx/nginx.conf
-ADD nginx_tumbo.conf /etc/nginx/conf.d/tumbo.conf
+ADD nginx_conf/nginx.conf /etc/nginx/nginx.conf
+ADD nginx_conf/nginx_tumbo.conf /etc/nginx/conf.d/tumbo.conf
 RUN rm /etc/nginx/conf.d/default.conf
 
 RUN chown -R tumbo:tumbo $HOME/.virtualenvs $HOME/

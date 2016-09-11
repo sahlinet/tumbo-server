@@ -1,5 +1,5 @@
 app:
-  build: .
+  build: ..
   #image: philipsahli/tumbo-server:social-auth
   external_links:
    - tumboserver_db_1:db
@@ -16,7 +16,6 @@ app:
    - DB_HOST=$${DB_PORT_5432_TCP_ADDR}
    - DB_NAME=tumbo
    - DB_PASS=$${DB_ENV_PASSWORD}
-   #- DB_PORT=$DB_1_PORT_5432_TCP_PORT
    - DB_PORT=$${DB_PORT_5432_TCP_PORT}
    - DB_USER=tumbo
    - JOBSTOREDB_NAME=$${JOBSTOREDB_ENV_DB_NAME}
@@ -24,11 +23,6 @@ app:
    - JOBSTOREDB_PASS=$${JOBSTOREDB_ENV_PASSWORD}
    - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
    - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
-   # TODO: Fix path for STREAM in nginx
-   #- STREAM_PORT=$${STREAM_PORT_9999_TCP_PORT}
-   #- STREAM_HOST=$${STREAM_PORT_9999_TCP_ADDR}
-   - STREAM_PORT=9999
-   - STREAM_HOST=127.0.0.1
    - FASTAPP_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
    - DROPBOX_CONSUMER_KEY
    - DROPBOX_CONSUMER_SECRET
@@ -45,8 +39,8 @@ app:
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
 background:
-  #build: .
-  image: philipsahli/tumbo-server:social-auth
+  build: ..
+  #image: philipsahli/tumbo-server:social-auth
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb

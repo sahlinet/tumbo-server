@@ -12,11 +12,11 @@ class BaseDockerIntegrationTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print sh.compose("-f", "docker-compose-base.yml", "up",
+        print sh.compose("-f", "compose-files/docker-compose-base.yml", "up",
                          "-d", "--no-recreate")
         print sh.compose("-f", cls.COMPOSE_FILE, "up", "-d")
 
-        addr = sh.compose("-f", "docker-compose-app-docker_socket_exec.yml",
+        addr = sh.compose("-f", "compose-files/docker-compose-app-docker_socket_exec.yml",
                           "port", "app", "80").split(":")
 
         time.sleep(60)
@@ -133,17 +133,17 @@ class DockerIntegrationTest(object):
 
 class DockerSocketIntegrationTest(BaseDockerIntegrationTest, DockerIntegrationTest):
 
-    COMPOSE_FILE = "docker-compose-app-docker_socket_exec.yml"
+    COMPOSE_FILE = "compose-files/docker-compose-app-docker_socket_exec.yml"
 
 
 class DockerSpawnIntegrationTest(BaseDockerIntegrationTest, DockerIntegrationTest):
 
-    COMPOSE_FILE = "docker-compose-app-spawnproc.yml"
+    COMPOSE_FILE = "compose-files/docker-compose-app-spawnproc.yml"
 
 
 class DockerRemoteIntegrationTest(BaseDockerIntegrationTest, DockerIntegrationTest):
 
-    COMPOSE_FILE = "docker-compose-app-docker_remote_exec.yml"
+    COMPOSE_FILE = "compose-files/docker-compose-app-docker_remote_exec.yml"
 
     @classmethod
     def setUpClass(cls):

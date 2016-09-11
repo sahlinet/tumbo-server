@@ -1,0 +1,14 @@
+backuper:
+  image: philipsahli/postgresql-test
+  ports:
+   - "5432"
+  external_links:
+   - tumboserver_db_1:db
+  environment:
+   - PGPASSWORD=tumbopw
+  entrypoint:
+   - /usr/bin/pg_dump
+   - -h
+   - db
+   - -U
+   - tumbo
