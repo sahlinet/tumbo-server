@@ -371,7 +371,7 @@ def do_ngrok():
     ngrok_authtoken = arguments.get("--ngrok-authtoken", None)
     print "Starting ngrok for %s with %s" % (ngrok_hostname, ngrok_authtoken)
     if arguments['docker']:
-        port = docker_compose("-f", "compose-files/docker-compose-app-docker_socket_exec.yml", "port", "app", "80").split(":")[1]
+        port = docker_compose("-p", "tumboserver", "-f", "compose-files/docker-compose-app-docker_socket_exec.yml", "port", "app", "80").split(":")[1]
     else:
         port = 8000
     cmd = '-hostname=%s -authtoken=%s localhost:%s' % (ngrok_hostname, ngrok_authtoken, port)
@@ -570,32 +570,32 @@ if __name__ == '__main__':
         if arguments['docker']:
             if arguments['pull']:
                 print "Docker images pull ..."
-                cmd = "-f compose-files/docker-compose-base.yml pull"
+                cmd = "-p tumboserver -f compose-files/docker-compose-base.yml pull"
                 docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 print "Docker images pull done."
 
             if arguments['build']:
                 print "Build docker images"
 
-                cmd = "-f compose-files/docker-compose-app-docker_socket_exec.yml build --pull"
+                cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml build --pull"
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
 
                 build.wait()
             if arguments['stop']:
                 print "Stop docker containers"
 
-                cmd = "-f compose-files/docker-compose-app-docker_socket_exec.yml stop"
+                cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml stop"
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 build.wait()
 
-                cmd = "-f compose-files/docker-compose-base.yml stop"
+                cmd = "-p tumboserver -f compose-files/docker-compose-base.yml stop"
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 build.wait()
 
             if arguments['logs']:
                 print "Follow logs of docker containers"
 
-                cmd = "-f compose-files/docker-compose-app-docker_socket_exec.yml logs -f"
+                cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml logs -f"
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 build.wait()
 
@@ -605,11 +605,11 @@ if __name__ == '__main__':
                     print "Will stop after %s seconds" % arguments['--stop-after']
 
                 try:
-                    cmd = "-f compose-files/docker-compose-base.yml up -d --no-recreate"
+                    cmd = "-p tumboserver -f compose-files/docker-compose-base.yml up -d --no-recreate"
                     base = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                     time.sleep(40)
 
-                    cmd = "-f compose-files/docker-compose-app-docker_socket_exec.yml up"
+                    cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml up"
                     app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True, _env=os.environ)
 
                     if arguments['--ngrok-hostname']:
@@ -626,13 +626,13 @@ if __name__ == '__main__':
                 except (KeyboardInterrupt, sh.ErrorReturnCode_1, Exception), e:
                     print e
                     # stop workers
-                    cmd = "-f compose-files/docker-compose-app-docker_socket_exec.yml kill"
+                    cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml kill"
                     app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
 
-                    cmd = "-f compose-files/docker-compose-app-docker_socket_exec.yml rm -f"
+                    cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml rm -f"
                     app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
 
-                    cmd = "-f compose-files/docker-compose-base.yml kill"
+                    cmd = "-p tumboserver -f compose-files/docker-compose-base.yml kill"
                     base = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
 
                     try:
@@ -644,5 +644,5 @@ if __name__ == '__main__':
                         pass
 
     if arguments['docker'] and arguments['url']:
-        port = docker_compose("-f", "compose-files/docker-compose-app-docker_socket_exec.yml", "port", "app", "80").split(":")[1]
+        port = docker_compose("-p", "tumboserver", "-f", "compose-files/docker-compose-app-docker_socket_exec.yml", "port", "app", "80").split(":")[1]
         print("http://%s:%s" % ("localhost", port))
