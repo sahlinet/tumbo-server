@@ -26,9 +26,9 @@ test:
     - sudo pip install Pygments==2.1.3
     - sudo pip install tabulate==0.7.5
     #
-    - sed -i 's|/var/run/docker.sock|/run/docker.sock|g' docker-compose-app-docker_socket_exec.yml
-    - cat docker-compose-app-docker_socket_exec.yml
-    - egrep sock docker-compose-app-docker_socket_exec.yml
+    - sed -i 's|/var/run/docker.sock|/run/docker.sock|g' compose-files/docker-compose-app-docker_socket_exec.yml
+    - cat compose-files/docker-compose-app-docker_socket_exec.yml
+    - egrep sock compose-files/docker-compose-app-docker_socket_exec.yml
     #
     - sudo chmod 777 /run/docker.sock
     #

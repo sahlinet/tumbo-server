@@ -22,7 +22,7 @@ class SpawnExecutor(BaseExecutor):
 
         python_path = sys.executable
         try:
-            MODELSPY = os.path.join(settings.PROJECT_ROOT, "../../app_worker")
+            MODELSPY = os.path.join(settings.PROJECT_ROOT, "../../worker")
             default_env = self.get_default_env()
             env = {}
             env.update(default_env)
