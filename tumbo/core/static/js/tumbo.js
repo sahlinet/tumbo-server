@@ -1,3 +1,8 @@
+function redirect(location) {
+    window.location = location;
+}
+
+$(function() {
     // shared
     $("button#share").click(function(event) {
       event.preventDefault();
@@ -6,7 +11,7 @@
     // delete base
     $("button#delete").click(function(event) {
       event.preventDefault();
-      $.post("/fastapp/"+window.active_base+"/delete/", function(data) {
+      $.post("/core/base/"+window.active_base+"/delete/", function(data) {
         if (data.redirect) {redirect(data.redirect); }
         });
     });
@@ -16,8 +21,6 @@
         console.warn(event.currentTarget.method);
         if (event.currentTarget.method == "post") {
             $.post(event.currentTarget.action, $(this).serialize(), function(data){
-              console.log("send form with POST");
-              console.log(data);
             });
         } else if (event.currentTarget.method == "get") {
             $.get(event.currentTarget.action, $(this).serialize(), function(data){

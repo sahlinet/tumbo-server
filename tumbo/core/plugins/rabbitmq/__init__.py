@@ -5,6 +5,8 @@ import json
 
 from django.conf import settings
 
+from urllib import quote_plus
+
 from core.plugins import register_plugin, Plugin
 from core.queue import RabbitmqAdmin
 
@@ -25,7 +27,6 @@ class RabbitMQPlugin(Plugin):
     def cockpit_context(self):
         data = {}
         data['vhosts'] = self.api.get_vhosts()
-        from urllib import quote_plus
         for vhost in data['vhosts']:
             #vhost['exchanges'] = self.api.get_exchanges(quote_plus(vhost['name']))
             #vhost['queues'] = self.api.get_queues(quote_plus(vhost['name']))
@@ -33,9 +34,6 @@ class RabbitMQPlugin(Plugin):
         #data.update({'channels': self.api.get_channels()})
         data.update({'overview': self.api.get_overview()})
         return data
-
-    def cockpit_json(self):
-        return json.dumps(self.cockpit_context())
 
     def _vhosts(self):
         return self.api.get_vhosts()

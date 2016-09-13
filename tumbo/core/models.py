@@ -289,7 +289,7 @@ class Base(models.Model):
 
     def save_and_sync(self, **kwargs):
         ready_to_sync.send(self.__class__, instance=self)
-        self.save(**kwargs)
+        #self.save(**kwargs)
 
     #def save(self, **kwargs):
     #    logger.debug("create executor for base %s" % self)
@@ -315,6 +315,7 @@ class Apy(models.Model):
 
     class Meta:
         db_table = "fastapp_apy"
+        unique_together = (("name", "base"),)
 
     def mark_executed(self):
         with transaction.atomic():
@@ -336,7 +337,6 @@ class Apy(models.Model):
 
     def save_and_sync(self, **kwargs):
         ready_to_sync.send(self.__class__, instance=self)
-        self.save(**kwargs)
 
     def __str__(self):
         return "%s %s" % (self. name, str(self.id))

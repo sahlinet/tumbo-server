@@ -42,6 +42,7 @@ class Plugin(object):
 	__metaclass__ = Singleton
 
 	def __init__(self, *args, **kwargs):
+		self.args = args
 		self.kwargs = kwargs
 		logger.info("Init %s" % self.name)
 		super(Plugin, self ).__init__()

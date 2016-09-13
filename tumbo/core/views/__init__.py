@@ -371,9 +371,9 @@ class DjendBaseCreateView(View):
 class DjendBaseDeleteView(View):
 
     def post(self, request, *args, **kwargs):
-        base = Base.objects.get(name=kwargs['base'], user=User.objects.get(username=request.user.username))
+        base = Base.objects.get(name=kwargs['base'], user=request.user)
         base.delete()
-        response_data = {"redirect": "/fastapp/"}
+        response_data = {"redirect": "/core/dashboard/"}
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
     @csrf_exempt

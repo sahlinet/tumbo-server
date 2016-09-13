@@ -55,9 +55,7 @@
           $window,
           $http,
           $document) {
-          console.warn("BasesCtrl");
           $scope.init = function() {
-              console.warn("init");
               var bases = Bases.all(function() {
                   angular.forEach(bases, function(base) {
                       base.apy_models = Apy.all({
@@ -94,8 +92,9 @@
           }
 
           $scope.is_related = function(apy) {
-              return !($scope.base.foreign_apys.indexOf(apy.url) ==
-                  -1);
+                if ($scope.base.foreign_ays != undefined) {
+                    return !($scope.base.foreign_apys.indexOf(apy.url) == -1);
+                };
           }
 
           //if (!angular.isUndefined(window.active_base_id)) {
@@ -103,8 +102,6 @@
               $scope.base = Base.get({
                   'name': window.active_base
               });
-              console.log("$scope.base");
-              console.log($scope.base);
           }
 
           $scope.creation_running = function() {
@@ -152,7 +149,6 @@
           };
 
           $scope.cycle_state = function(base) {
-              console.log(base);
               if (base.state) {
                   Base.stop({
                       name: base.name
@@ -218,7 +214,6 @@
                   }).success(function(data, status, headers,
                       config) {
                       // file is uploaded successfully
-                      console.log(data);
                       $window.location = "/core/" + data
                           .name + "/index/";
 
@@ -262,9 +257,6 @@
                   $scope.apys.map(function(apy) {
                       $scope.$watch(apy, function(
                           changed) {
-                          console.log(
-                              "changed"
-                          );
                       }, true);
                       counter++;
                   });

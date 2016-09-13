@@ -329,7 +329,6 @@ if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
     )
 
 SESSION_COOKIE_PATH = reverse_lazy('root')
-#SESSION_COOKIE_PATH="/core"
-CSRF_COOKIE_PATH="/"
+CSRF_COOKIE_PATH="/core/"
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
