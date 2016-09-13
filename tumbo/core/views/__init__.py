@@ -26,6 +26,7 @@ from django.core import serializers
 from django.core.cache import cache
 
 
+from core.api_serializers import BaseSerializer
 from dropbox.rest import ErrorResponse
 
 from core.utils import UnAuthorized, Connection, NoBasesFound, message, create_jwt
@@ -359,7 +360,6 @@ class DjendBaseCreateView(View):
         if not created:
             return HttpResponseBadRequest("A base with this name does already exist.")
         base.save_and_sync()
-        from core.api_serializers import BaseSerializer
         base_data = BaseSerializer(base)
         response_data = base_data.data
         return HttpResponse(json.dumps(response_data), content_type="application/json")
@@ -839,11 +839,11 @@ def login_or_sharedkey(function):
     return wrapper
 
 def load_json(s):
-	if type(s) is str:	
-		r = json.loads(s)
-	elif type(s) is dict:
-		r = s
-	return r
+    if type(s) is str:	
+        r= json.loads(s)
+    elif type(s) is dict:
+        r = s
+    return r
 
 @login_required
 def change_password(request):

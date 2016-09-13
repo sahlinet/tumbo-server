@@ -85,7 +85,6 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                             last_modified = datetime.fromtimestamp(os.stat(filepath).st_mtime)
                         except IOError, e:
                             logger.warning(e)
-                            #warn(channel, static_path + " not found in %s" (filepath))
                             return HttpResponseNotFound(static_path + " not found")
                 else:
                     # try to load from installed module in worker
