@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>{% extends 'default.html' %}
 {% load compress %}{% block fastapp_title %}
-<title>Fastapp {% if FASTAPP_NAME %}: {{ FASTAPP_NAME }} {% endif %} asdf</title>{% endblock fastapp_title %}{% block main %}{% endblock %}{% block fastapp_header %}
+<title>Fastapp {% if TUMBO_NAME %}: {{ TUMBO_NAME }} {% endif %} asdf</title>{% endblock fastapp_title %}{% block main %}{% endblock %}{% block fastapp_header %}
 
 
 <!-- js -->
@@ -22,8 +22,7 @@
 {% compress css %}
 <!-- Bootstrap core CSS -->
 <link href="{{ STATIC_URL }}bare/css/bootstrap.css" rel="stylesheet">
-<link href="{{ STATIC_URL }}css/fastapp.css" rel="stylesheet" />{% if "full" not in request.GET %}
-<link href="{{ STATIC_URL }}css/fastapp-nav.css" rel="stylesheet" />{% endif %}
+<link href="{{ STATIC_URL }}css/fastapp.css" rel="stylesheet" />
 <!-- Grid  -->
 <link href="{{ STATIC_URL }}grid/ng-grid.css" rel="stylesheet" />
 {% endcompress css %}
@@ -56,7 +55,7 @@
 </script>
 <script src="{{ STATIC_URL }}js/app/app.js">
 </script>
-<script src="{{ STATIC_URL }}js/fastapp.js">
+<script src="{{ STATIC_URL }}js/tumbo.js">
 </script>{% endcompress %}
 <!-- CodeMirror -->
 <link rel="stylesheet" href="{{ STATIC_URL }}codemirror/css/codemirror.css" />

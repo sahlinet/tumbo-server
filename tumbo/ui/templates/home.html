@@ -13,14 +13,11 @@
                 <h3>Hello {{ user.username }}</h3>
                 <p>You are logged in as <code><strong>{{ user.username }}</strong></code>!</p>
                 <div>
-                  <p>Go to the <a href="{% url 'console' %}">Console</a> or your <a href="profile">Profile</a>.</p>
+                  <p>Go to the <a href="{% url 'console' %}">Dashboard</a> or your <a href="{% url 'profile' %}">Profile</a>.</p>
                 </div>
             {% else %}
                 <div class="row">
-                {% include "aaa/login_form_sa.html" %}
-                </div>
-                <div class="row">
-                    <h4>or</h4>
+                    {% include "aaa/login_form_sa.html" %}
                 </div>
                 <div class="row">
                 {% include "aaa/login_form.html" %}

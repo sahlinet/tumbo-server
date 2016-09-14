@@ -8,14 +8,14 @@
 <div class="container" ng-controller="BasesCtrl">
     <div class="row">
         <h1>
-            {{ FASTAPP_NAME }} {% if user.is_authenticated %}
+            {{ TUMBO_NAME }} {% if user.is_authenticated %}
             <button id="share" type="button" class="btn btn-default btn-xs">
                 <span class="glyphicon glyphicon-share"></span> Share</button>
 
             <button id="delete" type="button" class="btn btn-default btn-xs">
                 <span class="glyphicon glyphicon-remove"></span> Delete</button>
 
-            <button id="rename_base_{{ FASTAPP_NAME }}" type="button" class="btn btn-default btn-xs">
+            <button id="rename_base_{{ TUMBO_NAME }}" type="button" class="btn btn-default btn-xs">
                 <span class="glyphicon glyphicon-pencil"></span> Rename</button>
 
             <a id="export" class="btn btn-default btn-xs" href="{% url 'base-export' active_base.name %}">
@@ -40,14 +40,21 @@
     <div class="row">
         <div class="col-md-12" >
             <h3>Runtime Information</h3>
-            {% verbatim %}
+            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS }}</a></p>
             <p>Port: </p>
+            {% verbatim %}
             <p><a target="_blank" href="http://{{ base.executors[0].ip }}:{{ base.executors[0].port }}">http://{{ base.executors[0].ip }}:{{ base.executors[0].port }}</a></p>
+            {% endverbatim %}
+            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS_V4 }}</a></p>
+            {% if active_base.executors.executors.0.ip6 %}
+            {% verbatim %}
             <p><a target="_blank" href="http://[{{ base.executors[0].ip6 }}]:{{ base.executors[0].port }}">http://[{{ base.executors[0].ip6 }}]:{{ base.executors[0].port }}</a></p>
             {% endverbatim %}
-            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS }}</a></p>
-            <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS_V4 }}</a></p>
             <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS_V6 }}</a></p>
+            {% endif %}
+            <h4>URL's</h4>
+            Static: <a href="{% url 'userland-static' active_base.user.username active_base.name 'index.html' %}">{% url 'userland-static' active_base.user.username active_base.name 'index.html' %}</a><br/>
+            Execution: <a href="{% url 'userland-apy-public-exec' active_base.user.username active_base.name 'example' %}">{% url 'userland-apy-public-exec' active_base.user.username active_base.name 'example' %}</a>
 
         </div>
     </div>
@@ -131,7 +138,7 @@
                     tabMode: "shift",
                 });
                 editor.on("blur", function(cm, cmChangeObject) {
-                    $.post("/fastapp/{{ active_base.name }}/sync/", {
+                    $.post("/core/dashboard/{{ active_base.name }}/sync/", {
                         content: cm.getValue()
                     });
                     $('body > div.container > div.row.rendered').html(cm.getValue());

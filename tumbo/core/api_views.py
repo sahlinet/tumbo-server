@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import zipfile
 import requests
-import json
 from threading import Thread
 from rest_framework.renderers import JSONRenderer, JSONPRenderer
 from rest_framework import permissions, viewsets, views
@@ -10,7 +9,8 @@ from rest_framework import status
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
-
+from django.http import Http404
+from django.conf import settings
 from django.db import transaction
 from django.core.management import call_command
 
@@ -20,14 +20,14 @@ from rest_framework.response import Response
 from rest_framework.decorators import link
 from rest_framework.exceptions import APIException
 
+from django.contrib.auth import get_user_model
+
 from core.importer import import_base
 from core.models import Base, Apy, Setting, TransportEndpoint, Transaction
 from core.api_serializers import PublicApySerializer, ApySerializer, BaseSerializer, SettingSerializer, TransportEndpointSerializer, TransactionSerializer
 from core.utils import check_code
+from core.views import DjendExecView
 
-from core.api_auth import EveryoneAuthentication
-
-from django.contrib.auth import get_user_model
 User = get_user_model()
 
 import logging
@@ -40,11 +40,10 @@ class ServerConfigViewSet(views.APIView):
     renderer_classes = (JSONRenderer, )
 
     def get(self, *args, **kwargs):
-        from django.conf import settings
         data = {'QUEUE_HOST_ADDR': settings.WORKER_RABBITMQ_HOST,
                 'QUEUE_HOST_PORT': settings.WORKER_RABBITMQ_PORT,
-                'FASTAPP_WORKER_THREADCOUNT': settings.FASTAPP_WORKER_THREADCOUNT,
-                'FASTAPP_PUBLISH_INTERVAL': settings.FASTAPP_PUBLISH_INTERVAL
+                'TUMBO_WORKER_THREADCOUNT': settings.TUMBO_WORKER_THREADCOUNT,
+                'TUMBO_PUBLISH_INTERVAL': settings.TUMBO_PUBLISH_INTERVAL
         }
         return Response(data)
 
@@ -149,21 +148,6 @@ class ApyViewSet(viewsets.ModelViewSet):
         self.kwargs['pk'] = self.object.id
         return self.retrieve(request, new_pk=cloned_exec.id)
 
-class ApyPublicExecutionViewSet(viewsets.ModelViewSet):
-    model = Apy
-    serializer_class = ApySerializer
-    renderer_classes = [JSONRenderer, JSONPRenderer]
-    authentication_classes = (EveryoneAuthentication,)
-
-    def execute(self, request, username, name, apy_name):
-        apy_obj = get_object_or_404(Apy, base__user__username=username, name=apy_name, base__name=name)
-        from core.views import DjendExecView
-        kwargs = {
-            'base': name,
-            'id': apy_obj.id
-        }
-        return DjendExecView.as_view()(self.request, **kwargs)
-
 
 class ApyExecutionViewSet(viewsets.ModelViewSet):
     model = Apy
@@ -171,15 +155,33 @@ class ApyExecutionViewSet(viewsets.ModelViewSet):
     renderer_classes = [JSONRenderer, JSONPRenderer]
     authentication_classes = (TokenAuthentication, SessionAuthentication,)
 
-    def execute(self, request, name, apy_name):
-        apy_obj = get_object_or_404(Apy, base__user=self.request.user, name=apy_name, base__name=name)
-        from core.views import DjendExecView
+
+    def execute(self, request, username, name, apy_name):
+        apy_obj = get_object_or_404(Apy, base__user__username=username, name=apy_name, base__name=name)
+
         kwargs = {
             'base': name,
             'id': apy_obj.id
         }
-        return DjendExecView.as_view()(self.request, **kwargs)
-        #return reverse('exec', args=[name, apy_name])
+
+        # public and owner
+        if apy_obj.public or apy_obj.base.user == self.request.user:
+            return DjendExecView.as_view()(self.request, **kwargs)
+
+        # shared key
+        if request.GET.has_key('shared_key'):
+            shared_key = request.GET.get('shared_key', None)
+            if apy_obj.base.uuid == shared_key:
+                #request.session['shared_key'] = shared_key
+                return DjendExecView.as_view()(self.request, **kwargs)
+        raise Http404
+    
+class CoreApyExecutionViewSet(ApyExecutionViewSet):
+
+    def execute(self, request, name, apy_name):
+        username = request.user
+        return super(CoreApyExecutionViewSet, self).execute(request, username, name, apy_name)
+
 
 class PublicApyViewSet(ApyViewSet):
     serializer_class = PublicApySerializer

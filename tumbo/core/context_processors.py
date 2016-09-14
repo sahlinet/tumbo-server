@@ -1,4 +1,3 @@
-from django.conf import settings
 from tumbo import __VERSION__ as TUMBO_VERSION
 
 

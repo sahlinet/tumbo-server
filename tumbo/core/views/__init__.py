@@ -24,14 +24,12 @@ from django.conf import settings
 from django.views.decorators.cache import never_cache
 from django.core import serializers
 from django.core.cache import cache
-from django.template import Template
-from django.contrib.auth import update_session_auth_hash
 
 
+from core.api_serializers import BaseSerializer
 from dropbox.rest import ErrorResponse
-from random import uniform
 
-from core.utils import UnAuthorized, Connection, NoBasesFound, message, info, warn, channel_name_for_user, send_client, create_jwt
+from core.utils import UnAuthorized, Connection, NoBasesFound, message, create_jwt
 from core.queue import generate_vhost_configuration
 from core.models import AuthProfile, Base, Apy, Setting, Executor, Process, Thread, Transaction
 from core.models import RUNNING, FINISHED
@@ -117,7 +115,7 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
             if request.method == "POST":
                 if key in post_dict:
                     del get_dict[key]
-        token = create_jwt(request)
+        token = create_jwt(request.user, exec_model.base.executor.secret)
         request_data.update({'request': {
                 'method': request.method,
                 'content_type': request.META.get('Content-Type'),
@@ -216,8 +214,6 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
                     },
                 'apy_id': exec_model.id
             }
-            #user = channel_name_for_user(request)
-            #send_client(user, "counter", cdata)
 
             if request.GET.has_key('callback'):
                 data = '%s(%s);' % (request.REQUEST['callback'], json.dumps(data))
@@ -262,7 +258,6 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
         try:
             exec_model = base_model.apys.get(id=kwargs['id'])
         except Apy.DoesNotExist:
-            #warning(channel_name_for_user(request), "404 on %s" % request.META['PATH_INFO'])
             return HttpResponseNotFound("'%s' not found"     % request.META['PATH_INFO'])
 
         rid = request.GET.get('rid', None)
@@ -342,15 +337,12 @@ class DjendSharedView(View, ContextMixin):
         # context
         context['VERSION'] = version
         context['shared_bases'] = request.session['shared_bases']
-        context['FASTAPP_EXECS'] = base_model.apys.all().order_by('name')
+        context['TUMBO_EXECS'] = base_model.apys.all().order_by('name')
         context['LAST_EXEC'] = request.GET.get('done')
         context['active_base'] = base_model
         context['username'] = request.user.username
-        context['FASTAPP_NAME'] = base_model.name
-        #context['DROPBOX_REDIRECT_URL'] = settings.DROPBOX_REDIRECT_URL
-        #context['PUSHER_KEY'] = settings.PUSHER_KEY
-        context['CHANNEL'] = channel_name_for_user(request)
-        context['FASTAPP_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base_model.name)
+        context['TUMBO_NAME'] = base_model.name
+        context['TUMBO_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base_model.name)
 
         rs = base_model.template(context)
         return HttpResponse(rs)
@@ -360,7 +352,6 @@ class DjendBaseCreateView(View):
 
     def post(self, request, *args, **kwargs):
 
-        # TODO: should be in full project and not core
         if use_plans:
             if get_user_quota(request.user).get('MAX_BASES_PER_USER') <= request.user.bases.count():
                 return HttpResponseForbidden("Too many bases for your plan.")
@@ -369,7 +360,6 @@ class DjendBaseCreateView(View):
         if not created:
             return HttpResponseBadRequest("A base with this name does already exist.")
         base.save_and_sync()
-        from core.api_serializers import BaseSerializer
         base_data = BaseSerializer(base)
         response_data = base_data.data
         return HttpResponse(json.dumps(response_data), content_type="application/json")
@@ -381,9 +371,9 @@ class DjendBaseCreateView(View):
 class DjendBaseDeleteView(View):
 
     def post(self, request, *args, **kwargs):
-        base = Base.objects.get(name=kwargs['base'], user=User.objects.get(username=request.user.username))
+        base = Base.objects.get(name=kwargs['base'], user=request.user)
         base.delete()
-        response_data = {"redirect": "/fastapp/"}
+        response_data = {"redirect": "/core/dashboard/"}
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
     @csrf_exempt
@@ -481,12 +471,10 @@ class DjendBaseSaveView(View):
             e = base.apys.get(name=exec_name)
             if len(content) > 8200:
                 pass
-                #error(channel_name_for_user(request), "Exec '%s' is to big." % exec_name)
             else:
                 e.module = content
                 e.description = request.POST.get('exec_description')
                 e.save()
-                info(channel_name_for_user(request), "Exec '%s' saved" % exec_name)
         # base
         else:
             logger.info("Save base")
@@ -494,8 +482,6 @@ class DjendBaseSaveView(View):
             if public: base.public = public
             if static_public: base.static_public = static_public
             base.save()
-            # save in database
-            #info(channel_name_for_user(request), "Base index '%s' saved" % base.name)
 
         return HttpResponse()
 
@@ -538,7 +524,7 @@ class DjendBaseView(TemplateView, ContextMixin):
 
                 # execs
                 try:
-                    context['FASTAPP_EXECS'] = base_model.apys.all().order_by('name')
+                    context['TUMBO_EXECS'] = base_model.apys.all().order_by('name')
                 except ErrorResponse, e:
                     messages.warning(request, "No app.json found", extra_tags="alert-warning")
                     logging.debug(e)
@@ -546,11 +532,10 @@ class DjendBaseView(TemplateView, ContextMixin):
             # context
             try:
                 context['bases'] = Base.objects.filter(user=request.user.id).order_by('name')
-                context['FASTAPP_NAME'] = base
+                context['TUMBO_NAME'] = base
                 #context['DROPBOX_REDIRECT_URL'] = settings.DROPBOX_REDIRECT_URL
                 #context['PUSHER_KEY'] = settings.PUSHER_KEY
-                context['CHANNEL'] = channel_name_for_user(request)
-                context['FASTAPP_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base)
+                context['TUMBO_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base)
                 context['active_base'] = base_model
                 context['username'] = request.user.username
                 context['LAST_EXEC'] = request.GET.get('done')
@@ -768,7 +753,6 @@ def process_user(uid):
             pool.add_task(process_file, path, metadata, client, user)
         logger.info("Waiting for completion ... %s" % path)
         pool.wait_completion()
-        logger.info("Add task for %s to pool")
         logger.info("Tasks completed.")
 
         # Update cursor
@@ -787,6 +771,7 @@ class DropboxNotifyView(View):
         try:
             challenge = request.GET['challenge']
         except:
+            logger.info("DropboxNotifyView called without challenge")
             return HttpResponseNotFound("Not Found")
         return HttpResponse(challenge)
 
@@ -854,11 +839,11 @@ def login_or_sharedkey(function):
     return wrapper
 
 def load_json(s):
-	if type(s) is str:	
-		r = json.loads(s)
-	elif type(s) is dict:
-		r = s
-	return r
+    if type(s) is str:	
+        r= json.loads(s)
+    elif type(s) is dict:
+        r = s
+    return r
 
 @login_required
 def change_password(request):
@@ -877,7 +862,7 @@ def change_password(request):
                 user.set_password(password1)
                 user.save()
             else:
-                return HttpResponse("Passwort could not be changed", status = 400)
+                return HttpResponse("Password could not be changed (mininum l", status = 400)
 
         return HttpResponse("OK")
     else:

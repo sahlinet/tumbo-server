@@ -23,7 +23,7 @@ class PluginRegistry(object):
 		if cls not in self.plugins:
 			logger.info("Register: %s" % cls)
 			logger.info("Check if plugin '%s' must be activated..." % cls.shortname)
-			plugins_config = getattr(settings, "FASTAPP_PLUGINS_CONFIG", {})
+			plugins_config = getattr(settings, "TUMBO_PLUGINS_CONFIG", {})
 			if cls.fullname in plugins_config.keys():
 				cls.init()
 				self.plugins.append(cls)

@@ -1,15 +1,9 @@
-from settings import *
 import os
 
-"""
-Django settings for tumbo project.
+from django.core.urlresolvers import reverse_lazy
 
-For more information on this file, see
-https://docs.djangoproject.com/en/1.7/topics/settings/
+from settings import *
 
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.7/ref/settings/
-"""
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -39,10 +33,10 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
-    # 'tumbo',
+    'django_extensions',
     'ui',
-    'aaa',
     'core',
+    'aaa',
     'django_gravatar',
     'rest_framework',
     'rest_framework.authtoken',
@@ -55,7 +49,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'aaa.cas.middleware.CasSessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -110,7 +104,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(lineno)s %(process)d %(threadName)s %(message)s'
+            'format': '%(levelname)s %(asctime)s %(name)s %(module)s %(lineno)s %(process)d %(threadName)s %(message)s'
         },
         'standard': {
             'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
@@ -210,7 +204,7 @@ LOGGING = {
         },
         'sqlalchemy': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'WARNING',
             'propagate': True,
         },
         'sqlalchemy.pool': {
@@ -222,10 +216,17 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'WARNING',
             'propagate': True,
+        },
+        'apscheduler': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': True
+        },
+        'aaa': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True
         }
-
-
-
     }
 }
 
@@ -234,24 +235,24 @@ LOGIN_URL = "/"
 # Client
 #
 # How many worker threads are started
-FASTAPP_WORKER_THREADCOUNT = 5
+TUMBO_WORKER_THREADCOUNT = 5
 # How often the worker sends a heartbeat message
-FASTAPP_PUBLISH_INTERVAL = 6
+TUMBO_PUBLISH_INTERVAL = 6
 
 # Server
 #
 # How many heartbeat listener threads are started
-FASTAPP_HEARTBEAT_LISTENER_THREADCOUNT = 2
+TUMBO_HEARTBEAT_LISTENER_THREADCOUNT = 2
 # How many asynchronous response threads are started
-FASTAPP_ASYNC_LISTENER_THREADCOUNT = 5
+TUMBO_ASYNC_LISTENER_THREADCOUNT = 5
 # How many log listener threads are started
-FASTAPP_LOG_LISTENER_THREADCOUNT = 5
+TUMBO_LOG_LISTENER_THREADCOUNT = 5
 # Cleanup
-FASTAPP_CLEANUP_INTERVAL_MINUTES = 60
-FASTAPP_CLEANUP_OLDER_THAN_N_HOURS = 48
-FASTAPP_STATIC_CACHE_SECONDS = 60
+TUMBO_CLEANUP_INTERVAL_MINUTES = 60
+TUMBO_CLEANUP_OLDER_THAN_N_HOURS = 48
+TUMBO_STATIC_CACHE_SECONDS = 60
 
-FASTAPP_DOCKER_IMAGE = "philipsahli/tumbo-worker:develop"
+TUMBO_DOCKER_IMAGE = "philipsahli/tumbo-worker:develop"
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
@@ -261,7 +262,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.static",
     "django.core.context_processors.tz",
     "django.contrib.messages.context_processors.messages",
-    "core.context_processors.versions"
+    "django.core.context_processors.request",
+    "core.context_processors.versions",
 )
 
 # compressor
@@ -274,7 +276,6 @@ STATICFILES_FINDERS = (
 
 # redis-metrics
 REDIS_METRICS = {
-   # 'MIN_GRANULARITY': 'hourly',
    'MIN_GRANULARITY': 'minutes',
    'MAX_GRANULARITY': 'monthly',
    'MONDAY_FIRST_DAY_OF_WEEK': True
@@ -286,27 +287,50 @@ TEMPLATE_LOADERS = (
      'core.loader.RemoteWorkerLoader',
 )
 
-
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 PROPAGATE_VARIABLES=os.environ.get("PROPAGATE_VARIABLES", "").split("|")
 
 # social auth
+if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
 
-INSTALLED_APPS += (
-    'social.apps.django_app.default',
-)
+    INSTALLED_APPS += (
+        'social.apps.django_app.default',
+    )
 
-AUTHENTICATION_BACKENDS = (
-    'social.backends.github.GithubOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-)
+    AUTHENTICATION_BACKENDS = (
+        'social.backends.github.GithubOAuth2',
+        'social.backends.username.UsernameAuth',
+        'django.contrib.auth.backends.ModelBackend',
+    )
 
-TEMPLATE_CONTEXT_PROCESSORS += (
-    'social.apps.django_app.context_processors.backends',
-    'social.apps.django_app.context_processors.login_redirect',
-)
+    TEMPLATE_CONTEXT_PROCESSORS += (
+        'social.apps.django_app.context_processors.backends',
+        'social.apps.django_app.context_processors.login_redirect',
+    )
 
-SOCIAL_AUTH_GITHUB_KEY = '367fc54a95e4953e6ee9'
-SOCIAL_AUTH_GITHUB_SECRET = '35949713f8ef99eb4a1183c67474440df5907335'
-LOGIN_REDIRECT_URL = '/profile/'
+    LOGIN_REDIRECT_URL = '/core/profile/'
+
+    SOCIAL_AUTH_PIPELINE = (
+        'social.pipeline.social_auth.social_details',
+        'social.pipeline.social_auth.social_uid',
+        'social.pipeline.social_auth.auth_allowed',
+        'social.pipeline.social_auth.social_user',
+        'social.pipeline.user.get_username',
+        'social.pipeline.social_auth.associate_by_email',
+        'social.pipeline.user.create_user',
+        'aaa.pipeline.restrict_user',
+        'social.pipeline.social_auth.associate_user',
+        'social.pipeline.social_auth.load_extra_data',
+        'social.pipeline.user.user_details',
+        'aaa.cas.pipeline.create_ticket',
+    )
+
+    SOCIAL_AUTH_GITHUB_KEY = os.environ.get('SOCIAL_AUTH_GITHUB_KEY', None)
+    SOCIAL_AUTH_GITHUB_SECRET = os.environ.get('SOCIAL_AUTH_GITHUB_SECRET', None)
+
+
+SESSION_COOKIE_PATH = reverse_lazy('root')
+CSRF_COOKIE_PATH="/core/"
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True

@@ -12,7 +12,6 @@ Usage:
   tumbo.py server docker pull
   tumbo.py server docker url
   tumbo.py server docker logs
-  tumbo.py server tutum run [--worker=worker] [--ngrok-hostname=host] [--ngrok-authtoken=token]
   tumbo.py env list
   tumbo.py env <env-id> login <url>
   tumbo.py env <env-id> logout
@@ -52,7 +51,6 @@ import requests
 import getpass
 import json
 import pprint
-import thread
 import logging
 
 from pygments import highlight
@@ -130,7 +128,7 @@ class Env(object):
         return r.status_code, response
 
     def _gettoken(self):
-        url = self.url + "/fastapp/api-token-auth/"
+        url = self.url + "/core/api-token-auth/"
         r = requests.post(url, data={'username': self.user, 'password': self.password})
 
         if r.status_code != 200:
@@ -222,13 +220,13 @@ class Env(object):
     def open_browser(self, base=None):
         import webbrowser
         if not base:
-            url = "%s/fastapp" % self.config_data['url']
+            url = "%s/core" % self.config_data['url']
         else:
-            url = "%s/fastapp/base/%s/index" % (self.config_data['url'], base)
+            url = "%s/core/base/%s/index" % (self.config_data['url'], base)
         webbrowser.open(url+"/")
 
     def projects_list(self):
-        status_code, projects = self._call_api("/fastapp/api/base/")
+        status_code, projects = self._call_api("/core/api/base/")
         table = []
         for project in projects:
             state = "Running" if project['state'] else "Stopped"
@@ -236,20 +234,20 @@ class Env(object):
         print tabulate(table, headers=["Projectname", "State"])
 
     def project_stop(self, name):
-        status_code, projects = self._call_api("/fastapp/api/base/%s/stop/" % name, method="POST")
+        status_code, projects = self._call_api("/core/api/base/%s/stop/" % name, method="POST")
 
     def project_start(self, name):
-        status_code, projects = self._call_api("/fastapp/api/base/%s/start/" % name, method="POST")
+        status_code, projects = self._call_api("/core/api/base/%s/start/" % name, method="POST")
 
     def project_destroy(self, name):
-        status_code, projects = self._call_api("/fastapp/api/base/%s/destroy/" % name, method="POST")
+        status_code, projects = self._call_api("/core/api/base/%s/destroy/" % name, method="POST")
 
     def project_delete(self, name):
-        status_code, projects = self._call_api("/fastapp/base/%s/delete/" % name, method="POST")
+        status_code, projects = self._call_api("/core/base/%s/delete/" % name, method="POST")
 
     def project_show(self, name):
 
-        status_code, project = self._call_api("/fastapp/api/base/%s/" % name)
+        status_code, project = self._call_api("/core/api/base/%s/" % name)
         print "\nStatus\n******"
         state = "Running" if project['state'] else "Stopped"
         print state
@@ -265,12 +263,12 @@ class Env(object):
 
         print tabulate(table, headers=["Port", "IPv4", "IPv6"])
 
-        status_code, functions = self._call_api("/fastapp/api/base/%s/apy/" % name)
+        status_code, functions = self._call_api("/core/api/base/%s/apy/" % name)
         if status_code == 404:
             print "Project does not exist"
             return
 
-        status_code, settings = self._call_api("/fastapp/api/base/%s/setting/" % name)
+        status_code, settings = self._call_api("/core/api/base/%s/setting/" % name)
         print "\nSettings\n********"
         table = []
         for setting in settings:
@@ -300,7 +298,7 @@ class Env(object):
 	data={}
 	if tid:
 		data['rid'] = tid
-        status_code, transactions = self._call_api("/fastapp/api/base/%s/transactions/" % name, method="GET", data=data)
+        status_code, transactions = self._call_api("/core/api/base/%s/transactions/" % name, method="GET", data=data)
 	import pprint
 	logs_only = arguments.get('--logs', False)
 	for transaction in transactions:
@@ -341,9 +339,9 @@ class Env(object):
 
     def execute(self, project_name, function_name, async=False):
         if not async:
-            status_code, response = self._call_api("/fastapp/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
+            status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
         else:
-            status_code, response = self._call_api("/fastapp/api/base/%s/apy/%s/execute/?json=&async=" % (project_name, function_name))
+            status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json=&async=" % (project_name, function_name))
         state_url = response.get('url', None)
         print "Started with id '%s'" % response['rid']
         if not state_url and response['status'] == "OK":
@@ -373,7 +371,7 @@ def do_ngrok():
     ngrok_authtoken = arguments.get("--ngrok-authtoken", None)
     print "Starting ngrok for %s with %s" % (ngrok_hostname, ngrok_authtoken)
     if arguments['docker']:
-        port = docker_compose("-f", "docker-compose-app-docker_socket_exec.yml", "port", "app", "80").split(":")[1]
+        port = docker_compose("-p", "tumboserver", "-f", "compose-files/docker-compose-app-docker_socket_exec.yml", "port", "app", "80").split(":")[1]
     else:
         port = 8000
     cmd = '-hostname=%s -authtoken=%s localhost:%s' % (ngrok_hostname, ngrok_authtoken, port)
@@ -484,8 +482,7 @@ if __name__ == '__main__':
                     cmd_args = '-u postgres /usr/bin/postgres -D /var/lib/pgsql/data'
                     sudo = sh.Command("sudo")
                     cmd = sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
-                    #cmd.wait()
-                    
+
                     print "Starting redis"
                     cmd_args = "-u redis /usr/bin/redis-server /etc/redis.conf"
                     sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
@@ -493,7 +490,7 @@ if __name__ == '__main__':
                     print "Starting rabbitmq"
                     cmd_args = "-u rabbitmq /usr/sbin/rabbitmq-server"
                     sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
-                    #sys.exit(0)
+
                 print "Starting development server"
                 env = {}
                 env.update(os.environ)
@@ -506,35 +503,40 @@ if __name__ == '__main__':
                 print PROPAGATE_VARIABLES
                 if PROPAGATE_VARIABLES:
                     env['PROPAGATE_VARIABLES'] = PROPAGATE_VARIABLES
-                
+
 
                 cmd = "tumbo/manage.py syncdb --noinput --settings=tumbo.dev"
                 syncdb = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 syncdb.wait()
-              
+
                 cmd = "tumbo/manage.py makemigrations core --settings=tumbo.dev"
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
 
-                cmd = "tumbo/manage.py migrate core --settings=tumbo.dev"
+                cmd = "tumbo/manage.py migrate --settings=tumbo.dev"
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
 
+                cmd = "tumbo/manage.py migrate aaa --settings=tumbo.dev"
+                migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                migrate.wait()
+
+
                 try:
-                	cmd = "tumbo/manage.py create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev"
-                	adminuser = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/null", _bg=True)
-                	adminuser.wait()
+                    cmd = "tumbo/manage.py create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev"
+                    adminuser = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/null", _bg=True)
+                    adminuser.wait()
                 except:
-                	print "adminuser already exists?"
+                    print "adminuser already exists?"
 
                 cmd = "tumbo/manage.py import_base --username=admin --file example_bases/generics.zip  --name=generics --settings=tumbo.dev"
                 generics_import = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
 
-                cmd = "tumbo/manage.py runserver 0.0.0.0:8000 --settings=tumbo.dev"
-                app = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
-
                 cmd = "tumbo/manage.py heartbeat --settings=tumbo.dev"
                 background = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+
+                cmd = "tumbo/manage.py runserver 0.0.0.0:8000 --settings=tumbo.dev"
+                app = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _tty_in=True, _in=sys.stdin, _bg=True)
 
                 if arguments['--ngrok-hostname'] and arguments['docker']:
                     if not ngrok:
@@ -548,67 +550,66 @@ if __name__ == '__main__':
                     stop()
 
             if arguments['test']:
-                print "Testing example on docker"
+                print "Testing example on Docker"
 
-                r = requests.post("http://localhost:8000/fastapp/api-token-auth/", data={'username': "admin", 'password': "admin"})
+                r = requests.post("http://localhost:8000/core/api-token-auth/", data={'username': "admin", 'password': "admin"})
                 token = r.json()['token']
                 print token
-                r = requests.post("http://localhost:8000/fastapp/api/base/87/start/", headers={
+                r = requests.post("http://localhost:8000/core/api/base/87/start/", headers={
                     'Authorization': "Token " + token
                 })
                 print r.text
                 print r.status_code
                 time.sleep(5)
-                r = requests.get("http://localhost:8000/fastapp/base/example/exec/foo/?json", headers={
+                r = requests.get("http://localhost:8000/core/base/example/exec/foo/?json", headers={
                     'Authorization': "Token " + token
                 })
                 print r.text
                 print r.json()
 
-
         if arguments['docker']:
             if arguments['pull']:
                 print "Docker images pull ..."
-                cmd = "-f docker-compose-base.yml pull"
+                cmd = "-p tumboserver -f compose-files/docker-compose-base.yml pull"
                 docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 print "Docker images pull done."
 
             if arguments['build']:
                 print "Build docker images"
 
-                cmd = "-f docker-compose-app-docker_socket_exec.yml build --pull --no-cache"
+                cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml build --pull"
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
 
                 build.wait()
             if arguments['stop']:
                 print "Stop docker containers"
 
-                cmd = "-f docker-compose-app-docker_socket_exec.yml stop"
+                cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml stop"
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 build.wait()
 
-                cmd = "-f docker-compose-base.yml stop"
+                cmd = "-p tumboserver -f compose-files/docker-compose-base.yml stop"
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 build.wait()
 
             if arguments['logs']:
                 print "Follow logs of docker containers"
 
-                cmd = "-f docker-compose-app-docker_socket_exec.yml logs -f"
+                cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml logs -f"
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 build.wait()
 
             if arguments['run']:
-                print "Starting Tumbo on docker"
+                print "Starting Tumbo on Docker"
                 if arguments['--stop-after']:
                     print "Will stop after %s seconds" % arguments['--stop-after']
 
                 try:
-                    cmd = "-f docker-compose-base.yml up -d --no-recreate"
+                    cmd = "-p tumboserver -f compose-files/docker-compose-base.yml up -d --no-recreate"
                     base = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
-                    time.sleep(15)
+                    time.sleep(40)
 
-                    cmd = "-f docker-compose-app-docker_socket_exec.yml up"
+                    cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml up"
                     app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True, _env=os.environ)
 
                     if arguments['--ngrok-hostname']:
@@ -625,13 +626,13 @@ if __name__ == '__main__':
                 except (KeyboardInterrupt, sh.ErrorReturnCode_1, Exception), e:
                     print e
                     # stop workers
-                    cmd = "-f docker-compose-app-docker_socket_exec.yml kill"
+                    cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml kill"
                     app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
 
-                    cmd = "-f docker-compose-app-docker_socket_exec.yml rm -f"
+                    cmd = "-p tumboserver -f compose-files/docker-compose-app-docker_socket_exec.yml rm -f"
                     app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
 
-                    cmd = "-f docker-compose-base.yml kill"
+                    cmd = "-p tumboserver -f compose-files/docker-compose-base.yml kill"
                     base = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
 
                     try:
@@ -642,8 +643,6 @@ if __name__ == '__main__':
                     except sh.ErrorReturnCode_1:
                         pass
 
-
-
     if arguments['docker'] and arguments['url']:
-        port = docker_compose("-f", "docker-compose-app-docker_socket_exec.yml", "port", "app", "80").split(":")[1]
+        port = docker_compose("-p", "tumboserver", "-f", "compose-files/docker-compose-app-docker_socket_exec.yml", "port", "app", "80").split(":")[1]
         print("http://%s:%s" % ("localhost", port))

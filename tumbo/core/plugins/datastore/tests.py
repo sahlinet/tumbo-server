@@ -1,5 +1,4 @@
 import unittest
-import os
 
 from . import DataObject, PsqlDataStore, resultproxy_to_list, LockException
 

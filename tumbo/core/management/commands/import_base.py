@@ -1,15 +1,11 @@
 import logging
-import gevent
 import zipfile
-
-from django.db import transaction
-from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
-from django.contrib.auth import get_user_model
 
 from optparse import make_option
 
-from core.models import Base
+from django.core.management.base import BaseCommand
+from django.contrib.auth import get_user_model
+
 from core.importer import import_base
 
 logger = logging.getLogger("core.executors.remote")
@@ -36,7 +32,6 @@ class Command(BaseCommand):
         f = open(options['file'], 'r')
         zf = zipfile.ZipFile(f)
 
-        #f.close()
         user = get_user_model().objects.get(username=options['username'])
         override_public = True
         override_private = True

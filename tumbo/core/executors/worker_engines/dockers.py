@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 MEM_LIMIT = "96m"
 #CPU_SHARES = 512
 
-DOCKER_IMAGE = getattr(settings, 'FASTAPP_DOCKER_IMAGE',
+DOCKER_IMAGE = getattr(settings, 'TUMBO_DOCKER_IMAGE',
                             'philipsahli/tumbo-worker:develop')
 
 
@@ -49,23 +49,25 @@ class DockerExecutor(BaseExecutor):
             logger.info("Create container for %s" % self.vhost)
             import docker
 
-            env = {
+            default_env = self.get_default_env()
+            env = {}
+            env.update(default_env)
+            env.update({
                     'RABBITMQ_HOST': settings.WORKER_RABBITMQ_HOST,
                     'RABBITMQ_PORT': settings.WORKER_RABBITMQ_PORT,
-                    'FASTAPP_WORKER_THREADCOUNT': settings.FASTAPP_WORKER_THREADCOUNT,
-                    'FASTAPP_PUBLISH_INTERVAL': settings.FASTAPP_PUBLISH_INTERVAL,
-                    'FASTAPP_CORE_SENDER_PASSWORD': settings.FASTAPP_CORE_SENDER_PASSWORD,
+                    'TUMBO_WORKER_THREADCOUNT': settings.TUMBO_WORKER_THREADCOUNT,
+                    'TUMBO_PUBLISH_INTERVAL': settings.TUMBO_PUBLISH_INTERVAL,
+                    'TUMBO_CORE_SENDER_PASSWORD': settings.TUMBO_CORE_SENDER_PASSWORD,
                     'EXECUTOR': "docker",
                     'SERVICE_PORT': self.executor.port,
                     'SERVICE_IP': self.executor.ip
-                }
+                })
             try:
                 for var in settings.PROPAGATE_VARIABLES:
                     if os.environ.get(var, None):
                         env[var] = os.environ[var]
             except AttributeError:
                 pass
-
 
             if self.executor.ip6:
                 env['SERVICE_IP6'] = self.executor.ip6
@@ -111,6 +113,8 @@ class DockerExecutor(BaseExecutor):
             ip = self.api.port(id, port)[0]['HostIp']
         else:
             ip = container['NetworkSettings']['IPAddress']
+        if ip in ["0.0.0.0", "127.0.0.1"]:
+            ip = self._get_public_ipv4_address()
         ip6 = container['NetworkSettings']['GlobalIPv6Address']
         return {
             'ip': ip,
@@ -166,7 +170,7 @@ class DockerExecutor(BaseExecutor):
             login_email = load_setting("DOCKER_LOGIN_EMAIL", False)
             login_host = load_setting("DOCKER_LOGIN_HOST", False)
         except ImproperlyConfigured, e:
-            pass
+            logger.debug(e.msg)
 
         if login_user:
             self.api.login(

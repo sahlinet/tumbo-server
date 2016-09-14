@@ -1,8 +1,10 @@
+import logging
+
 from rest_framework import serializers
 from rest_framework.reverse import reverse
+
 from core.models import Base, Apy, Setting, Counter, TransportEndpoint, Transaction, LogEntry
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -35,7 +37,6 @@ class ApySerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'module', 'counter', 'description', 'public', 'schedule', 'everyone')
 
     def save_object(self, obj, **kwargs):
-        logger.debug("save_and_sync")
         obj.save_and_sync(**kwargs)
 
 
@@ -97,5 +98,4 @@ class BaseSerializer(serializers.ModelSerializer):
 
     def save_object(self, obj, **kwargs):
         super(BaseSerializer, self).save_object(obj, **kwargs)
-        logger.debug("save_and_sync")
         obj.save_and_sync(**kwargs)

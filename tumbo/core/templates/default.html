@@ -11,8 +11,8 @@
     <link rel="shortcut icon" href="{{ STATIC_URL }}img/favicon.ico" />
     <link rel="bookmark" href="{{ STATIC_URL }}img/favicon.ico" />
     <!-- site css -->
-    <link rel="stylesheet" href="{{STATIC_URL}}bower_components/Bootflat/css/site.min.css">
-    <link rel="stylesheet" href="{{ STATIC_URL}}css/tumbo.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}bower_components/Bootflat/css/site.min.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/tumbo.css">
     <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,800,700,400italic,600italic,700italic,800italic,300italic" rel="stylesheet" type="text/css">
 
     <!-- sentry -->
@@ -55,7 +55,7 @@
                         <li><a class="nav-link" href="{% url 'console' %}">
                         <span class="glyphicon glyphicon-edit img-circle" aria-hidden="true"></span>&nbsp;
 
-                Console</a></li>
+                Dashboard</a></li>
 
                         {% if user.is_superuser %}
                         <li><a class="nav-link" href="{% url 'cockpit' %}">Cockpit</a></li>
@@ -64,11 +64,15 @@
 
                         {% if user.is_authenticated %}
                         <li>
-                            <a class="nav-link" href="/profile/">
+                            <a class="nav-link" href="{% url 'core-profile' %}">
                                 <img class="img-circle" src="{% gravatar_url user.email 20 %}" />&nbsp;Profile</a>
                         </li>
                         <li>
-                            <button type="button" class="btn btn-warning navbar-btn btn-margin-left" onclick="window.location='/logout/'">Logout</button>
+                        {% if "/cas/" in request.build_absolute_uri %}
+                            <button type="button" class="btn btn-warning navbar-btn btn-margin-left" onclick="window.location='{% url "cas-logout" %}'">Logout</button>
+                        {% else %}
+                            <button type="button" class="btn btn-warning navbar-btn btn-margin-left" onclick="window.location='{% url "core-logout" %}'">Logout</button>
+                        {% endif %}
                         </li>
                         {% endif %}
                     </ul>

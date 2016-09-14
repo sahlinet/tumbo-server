@@ -1,7 +1,7 @@
 import logging
 import requests
-import time
 import os
+import time
 
 from django.conf import settings
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 MEM_LIMIT_MB = 256
 CPU_SHARES = 1024
 
-DOCKER_IMAGE = getattr(settings, 'FASTAPP_DOCKER_IMAGE',
+DOCKER_IMAGE = getattr(settings, 'TUMBO_DOCKER_IMAGE',
                     'philipsahli/tumbo-worker:develop')
 
 
@@ -93,9 +93,9 @@ class RancherApiExecutor(BaseExecutor):
             env = {
                 'RABBITMQ_HOST': settings.WORKER_RABBITMQ_HOST,
                 'RABBITMQ_PORT': int(settings.WORKER_RABBITMQ_PORT),
-                'FASTAPP_WORKER_THREADCOUNT': settings.FASTAPP_WORKER_THREADCOUNT,
-                'FASTAPP_PUBLISH_INTERVAL': settings.FASTAPP_PUBLISH_INTERVAL,
-                'FASTAPP_CORE_SENDER_PASSWORD': settings.FASTAPP_CORE_SENDER_PASSWORD,
+                'TUMBO_WORKER_THREADCOUNT': settings.TUMBO_WORKER_THREADCOUNT,
+                'TUMBO_PUBLISH_INTERVAL': settings.TUMBO_PUBLISH_INTERVAL,
+                'TUMBO_CORE_SENDER_PASSWORD': settings.TUMBO_CORE_SENDER_PASSWORD,
                 'EXECUTOR': "docker",
                 'SERVICE_PORT': self.executor.port,
                 'SERVICE_IP': self.executor.ip
@@ -202,7 +202,6 @@ class RancherApiExecutor(BaseExecutor):
             logger.debug(json_data)
             status_code, response = self._call_rancher("/", json_data)
             id = response['id']
-        import time
         time.sleep(3)
         status_code, response = self._call_rancher("/%s?action=activate" % id, force_post=True)
 
@@ -210,7 +209,6 @@ class RancherApiExecutor(BaseExecutor):
         c = 0
         while c < timeout:
             c=c+1
-            import time
             time.sleep(2)
 
             if self.state(id):

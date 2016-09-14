@@ -1,13 +1,8 @@
-import sys
-import os
 import logging
 import random
 
-from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.exceptions import ImproperlyConfigured
 
-from core.utils import load_setting, load_var_to_file
 from core.plugins import call_plugin_func
 
 logger = logging.getLogger(__name__)
@@ -24,6 +19,7 @@ class BaseExecutor(object):
         self.username = kwargs['username']
         self.password = kwargs['password']
         self.executor = kwargs['executor']
+        self.secret = kwargs['secret']
 
         # container name, must be unique, therefore we use a mix from site's domain name and executor
         slug = "worker-%s-%i-%s" % (Site.objects.get_current().domain,
@@ -32,9 +28,24 @@ class BaseExecutor(object):
 
     def addresses(self, id, port=None):
         return {
-            'ip': "127.0.0.1",
+            'ip': self._get_public_ipv4_address(),
             'ip6': None
             }
+
+    def _get_public_ipv4_address(self):
+        import socket
+        origGetAddrInfo = socket.getaddrinfo
+
+        def getAddrInfoWrapper(host, port, family=0, socktype=0, proto=0, flags=0):
+            return origGetAddrInfo(host, port, socket.AF_INET, socktype, proto, flags)
+
+        # replace the original socket.getaddrinfo by our version
+        socket.getaddrinfo = getAddrInfoWrapper
+
+        #--------------------
+        import urllib2
+        return urllib2.urlopen("https://icanhazip.com").read().replace("\n", "")
+
 
     @property
     def _start_command(self):
@@ -54,8 +65,12 @@ class BaseExecutor(object):
         success, failed = call_plugin_func(self.executor.base, "on_start_base")
         if len(failed.keys()) > 0:
             logger.warning("Problem with on_start_base for plugin (%s)" % str(failed))
-        print success
-        print failed
 
     def log(self, id):
         raise NotImplementedError()
+
+    def get_default_env(self):
+        env = {}
+        env.update({'secret': self.secret})
+        print env
+        return env

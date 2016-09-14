@@ -6,12 +6,9 @@ import logging
 import atexit
 
 from django.conf import settings
-from django.contrib.sites.models import Site
-from django.core.exceptions import ImproperlyConfigured
 
-from core.executors.worker_engines import BaseExecutor, ContainerNotFound
-from core.utils import load_setting, load_var_to_file
-from core.plugins import call_plugin_func
+from core.executors.worker_engines import BaseExecutor
+from core.utils import load_setting
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +22,15 @@ class SpawnExecutor(BaseExecutor):
 
         python_path = sys.executable
         try:
-            MODELSPY = os.path.join(settings.PROJECT_ROOT, "../../app_worker")
-            env = os.environ.copy()
+            MODELSPY = os.path.join(settings.PROJECT_ROOT, "../../worker")
+            default_env = self.get_default_env()
+            env = {}
+            env.update(default_env)
+            env.update(os.environ.copy())
             env['EXECUTOR'] = "Spawn"
-            env['FASTAPP_CORE_SENDER_PASSWORD'] = load_setting("FASTAPP_CORE_SENDER_PASSWORD")
-            env['FASTAPP_WORKER_THREADCOUNT'] = str(load_setting("FASTAPP_WORKER_THREADCOUNT"))
-            env['FASTAPP_PUBLISH_INTERVAL'] = str(load_setting("FASTAPP_PUBLISH_INTERVAL"))
+            env['TUMBO_CORE_SENDER_PASSWORD'] = load_setting("TUMBO_CORE_SENDER_PASSWORD")
+            env['TUMBO_WORKER_THREADCOUNT'] = str(load_setting("TUMBO_WORKER_THREADCOUNT"))
+            env['TUMBO_PUBLISH_INTERVAL'] = str(load_setting("TUMBO_PUBLISH_INTERVAL"))
             env['RABBITMQ_HOST'] = str(load_setting("WORKER_RABBITMQ_HOST"))
             env['RABBITMQ_PORT'] = str(load_setting("WORKER_RABBITMQ_PORT"))
             python_paths = ""
@@ -45,7 +45,6 @@ class SpawnExecutor(BaseExecutor):
 
             try:
                 for var in settings.PROPAGATE_VARIABLES:
-                    #import pdb; pdb.set_trace()
                     if os.environ.get(var, None):
                         env[var] = os.environ[var]
             except AttributeError, e:

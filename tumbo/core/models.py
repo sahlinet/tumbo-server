@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import urllib
-import ConfigParser
-import io
 import StringIO
 import gevent
 import json
@@ -14,8 +12,9 @@ import re
 from configobj import ConfigObj
 from datetime import datetime, timedelta
 from jsonfield import JSONField
+from sequence_field.fields import SequenceField
 
-
+from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.template import Template
 from django_extensions.db.fields import UUIDField, ShortUUIDField, RandomCharField
@@ -33,7 +32,6 @@ from core.utils import Connection
 from core.plugins import call_plugin_func
 from core.plugins import PluginRegistry
 
-from sequence_field.fields import SequenceField
 
 import logging
 logger = logging.getLogger(__name__)
@@ -291,7 +289,7 @@ class Base(models.Model):
 
     def save_and_sync(self, **kwargs):
         ready_to_sync.send(self.__class__, instance=self)
-        self.save(**kwargs)
+        #self.save(**kwargs)
 
     #def save(self, **kwargs):
     #    logger.debug("create executor for base %s" % self)
@@ -317,6 +315,7 @@ class Apy(models.Model):
 
     class Meta:
         db_table = "fastapp_apy"
+        unique_together = (("name", "base"),)
 
     def mark_executed(self):
         with transaction.atomic():
@@ -334,11 +333,10 @@ class Apy(models.Model):
         self.counter.save()
 
     def get_exec_url(self):
-        return "/fastapp/base/%s/exec/%s/?json=" % (self.base.name, self.id)
+        return reverse("userland-apy-public-exec", args=[self.base.user.username, self.base.name, self.name]) + "?json="
 
     def save_and_sync(self, **kwargs):
         ready_to_sync.send(self.__class__, instance=self)
-        self.save(**kwargs)
 
     def __str__(self):
         return "%s %s" % (self. name, str(self.id))
@@ -529,6 +527,7 @@ class Executor(models.Model):
     started = models.BooleanField(default=False)
     ip = models.GenericIPAddressField(null=True)
     ip6 = models.GenericIPAddressField(null=True)
+    secret = RandomCharField(length=8, include_alpha=True, editable=True)
 
     port = SequenceField(
         key='test.sequence.1',
@@ -561,7 +560,7 @@ class Executor(models.Model):
 
     @property
     def implementation(self):
-        s_exec = getattr(settings, 'FASTAPP_WORKER_IMPLEMENTATION',
+        s_exec = getattr(settings, 'TUMBO_WORKER_IMPLEMENTATION',
                                    'core.executors.worker_engines.spawnproc.SpawnExecutor')
         regex = re.compile("(.*)\.(.*)")
         r = regex.search(s_exec)
@@ -575,6 +574,7 @@ class Executor(models.Model):
                 base_name=self.base.name,
                 username=self.base.name,
                 password=self.password,
+                secret=self.secret,
                 executor=self
                 )
         except KeyError, e:
@@ -609,6 +609,7 @@ class Executor(models.Model):
         self.started = True
 
         ips = self.implementation.addresses(self.pid, port=self.port)
+        logger.info("ips: %s" % str(ips))
         self.ip = ips['ip']
         self.ip6 = ips['ip6']
 
@@ -705,7 +706,10 @@ def synchronize_to_storage(sender, *args, **kwargs):
                                                    instance.name),
                                      instance.module)
         queryset = Apy.objects.all()
-        queryset.filter(pk=instance.pk).update(rev=result['rev'])
+        #print result['rev']
+        #queryset.get(pk=instance.pk).update(rev=result['rev'])
+        instance.rev=result['rev']
+        instance.save()
 
         # update app.config for saving description
         result = connection.put_file("%s/%s/app.config" % (instance.base.user.username, 

@@ -1,0 +1,66 @@
+{% extends "default.html" %}
+
+{% load backend_utils %}
+
+{% block main %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <h3>Login for Base {{userland}}/{{basename}}</h3>
+        {% if user %}
+            {{ user.username }}
+        {% endif %}
+        <br/>
+        {% for sublist in available_backends|social_backends %}
+            {% for name, backend in sublist %}
+              {% associated backend %}
+              {% if association %}
+                <form class="disconnect-form col-md-2" id="{{ name }}-disconnect" action="{% url "social:disconnect_individual" backend=association.provider association_id=association.id %}" method="post">{% csrf_token %}
+                  <a class="btn btn-danger" name="{{ backend|backend_class }}" href="#">
+                    <i class="fa fa-{{ name|icon_name }}"></i>
+                    Disconnect {{ backend|backend_name }}
+                  </a>
+                </form>
+              {% else %}
+                {% if name == "google-plus" %}
+                  <div class="col-md-4 btn btn-default" id="{{ name }}-button" name="{{ backend|backend_class }}">
+                    <i class="fa fa-{{ name|icon_name }}"></i>
+                    {{ backend|backend_name }}
+                  </div>
+                {% else %}
+                  <a class="col-md-4 btn btn-default" id="{{ name }}-button" name="{{ backend|backend_class }}" href="{% url "social:begin" backend=name %}">
+                    <i class="fa fa-{{ name|icon_name }}"></i>
+                    {{ backend|backend_name }}
+                  </a>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+  </div>
+<h3>or</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <form class="form-signin" id="login_form" method="post" action="/cas/complete/username/"
+                {% csrf_token %}
+
+                <label for="inputUsername" class="sr-only">Username</label>
+                <input type="text" id="inputUsername" name="username" class="form-control" placeholder="Username" required="" autofocus="">
+                <label for="inputPassword" class="sr-only">Password</label>
+                <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required="">
+                <!--<div class="checkbox">
+                  <label>
+                    <input type="checkbox" value="remember-me"> Remember me
+                  </label>
+                </div>-->
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+            </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

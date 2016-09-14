@@ -1,9 +1,9 @@
-from core.models import Base
+from re import compile
 
-__author__ = 'fatrix'
 from django.http import HttpResponseRedirect
 from django.conf import settings
-from re import compile
+
+from core.models import Base
 
 EXEMPT_URLS = [compile(settings.LOGIN_URL.lstrip('/'))]
 if hasattr(settings, 'LOGIN_EXEMPT_URLS'):

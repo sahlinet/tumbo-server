@@ -1,23 +1,15 @@
 import logging
-import errno
-import io
 import os
-import warnings
 import json
 import base64
 
 from django.template import TemplateDoesNotExist
 from django.template.loader import BaseLoader
-from dropbox.rest import ErrorResponse
 from core.utils import Connection
-from django.core.exceptions import SuspiciousFileOperation
-from django.template import Origin, TemplateDoesNotExist
-from django.utils._os import safe_join
 
 from django.conf import settings
 
 from core.models import Base
-from core.views.static import DjendStaticView
 from core.executors.remote import get_static
 from core.queue import generate_vhost_configuration
 
@@ -91,7 +83,7 @@ class DropboxAppFolderLoader(FastappBaseLoader):
 class DevLocalRepositoryPathLoader(FastappBaseLoader):
 
   def get_file(self, template_name, short_name, base_model):
-        REPOSITORIES_PATH = getattr(settings, "FASTAPP_REPOSITORIES_PATH", None)
+        REPOSITORIES_PATH = getattr(settings, "TUMBO_REPOSITORIES_PATH", None)
         if REPOSITORIES_PATH:
             logger.debug("in DevLocalRepositoryPathLoader")
             try:

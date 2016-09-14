@@ -2,31 +2,17 @@ import logging
 import sys
 import threading
 
-
 from django.core.management.base import BaseCommand
+from django.conf import settings
 
 from core.executors.heartbeat import HeartbeatThread, inactivate, update_status, HEARTBEAT_QUEUE
 from core.executors.async import AsyncResponseThread
 from core.log import LogReceiverThread
-from django.conf import settings
 from core.queue import RabbitmqAdmin
-
 from core.utils import load_setting
 
 logger = logging.getLogger("core.executors.remote")
 
-import os
-
-#import psutil
-#import newrelic.agent
-#@newrelic.agent.data_source_generator(name='Memory Usage')
-#def memory_metrics():
-#    pid = os.getpid()
-#    p = psutil.Process(os.getpid())
-#    m = p.get_memory_info()
-#    yield ('Custom/Memory/Physical', float(m.rss)/(1024*1024))
-#    yield ('Custom/Memory/Virtual', float(m.vms)/(1024*1024))
-#newrelic.agent.register_data_source(memory_metrics)
 
 class Command(BaseCommand):
     args = '<poll_id poll_id ...>'
@@ -46,8 +32,8 @@ class Command(BaseCommand):
         host = load_setting("RABBITMQ_HOST")
         port = int(load_setting("RABBITMQ_PORT"))
 
-        SENDER_PASSWORD = load_setting("FASTAPP_CORE_SENDER_PASSWORD")
-        RECEIVER_PASSWORD = load_setting("FASTAPP_CORE_RECEIVER_PASSWORD")
+        SENDER_PASSWORD = load_setting("TUMBO_CORE_SENDER_PASSWORD")
+        RECEIVER_PASSWORD = load_setting("TUMBO_CORE_RECEIVER_PASSWORD")
 
         # create core vhost
         CORE_SENDER_USERNAME = load_setting("CORE_SENDER_USERNAME")
@@ -65,7 +51,7 @@ class Command(BaseCommand):
 
         # heartbeat
         queues_consume = [[HEARTBEAT_QUEUE, True]]
-        HEARTBEAT_THREAD_COUNT = settings.FASTAPP_HEARTBEAT_LISTENER_THREADCOUNT
+        HEARTBEAT_THREAD_COUNT = settings.TUMBO_HEARTBEAT_LISTENER_THREADCOUNT
         for c in range(0, HEARTBEAT_THREAD_COUNT):
             name = "HeartbeatThread-%s" % c
 
@@ -79,7 +65,7 @@ class Command(BaseCommand):
         update_status_thread.start()
 
         # async response thread
-        ASYNC_THREAD_COUNT = settings.FASTAPP_ASYNC_LISTENER_THREADCOUNT
+        ASYNC_THREAD_COUNT = settings.TUMBO_ASYNC_LISTENER_THREADCOUNT
         async_queue_name = load_setting("ASYNC_RESPONSE_QUEUE")
         queues_consume_async = [[async_queue_name, True]]
         for c in range(0, ASYNC_THREAD_COUNT):
@@ -94,7 +80,7 @@ class Command(BaseCommand):
         async_status_thread.start()
 
         # log receiver
-        LOG_THREAD_COUNT = settings.FASTAPP_LOG_LISTENER_THREADCOUNT
+        LOG_THREAD_COUNT = settings.TUMBO_LOG_LISTENER_THREADCOUNT
         log_queue_name = load_setting("LOGS_QUEUE")
         queues_consume_log = [[log_queue_name, True]]
         log_threads = []

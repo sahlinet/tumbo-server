@@ -22,11 +22,11 @@ can create or update the base on the same or on other platform.
 ## Static Files
 
 Place static files in a folder `static` on the Dropbox base directory. When a static file is
-accessed by a client, the file is read from your Dropbox and then cached on Tumbo for {{ FASTAPP_STATIC_CACHE_SECONDS }} seconds.
+accessed by a client, the file is read from your Dropbox and then cached on Tumbo for {{ TUMBO_STATIC_CACHE_SECONDS }} seconds.
 
 {% verbatim %}
-Static files can be accessed over `https://tumbo.example.com/fastapp/EXAMPLE_BASE/static/FILE`. The
-URL until the word *static* is available as variable in HTML files as {{ FASTAPP_STATIC_URL }}.
+Static files can be accessed over `https://tumbo.example.com/userland/USERNAME/EXAMPLE_BASE/static/FILE`. The
+URL until the word *static* is available as variable in HTML files as {{ TUMBO_STATIC_URL }}.
 {% endverbatim %}
 
 * * *
@@ -133,7 +133,7 @@ This configuration setting is for security reasons not exported. A base must be 
 
 #### Curl
 
-     curl -L -v "https://tumbo.example.com/fastapp/base/hello-world/exec/echo/?json=&shared_key=f241fcab-0323-42b5-ac17-94bfefd5df72"
+     curl -L -v "https://tumbo.example.com/userland/admin/base/hello-world/exec/echo/?json=&shared_key=f241fcab-0323-42b5-ac17-94bfefd5df72"
      {
 	   "status": "OK",
 	   "exception": null,
@@ -147,7 +147,7 @@ This configuration setting is for security reasons not exported. A base must be 
 
 If the Exec raises an Exception the response status is `NOK`.
 
-     curl -L -v "https://tumbo.example.com/fastapp/base/hello-world/exec/echo/?json=&shared_key=f241fcab-0323-42b5-ac17-94bfefd5df72"
+     curl -L -v "https://tumbo.example.com/userland/base/hello-world/exec/echo/?json=&shared_key=f241fcab-0323-42b5-ac17-94bfefd5df72"
 	 {
        "status": "NOK",
        "exception": "Exception",

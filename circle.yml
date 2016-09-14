@@ -26,26 +26,26 @@ test:
     - sudo pip install Pygments==2.1.3
     - sudo pip install tabulate==0.7.5
     #
-    - sed -i 's|/var/run/docker.sock|/run/docker.sock|g' docker-compose-app-docker_socket_exec.yml
-    - cat docker-compose-app-docker_socket_exec.yml
-    - egrep sock docker-compose-app-docker_socket_exec.yml
+    - sed -i 's|/var/run/docker.sock|/run/docker.sock|g' compose-files/docker-compose-app-docker_socket_exec.yml
+    - cat compose-files/docker-compose-app-docker_socket_exec.yml
+    - egrep sock compose-files/docker-compose-app-docker_socket_exec.yml
     #
     - sudo chmod 777 /run/docker.sock
     #
     - python cli/tumbo.py server docker pull
     - python cli/tumbo.py server docker build
+    # Tests
+    - docker run -e CIRCLECI=True -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test core --settings=tumbo.dev
+    - docker run -e CIRCLECI=True -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test aaa --settings=tumbo.dev
     - python cli/tumbo.py server docker run:
         background: true
         timeout: 360
     - sleep 240
     - docker images
-    - docker ps
     - docker ps -a
     - docker inspect tumboserver_app_1
     - curl --retry 10 --retry-delay 5 -v $(python cli/tumbo.py server docker url)
     - pkill python
-    # Tests
-    - docker run -e CIRCLECI=True -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py test core --settings=tumbo.dev
     #
     #- sudo pip install codecov==2.0.5
     #- codecov -t $CODECOV_KEY
@@ -54,8 +54,6 @@ test:
     - git config --global user.email "philip@sahli.net"
     - git config --global user.name "Philip Sahli"
     - git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
-    #
-    #- "PORT=$(docker-compose -f docker-compose-app-spawnproc.yml port lb 80|awk -F: '{print $2}'); curl --retry 10 --retry-delay 5 -v http://localhost:$PORT"
 deployment:
   release:
     branch: master
@@ -80,8 +78,9 @@ deployment:
     commands:
       # publish develop tag
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - docker tag tumboserver_app philipsahli/tumbo-server:$CIRCLE_BRANCH
-      - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_BRANCH
+      - docker images
+      - docker tag -f tumboserver_app philipsahli/tumbo-server:$CIRCLE_BRANCH
+      - docker tag -f philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_BRANCH
       - docker images
       - docker push philipsahli/tumbo-server:$CIRCLE_BRANCH
       - docker push philipsahli/tumbo-worker:$CIRCLE_BRANCH

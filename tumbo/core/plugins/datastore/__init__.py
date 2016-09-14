@@ -255,19 +255,19 @@ class DataStorePlugin(Plugin):
         settings.TEMPLATE_DIRS = settings.TEMPLATE_DIRS + (template_path,)
 
     def config(self, base):
-        plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.datastore']
+        plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.datastore']
         plugin_settings['USER'] = base.name.replace("-", "_")
         plugin_settings['PASSWORD'] = base.executor.password
         return plugin_settings
 
     def on_start_base(self, base):
-        plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.datastore']
+        plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.datastore']
         store = PsqlDataStore(schema=base.name, password=base.executor.password,
                               keep=False, **plugin_settings)
         return store.init_store()
 
     def cockpit_context(self):
-        plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.datastore']
+        plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.datastore']
         SCHEMAS = "SELECT schema_name FROM information_schema.schemata;"
         TABLESPACES = """SELECT array_to_json(array_agg(row_to_json(t))) FROM (
                 SELECT *, pg_tablespace_size(spcname) FROM pg_tablespace

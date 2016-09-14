@@ -1,7 +1,0 @@
-{{ plugin }}
-<h3>Message</h3>
-   <p>{{ plugin.cockpit_context.message }}</p>
-<h3>Logs</h3>
-{% for line in plugin.cockpit_context.logs %}
-   <p>{{ line }}</p>
-{% endfor %}

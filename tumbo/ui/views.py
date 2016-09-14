@@ -18,7 +18,7 @@ def context(**extra):
         # 'plus_scope': ' '.join(GooglePlusAuth.DEFAULT_SCOPE),
         'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS),
         'PLANET_VERSION': TUMBO_VERSION,
-        'FASTAPP_STATIC_CACHE_SECONDS': settings.FASTAPP_STATIC_CACHE_SECONDS
+        'TUMBO_STATIC_CACHE_SECONDS': settings.TUMBO_STATIC_CACHE_SECONDS
     }, **extra)
 
 

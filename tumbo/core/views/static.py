@@ -5,27 +5,22 @@ import logging
 import json
 import dropbox
 
+from dropbox.rest import ErrorResponse
+
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
-
 from django.views.generic import View
-
 from django.http import HttpResponseNotFound, HttpResponse, HttpResponseServerError, HttpResponseNotModified
-
 from django.conf import settings
-from dropbox.rest import ErrorResponse
 from django.core.cache import cache
-from django.template import Context, Template, RequestContext
+from django.template import Template, RequestContext
 
 from core.utils import totimestamp, fromtimestamp
-
 from core.queue import generate_vhost_configuration
 from core.models import Base
-
 from core.executors.remote import get_static
 from core.plugins.datastore import PsqlDataStore
-
 from core.views import ResponseUnavailableViewMixing
 
 
@@ -68,7 +63,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             try:
                 logger.info("%s: not in cache" % static_path)
 
-                REPOSITORIES_PATH = getattr(settings, "FASTAPP_REPOSITORIES_PATH", None)
+                REPOSITORIES_PATH = getattr(settings, "TUMBO_REPOSITORIES_PATH", None)
                 if "runserver" in sys.argv and REPOSITORIES_PATH:
                     # for debugging with local runserver not loading from repository or dropbox directory
                     # but from local filesystem
@@ -82,7 +77,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                         logger.warning(e)
                     if not file:
                         try:
-                            DEV_STORAGE_DROPBOX_PATH = getattr(settings, "FASTAPP_DEV_STORAGE_DROPBOX_PATH")
+                            DEV_STORAGE_DROPBOX_PATH = getattr(settings, "TUMBO_DEV_STORAGE_DROPBOX_PATH")
                             filepath = os.path.join(DEV_STORAGE_DROPBOX_PATH, static_path)
                             file = open(filepath, 'r')
                             size = os.path.getsize(filepath)
@@ -90,7 +85,6 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                             last_modified = datetime.fromtimestamp(os.stat(filepath).st_mtime)
                         except IOError, e:
                             logger.warning(e)
-                            #warn(channel, static_path + " not found in %s" (filepath))
                             return HttpResponseNotFound(static_path + " not found")
                 else:
                     # try to load from installed module in worker
@@ -141,7 +135,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                          cache.set(cache_key, {
                                'f': file,
                                'lm': totimestamp(last_modified)
-                               }, int(settings.FASTAPP_STATIC_CACHE_SECONDS))
+                               }, int(settings.TUMBO_STATIC_CACHE_SECONDS))
             except (ErrorResponse, IOError), e:
                 logger.exception(e)
                 logger.warning("%s: not found" % static_path)
@@ -229,11 +223,11 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
     def _setup_context(self, request, base_model):
         data = dict((s.key, s.value) for s in base_model.setting.all())
 
-        data['FASTAPP_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base_model.name)
+        data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % ("userland", base_model.user.username, base_model.name)
 
         try:
             logger.debug("Setup datastore for context starting")
-            plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.datastore']
+            plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.datastore']
             data['datastore'] = PsqlDataStore(schema=base_model.name, keep=False, **plugin_settings)
             logger.debug("Setup datastore for context done")
             logger.debug("Datastore-Size: %s" % data['datastore'].count())

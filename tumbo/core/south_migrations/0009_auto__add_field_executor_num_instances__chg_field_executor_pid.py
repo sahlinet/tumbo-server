@@ -18,7 +18,6 @@ class Migration(SchemaMigration):
         db.alter_column(u'fastapp_executor', 'pid', self.gf('django.db.models.fields.CharField')(max_length=10, null=True))
 
         for base in orm.Base.objects.all():
-            #import pdb; pdb.set_trace()
             #try:
             #    print base.executor
             #    base.executor

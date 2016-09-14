@@ -7,13 +7,14 @@ import logging
 import sys
 import traceback
 import base64
+
 from bunch import Bunch
 
 from django.conf import settings
 
 from core.queue import connect_to_queuemanager, CommunicationThread
 from core.queue import connect_to_queue
-from core.utils import load_setting, profileit, read_jwt
+from core.utils import load_setting, read_jwt
 from core.plugins import PluginRegistry
 from core import responses
 
@@ -187,7 +188,7 @@ def call_rpc_client(apy, vhost, username, password, async=False):
         executor = ExecutorClient(
             vhost,
             load_setting("CORE_RECEIVER_USERNAME"),
-            load_setting("FASTAPP_CORE_RECEIVER_PASSWORD"),
+            load_setting("TUMBO_CORE_RECEIVER_PASSWORD"),
             async=async
             )
 
@@ -291,7 +292,7 @@ class ExecutorServerThread(CommunicationThread):
                                 self.host,
                                 load_setting("CORE_VHOST"),
                                 load_setting("CORE_SENDER_USERNAME"),
-                                load_setting("FASTAPP_CORE_SENDER_PASSWORD"),
+                                load_setting("TUMBO_CORE_SENDER_PASSWORD"),
                                 self.port
                                 )
                         channel = connection.channel()
@@ -345,7 +346,7 @@ def log_to_queue(tid, level, msg):
     port = settings.RABBITMQ_PORT
     vhost = load_setting("CORE_VHOST")
     username = load_setting("CORE_SENDER_USERNAME")
-    password = load_setting("FASTAPP_CORE_SENDER_PASSWORD")
+    password = load_setting("TUMBO_CORE_SENDER_PASSWORD")
     log_queue_name = load_setting("LOGS_QUEUE")
 
     channel = connect_to_queue(host, log_queue_name, vhost,
@@ -385,7 +386,6 @@ def error(tid, msg):
     log_to_queue(tid, logging.ERROR, msg)
 
 
-#@profileit
 def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfig={}):
         exception = None
         exception_message = None
@@ -400,13 +400,7 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
 
         response_class = None
 
-        try:
-            token, payload = read_jwt(request['token'])
-        except Exception, e:
-            logger.error(e)
-            raise e
 
-        del request['token']
 
         # worker does not know apy
         if model['fields']['name'] not in functions:
@@ -417,10 +411,12 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
         else:
             func = functions[model['fields']['name']]
             logger.debug("do %s" % request)
-            identity = payload
 
             logger.debug("START DO")
             try:
+
+                token, payload = read_jwt(request['token'], os.environ.get('secret'))
+                del request['token']
 
                 func.identity = payload
                 func.request = request
@@ -473,7 +469,7 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
 
                 # execution
                 returned = func(func)
-		logger.info("Returned is of type: %s" % type(returned))
+                logger.info("Returned is of type: %s" % type(returned))
                 if isinstance(returned, responses.Response):
                     # serialize
                     response_class = returned.__class__.__name__
@@ -644,8 +640,7 @@ class StaticServerThread(CommunicationThread):
                                         delivery_mode=1,
                                         ),
                                      body=json.dumps(response_data))
-                    #logger.info("message published: %s" % str(publish_result))
-                    #logger.info("ack message")
+                    logger.debug("message published: %s" % str(publish_result))
                     ch.basic_ack(delivery_tag=method.delivery_tag)
                     logger.debug("Static-Request %s response in %s (%s)" % (body['path'], self.name, rc))
         except Exception, e:

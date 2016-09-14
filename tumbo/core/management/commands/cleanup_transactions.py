@@ -9,11 +9,12 @@ from core.models import Transaction, LogEntry
 
 logger = logging.getLogger("core.executors.remote")
 
+
 class Command(BaseCommand):
     help = 'Cleanup old transactions and logs'
 
     def handle(self, *args, **options):
-        older_than = datetime.datetime.now()-datetime.timedelta(hours=settings.FASTAPP_CLEANUP_OLDER_THAN_N_HOURS)
+        older_than = datetime.datetime.now()-datetime.timedelta(hours=settings.TUMBO_CLEANUP_OLDER_THAN_N_HOURS)
         older_than_aware = older_than.replace(tzinfo=pytz.UTC)
         transactions = Transaction.objects.filter(created__lte=older_than_aware)
 

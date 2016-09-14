@@ -1,20 +1,21 @@
-import datetime, time
+import datetime
+import time
 import logging
 import dropbox
 import json
 import StringIO
 import hashlib
-import pika
 import os
 import re
+
 from jose import jws
+from dropbox.rest import ErrorResponse
+
 from django.contrib import messages
 from django.conf import settings
-from dropbox.rest import ErrorResponse
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth import get_user_model
 
-from core.queue import connect_to_queue
 from core import defaults
 
 import sys
@@ -148,86 +149,6 @@ def sign(data):
     m.update(data)
     m.update(settings.SECRET_KEY)
     return "%s-%s" % (data, m.hexdigest()[:10])
-
-
-def channel_name_for_user(request):
-    if request.user.is_authenticated():
-        channel_name = "%s-%s" % (request.user.username, sign(request.user.username))
-    else:
-        #channel_name = "anon-%s" % sign(request.session.session_key)
-        # TODO: find a way to identify anonymous user
-        #     problem on initial
-        channel_name = "anon-%s" % sign(request.META['REMOTE_ADDR'])
-    logger.debug("channel_name: %s" % channel_name)
-    return channel_name
-
-
-def channel_name_for_user_by_user(user):
-    channel_name = "%s-%s" % (user.username, sign(user.username))
-    logger.debug("channel_name: %s" % channel_name)
-    return channel_name
-
-
-def send_client(channel_name, event, data):
-    return
-    logger.debug("START EVENT_TO_QUEUE %s"   % event)
-
-    host = settings.RABBITMQ_HOST
-    port = int(settings.RABBITMQ_PORT)
-    user = getattr(settings, "RABBITMQ_ADMIN_USER", "guest")
-    password = getattr(settings, "RABBITMQ_ADMIN_PASSWORD", "guest")
-
-    #channel = pusher
-    channel = connect_to_queue(host, 'pusher_events', "/", username=user, password=password, port=port)
-    payload = {
-        'channel': channel_name,
-        'event': event,
-        'data': data,
-    }
-
-    channel.basic_publish(exchange='',
-                          routing_key='pusher_events',
-                          body=json.dumps(payload),
-                          properties=pika.BasicProperties(
-                            delivery_mode=1,
-                         ),
-                        )
-    logger.debug("END EVENT_TO_QUEUE %s" % event)
-    channel.close()
-    channel.connection.close()
-    del channel.connection
-    del channel
-
-def user_message(level, channel_name, message):
-
-    #channel = username
-    # TODO: strip message to max 10KB
-    # http://pusher.com/docs/server_api_guide/server_publishing_events
-
-    #p = get_pusher()
-
-    now = datetime.datetime.now()
-    if level == logging.INFO:
-        class_level = "info"
-    elif level == logging.DEBUG:
-        class_level = "debug"
-    elif level == logging.WARNING:
-        class_level = "warn"
-    elif level == logging.ERROR:
-        class_level = "error"
-    #logger.log(level, "to pusher: "+message)
-    data = {'datetime': str(now), 'message': str(message), 'class': class_level}
-    send_client(channel_name, "console_msg", data)
-
-
-def info(username, gmessage):
-        return user_message(logging.INFO, username, gmessage)
-def debug(username, gmessage):
-        return user_message(logging.DEBUG, username, gmessage)
-def error(username, gmessage):
-        return user_message(logging.ERROR, username, gmessage)
-def warn(username, gmessage):
-        return user_message(logging.WARN, username, gmessage)
 
 
 def check_code(code, name):
@@ -372,25 +293,32 @@ def fromtimestamp(t):
     logger.info("fromtimestamp: %s" % t)
     return datetime.datetime.fromtimestamp(t)
 
-def create_jwt(request): 
+def create_jwt(user, secret): 
+    logger.info("Create JWT with secret %s" % secret)
     """ the above token need to be saved in database, and a one-to-one relation should exist with the username/user_pk """ 
     #username = request.POST['username'] 
     #password = request.POST['password'] 
 
     expiry = datetime.datetime.now() + datetime.timedelta(seconds=30) 
     expiry_s = time.mktime(expiry.timetuple())
-    if request.user.is_authenticated():
-        print "AAAA"
-        token = jws.sign({'username': request.user.username, 'expiry':expiry_s, 'type': "AuthenticatedUser", 'internalid': request.user.authprofile.internalid}, 'seKre8', algorithm='HS256') 
+    if user.is_authenticated():
+        internalid = user.authprofile.internalid
+        payload = {'username': user.username, 'expiry':expiry_s, 'type': "AuthenticatedUser", 'internalid': internalid, 'email': user.email}
+        token = jws.sign(payload, secret, algorithm='HS256') 
     else:
-        print "BBBB"
-        token = jws.sign({'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': 0}, 'seKre8', algorithm='HS256') 
+        payload = {'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': None, 'email': None}
+        token = jws.sign(payload, secret, algorithm='HS256') 
+    logger.info("Payload: %s" % payload)
+    #logger.info("Token: %s" % token)
     return token
 
-def read_jwt(payload):
-    decoded_dict = json.loads(jws.verify(payload, 'seKre8', algorithms=['HS256']))
-    print decoded_dict
-    print type(decoded_dict)
+def read_jwt(payload, secret):
+    logger.info("Read JWT with secret %s" % secret)
+    logger.info("Payload: %s" % payload)
+    decoded_dict = json.loads(jws.verify(payload, secret, algorithms=['HS256']))
+    logger.info("Identity: %s" % decoded_dict)
+    #print decoded_dict
+    #print type(decoded_dict)
     username = decoded_dict.get('username', None) 
     expiry = decoded_dict.get('expiry', None) 
 
