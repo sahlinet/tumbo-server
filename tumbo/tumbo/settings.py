@@ -309,8 +309,6 @@ if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
         'social.apps.django_app.context_processors.login_redirect',
     )
 
-    SOCIAL_AUTH_GITHUB_KEY = '367fc54a95e4953e6ee9'
-    SOCIAL_AUTH_GITHUB_SECRET = '35949713f8ef99eb4a1183c67474440df5907335'
     LOGIN_REDIRECT_URL = '/core/profile/'
 
     SOCIAL_AUTH_PIPELINE = (
@@ -327,6 +325,10 @@ if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
         'social.pipeline.user.user_details',
         'aaa.cas.pipeline.create_ticket',
     )
+
+    SOCIAL_AUTH_GITHUB_KEY = os.environ.get('SOCIAL_AUTH_GITHUB_KEY', None)
+    SOCIAL_AUTH_GITHUB_SECRET = os.environ.get('SOCIAL_AUTH_GITHUB_SECRET', None)
+
 
 SESSION_COOKIE_PATH = reverse_lazy('root')
 CSRF_COOKIE_PATH="/core/"

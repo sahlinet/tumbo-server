@@ -45,6 +45,8 @@ Dropbox is used for storing users data, beside on server-side database.
 
 [python-social-auth](https://github.com/omab/python-social-auth) is used to enable login with social accounts.
 
+psa is loaded, when `TUMBO_SOCIAL_AUTH` is set to `true`.
+
 #### Github OAuth2
 
     SOCIAL_AUTH_GITHUB_KEY
@@ -59,7 +61,10 @@ In fact all of the backend supported by psa should work, but they are not enable
 
 Tumbo is using following settings. Tumbo is shipped as a Django project, the settings are read from environment variables:
 
+### Worker
     TUMBO_WORKER_IMPLEMENTATION
+
+### General
 
     TUMBO_WORKER_THREADCOUNT
     TUMBO_PUBLISH_INTERVAL
@@ -74,8 +79,18 @@ Tumbo is using following settings. Tumbo is shipped as a Django project, the set
     TUMBO_DOCKER_CPU_SHARES
     TUMBO_DOCKER_IMAGE
 
+
+### Development
+
+Used in development mode to load functions and static files from a checked out git repository:
+
     TUMBO_REPOSITORY_PATH
+
+Used in development mode to load functions and static files from Dropbox App:
+
     TUMBO_DEV_STORAGE_DROPBOX_PATH
+
+### Transaction cleanup
 
     TUMBO_CLEANUP_OLDER_THAN_N_HOURS
     TUMBO_CLEANUP_INTERVAL_MINUTES
