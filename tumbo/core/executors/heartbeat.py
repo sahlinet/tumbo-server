@@ -19,7 +19,6 @@ from django.db import DatabaseError, transaction
 from core.executors.remote import distribute
 from core.models import Base, Instance, Process, Thread, Apy, Setting
 from core.queue import CommunicationThread
-from core.views import DjendExecView
 
 from core.plugins import call_plugin_func
 from core import __VERSION__
@@ -287,6 +286,7 @@ class HeartbeatThread(CommunicationThread):
                     request = request_factory.get(url, data={'base': base_obj.name, 'id': init.id})
                     request.user = get_user_model().objects.get(username='admin')
 
+                    from core.views import DjendExecView
                     view = DjendExecView()
                     response = view.get(request, base=base_obj.name, id=init.id)
                     logger.info("Init method called for base %s, response_code: %s" % (base_obj.name, response.status_code))
