@@ -11,6 +11,8 @@
 See [https://tumbo.io](https://tumbo.io)
 See [https://sahli.net/page/tumbo-io](https://sahli.net/page/tumbo-io)
 
+Current version: 0.2.0
+
 ## Run Tumbo
 
 ### On Linux (Development)
