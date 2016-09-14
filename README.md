@@ -62,15 +62,19 @@ In fact all of the backend supported by psa should work, but they are not enable
 Tumbo is using following settings. Tumbo is shipped as a Django project, the settings are read from environment variables:
 
 ### Worker
+
     TUMBO_WORKER_IMPLEMENTATION
 
 ### General
 
-    TUMBO_WORKER_THREADCOUNT
     TUMBO_PUBLISH_INTERVAL
+
     TUMBO_CORE_SENDER_PASSWORD
     TUMBO_CORE_RECEIVER_PASSWORD
+
     TUMBO_STATIC_CACHE_SECONDS
+
+    TUMBO_WORKER_THREADCOUNT
     TUMBO_HEARTBEAT_LISTENER_THREADCOUNT
     TUMBO_ASYNC_LISTENER_THREADCOUNT
     TUMBO_LOG_LISTENER_THREADCOUNT
