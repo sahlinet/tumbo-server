@@ -55,7 +55,7 @@ test:
     - git config --global user.name "Philip Sahli"
     - git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
 deployment:
-  release:
+  master:
     branch: master
     commands:
       # publish master tag
@@ -65,6 +65,18 @@ deployment:
       - docker images
       - docker push philipsahli/tumbo-server:master
       - docker push philipsahli/tumbo-worker:master
+  release:
+    tag: /v[0-9]+(\.[0-9]+)*/
+    owner: sahlinet
+    commands:
+      # publish master tag
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker tag tumboserver_app philipsahli/tumbo-server:$CIRCLE_TAG
+      - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_TAG
+      - docker images
+      - docker push philipsahli/tumbo-server:$CIRCLE_TAG
+      - docker push philipsahli/tumbo-worker:$CIRCLE_TAG
+
   trunk:
     branch: develop
     commands:
