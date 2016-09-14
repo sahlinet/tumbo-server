@@ -56,15 +56,26 @@ test:
     - git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
 deployment:
   release:
-    branch: master
+    #branch: master
+    #commands:
+    #  # publish master tag
+    #  - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+    #  - docker tag tumboserver_app philipsahli/tumbo-server:master
+    #  - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:master
+    #  - docker images
+    #  - docker push philipsahli/tumbo-server:master
+    #  - docker push philipsahli/tumbo-worker:master
+    tag: /v[0-9]+(\.[0-9]+)*/
+    owner: sahlinet
     commands:
       # publish master tag
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - docker tag tumboserver_app philipsahli/tumbo-server:master
-      - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:master
+      - docker tag tumboserver_app philipsahli/tumbo-server:CIRCLE_TAG
+      - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:CIRCLE_TAG
       - docker images
-      - docker push philipsahli/tumbo-server:master
-      - docker push philipsahli/tumbo-worker:master
+      - docker push philipsahli/tumbo-server:$CIRCLE_TAG
+      - docker push philipsahli/tumbo-worker:$CIRCLE_TAG
+
   trunk:
     branch: develop
     commands:
