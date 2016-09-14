@@ -337,12 +337,12 @@ class DjendSharedView(View, ContextMixin):
         # context
         context['VERSION'] = version
         context['shared_bases'] = request.session['shared_bases']
-        context['FASTAPP_EXECS'] = base_model.apys.all().order_by('name')
+        context['TUMBO_EXECS'] = base_model.apys.all().order_by('name')
         context['LAST_EXEC'] = request.GET.get('done')
         context['active_base'] = base_model
         context['username'] = request.user.username
-        context['FASTAPP_NAME'] = base_model.name
-        context['FASTAPP_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base_model.name)
+        context['TUMBO_NAME'] = base_model.name
+        context['TUMBO_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base_model.name)
 
         rs = base_model.template(context)
         return HttpResponse(rs)
@@ -524,7 +524,7 @@ class DjendBaseView(TemplateView, ContextMixin):
 
                 # execs
                 try:
-                    context['FASTAPP_EXECS'] = base_model.apys.all().order_by('name')
+                    context['TUMBO_EXECS'] = base_model.apys.all().order_by('name')
                 except ErrorResponse, e:
                     messages.warning(request, "No app.json found", extra_tags="alert-warning")
                     logging.debug(e)
@@ -532,10 +532,10 @@ class DjendBaseView(TemplateView, ContextMixin):
             # context
             try:
                 context['bases'] = Base.objects.filter(user=request.user.id).order_by('name')
-                context['FASTAPP_NAME'] = base
+                context['TUMBO_NAME'] = base
                 #context['DROPBOX_REDIRECT_URL'] = settings.DROPBOX_REDIRECT_URL
                 #context['PUSHER_KEY'] = settings.PUSHER_KEY
-                context['FASTAPP_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base)
+                context['TUMBO_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base)
                 context['active_base'] = base_model
                 context['username'] = request.user.username
                 context['LAST_EXEC'] = request.GET.get('done')

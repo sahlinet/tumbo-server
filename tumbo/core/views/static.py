@@ -63,7 +63,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             try:
                 logger.info("%s: not in cache" % static_path)
 
-                REPOSITORIES_PATH = getattr(settings, "FASTAPP_REPOSITORIES_PATH", None)
+                REPOSITORIES_PATH = getattr(settings, "TUMBO_REPOSITORIES_PATH", None)
                 if "runserver" in sys.argv and REPOSITORIES_PATH:
                     # for debugging with local runserver not loading from repository or dropbox directory
                     # but from local filesystem
@@ -77,7 +77,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                         logger.warning(e)
                     if not file:
                         try:
-                            DEV_STORAGE_DROPBOX_PATH = getattr(settings, "FASTAPP_DEV_STORAGE_DROPBOX_PATH")
+                            DEV_STORAGE_DROPBOX_PATH = getattr(settings, "TUMBO_DEV_STORAGE_DROPBOX_PATH")
                             filepath = os.path.join(DEV_STORAGE_DROPBOX_PATH, static_path)
                             file = open(filepath, 'r')
                             size = os.path.getsize(filepath)
@@ -135,7 +135,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                          cache.set(cache_key, {
                                'f': file,
                                'lm': totimestamp(last_modified)
-                               }, int(settings.FASTAPP_STATIC_CACHE_SECONDS))
+                               }, int(settings.TUMBO_STATIC_CACHE_SECONDS))
             except (ErrorResponse, IOError), e:
                 logger.exception(e)
                 logger.warning("%s: not found" % static_path)
@@ -223,11 +223,11 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
     def _setup_context(self, request, base_model):
         data = dict((s.key, s.value) for s in base_model.setting.all())
 
-        data['FASTAPP_STATIC_URL'] = "/%s/%s/%s/static/" % ("userland", base_model.user.username, base_model.name)
+        data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % ("userland", base_model.user.username, base_model.name)
 
         try:
             logger.debug("Setup datastore for context starting")
-            plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.datastore']
+            plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.datastore']
             data['datastore'] = PsqlDataStore(schema=base_model.name, keep=False, **plugin_settings)
             logger.debug("Setup datastore for context done")
             logger.debug("Datastore-Size: %s" % data['datastore'].count())

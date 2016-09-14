@@ -309,5 +309,5 @@ class HeartbeatThread(CommunicationThread):
     def schedule_next_message(self):
         #logger.info('Next beat in %0.1f seconds',
                     #self.PUBLISH_INTERVAL)
-        self._connection.add_timeout(settings.FASTAPP_PUBLISH_INTERVAL,
+        self._connection.add_timeout(settings.TUMBO_PUBLISH_INTERVAL,
                                      self.send_message)

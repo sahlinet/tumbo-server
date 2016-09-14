@@ -235,24 +235,24 @@ LOGIN_URL = "/"
 # Client
 #
 # How many worker threads are started
-FASTAPP_WORKER_THREADCOUNT = 5
+TUMBO_WORKER_THREADCOUNT = 5
 # How often the worker sends a heartbeat message
-FASTAPP_PUBLISH_INTERVAL = 6
+TUMBO_PUBLISH_INTERVAL = 6
 
 # Server
 #
 # How many heartbeat listener threads are started
-FASTAPP_HEARTBEAT_LISTENER_THREADCOUNT = 2
+TUMBO_HEARTBEAT_LISTENER_THREADCOUNT = 2
 # How many asynchronous response threads are started
-FASTAPP_ASYNC_LISTENER_THREADCOUNT = 5
+TUMBO_ASYNC_LISTENER_THREADCOUNT = 5
 # How many log listener threads are started
-FASTAPP_LOG_LISTENER_THREADCOUNT = 5
+TUMBO_LOG_LISTENER_THREADCOUNT = 5
 # Cleanup
-FASTAPP_CLEANUP_INTERVAL_MINUTES = 60
-FASTAPP_CLEANUP_OLDER_THAN_N_HOURS = 48
-FASTAPP_STATIC_CACHE_SECONDS = 60
+TUMBO_CLEANUP_INTERVAL_MINUTES = 60
+TUMBO_CLEANUP_OLDER_THAN_N_HOURS = 48
+TUMBO_STATIC_CACHE_SECONDS = 60
 
-FASTAPP_DOCKER_IMAGE = "philipsahli/tumbo-worker:develop"
+TUMBO_DOCKER_IMAGE = "philipsahli/tumbo-worker:develop"
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",

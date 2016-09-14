@@ -13,10 +13,10 @@ can create or update the base on the same or on other platform.</p>
 <hr>
 <h2>Static Files</h2>
 <p>Place static files in a folder <code>static</code> on the Dropbox base directory. When a static file is
-accessed by a client, the file is read from your Dropbox and then cached on Tumbo for {{ FASTAPP_STATIC_CACHE_SECONDS }} seconds.</p>
+accessed by a client, the file is read from your Dropbox and then cached on Tumbo for {{ TUMBO_STATIC_CACHE_SECONDS }} seconds.</p>
 <p>{% verbatim %}
 Static files can be accessed over <code>https://tumbo.example.com/fastapp/EXAMPLE_BASE/static/FILE</code>. The
-URL until the word <em>static</em> is available as variable in HTML files as {{ FASTAPP_STATIC_URL }}.
+URL until the word <em>static</em> is available as variable in HTML files as {{ TUMBO_STATIC_URL }}.
 {% endverbatim %}</p>
 <hr>
 <h2>Exec</h2>

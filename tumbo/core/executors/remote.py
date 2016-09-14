@@ -188,7 +188,7 @@ def call_rpc_client(apy, vhost, username, password, async=False):
         executor = ExecutorClient(
             vhost,
             load_setting("CORE_RECEIVER_USERNAME"),
-            load_setting("FASTAPP_CORE_RECEIVER_PASSWORD"),
+            load_setting("TUMBO_CORE_RECEIVER_PASSWORD"),
             async=async
             )
 
@@ -292,7 +292,7 @@ class ExecutorServerThread(CommunicationThread):
                                 self.host,
                                 load_setting("CORE_VHOST"),
                                 load_setting("CORE_SENDER_USERNAME"),
-                                load_setting("FASTAPP_CORE_SENDER_PASSWORD"),
+                                load_setting("TUMBO_CORE_SENDER_PASSWORD"),
                                 self.port
                                 )
                         channel = connection.channel()
@@ -346,7 +346,7 @@ def log_to_queue(tid, level, msg):
     port = settings.RABBITMQ_PORT
     vhost = load_setting("CORE_VHOST")
     username = load_setting("CORE_SENDER_USERNAME")
-    password = load_setting("FASTAPP_CORE_SENDER_PASSWORD")
+    password = load_setting("TUMBO_CORE_SENDER_PASSWORD")
     log_queue_name = load_setting("LOGS_QUEUE")
 
     channel = connect_to_queue(host, log_queue_name, vhost,

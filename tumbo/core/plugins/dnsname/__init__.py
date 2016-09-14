@@ -60,7 +60,7 @@ class DNSNamePlugin(Plugin):
 		settings.TEMPLATE_DIRS = settings.TEMPLATE_DIRS + (template_path,)
 
 	def cockpit_context(self):
-		plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.dnsname']
+		plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.dnsname']
 		token = plugin_settings['token']
 		domain = plugin_settings['zone']
 		return {'DIGITALOCEAN_ZONE': domain}
@@ -68,7 +68,7 @@ class DNSNamePlugin(Plugin):
 	def on_start_base(self, base, **kwargs):
 		logger.info(str(self.__class__.name) + " " + inspect.stack()[0][3])
 
-		plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.dnsname']
+		plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.dnsname']
 		token = plugin_settings['token']
 		domain = plugin_settings['zone']
 		dns = DigitaloceanDns(token, domain)
@@ -85,7 +85,7 @@ class DNSNamePlugin(Plugin):
 	def on_destroy_base(self, base):
 		logger.info(str(self.__class__.name) + " " + inspect.stack()[0][3])
 
-		plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.dnsname']
+		plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.dnsname']
 		token = plugin_settings['token']
 		domain = plugin_settings['zone']
 		dns = DigitaloceanDns(token, domain)
@@ -109,21 +109,21 @@ class DNSNamePlugin(Plugin):
 
 		k = "SERVICE_DNS"
 		v =  self._make_dns_name(executor.base, 0)
-		plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.dnsname']
+		plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.dnsname']
 		domain = plugin_settings['zone']
 		v = v + "." + domain
 		context[k] = v
 
 		k = "SERVICE_DNS_V4"
 		v =  self._make_dns_name(executor.base, 0)+"-v4"
-		plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.dnsname']
+		plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.dnsname']
 		domain = plugin_settings['zone']
 		v = v + "." + domain
 		context[k] = v
 
 		k = "SERVICE_DNS_V6"
 		v =  self._make_dns_name(executor.base, 0)+"-v6"
-		plugin_settings = settings.FASTAPP_PLUGINS_CONFIG['core.plugins.dnsname']
+		plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.dnsname']
 		domain = plugin_settings['zone']
 		v = v + "." + domain
 		context[k] = v

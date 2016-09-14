@@ -33,7 +33,7 @@ DATABASES['default']['HOST'] = get_var('DB_HOST')
 DATABASES['default']['PORT'] = get_var('DB_PORT')
 
 # 'postgresql://scott:tiger@localhost:5432/mydatabase'
-FASTAPP_SCHEDULE_JOBSTORE = 'postgresql://%s:%s@%s:%s/%s' % (
+TUMBO_SCHEDULE_JOBSTORE = 'postgresql://%s:%s@%s:%s/%s' % (
         get_var('JOBSTOREDB_USER'),
         get_var('JOBSTOREDB_PASS'),
         get_var('JOBSTOREDB_HOST'),
@@ -71,10 +71,10 @@ DROPBOX_CONSUMER_KEY = get_var('DROPBOX_CONSUMER_KEY')
 DROPBOX_CONSUMER_SECRET = get_var('DROPBOX_CONSUMER_SECRET')
 DROPBOX_REDIRECT_URL = get_var('DROPBOX_REDIRECT_URL')
 
-FASTAPP_WORKER_IMPLEMENTATION = get_var('FASTAPP_WORKER_IMPLEMENTATION')
-FASTAPP_DOCKER_IMAGE = get_var('FASTAPP_DOCKER_IMAGE')
+TUMBO_WORKER_IMPLEMENTATION = get_var('TUMBO_WORKER_IMPLEMENTATION')
+TUMBO_DOCKER_IMAGE = get_var('TUMBO_DOCKER_IMAGE')
 
-if "rancher" in FASTAPP_WORKER_IMPLEMENTATION.lower():
+if "rancher" in TUMBO_WORKER_IMPLEMENTATION.lower():
     RANCHER_ACCESS_KEY = get_var('RANCHER_ACCESS_KEY')
     RANCHER_ACCESS_SECRET = get_var('RANCHER_ACCESS_SECRET')
     RANCHER_ENVIRONMENT_ID = get_var('RANCHER_ENVIRONMENT_ID')
@@ -82,8 +82,8 @@ if "rancher" in FASTAPP_WORKER_IMPLEMENTATION.lower():
 
 DOCKER_TLS_URL = get_var('DOCKER_TLS_URL', False)
 
-FASTAPP_CORE_SENDER_PASSWORD = "h8h9h0h1h2h3"
-FASTAPP_CORE_RECEIVER_PASSWORD = "h8h9h0h1h2h3"
+TUMBO_CORE_SENDER_PASSWORD = "h8h9h0h1h2h3"
+TUMBO_CORE_RECEIVER_PASSWORD = "h8h9h0h1h2h3"
 
 
 WORKER_RABBITMQ_HOST = os.environ.get('WORKER_RABBITMQ_HOST', None)
@@ -104,12 +104,12 @@ else:
     STORE_DB_PORT = int(os.environ['STORE_PORT_5432_TCP_PORT'])
 
 # Client
-FASTAPP_WORKER_THREADCOUNT = 30               # How many worker threads are started
-FASTAPP_PUBLISH_INTERVAL = 4                  # How often the worker sends a heartbeat message
+TUMBO_WORKER_THREADCOUNT = 30               # How many worker threads are started
+TUMBO_PUBLISH_INTERVAL = 4                  # How often the worker sends a heartbeat message
 
-FASTAPP_HEARTBEAT_LISTENER_THREADCOUNT = 8   # How many heartbeat listener threads are started
-FASTAPP_ASYNC_LISTENER_THREADCOUNT = 4        # How many asynchronous response threads are started
-FASTAPP_LOG_LISTENER_THREADCOUNT = 4          # How many log listener threads are started
+TUMBO_HEARTBEAT_LISTENER_THREADCOUNT = 8   # How many heartbeat listener threads are started
+TUMBO_ASYNC_LISTENER_THREADCOUNT = 4        # How many asynchronous response threads are started
+TUMBO_LOG_LISTENER_THREADCOUNT = 4          # How many log listener threads are started
 
 # opbeat
 OPBEAT = {
@@ -151,7 +151,7 @@ if PAPERTAIL_ID:
     LOGGING['loggers']['core.utils']['handlers'].append('papertail')
 
 ## Plugins
-FASTAPP_PLUGINS_CONFIG = {
+TUMBO_PLUGINS_CONFIG = {
         'core.plugins.stats': {},
         'core.plugins.rabbitmq': {},
         'core.plugins.datastore': {
@@ -165,7 +165,7 @@ FASTAPP_PLUGINS_CONFIG = {
 }
 
 if os.environ.get('DIGITALOCEAN_CONFIG', None):
-    FASTAPP_PLUGINS_CONFIG.update(
+    TUMBO_PLUGINS_CONFIG.update(
         {
                 'core.plugins.dnsname': {
                     'provider': "DigitalOcean",

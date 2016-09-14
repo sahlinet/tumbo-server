@@ -42,8 +42,8 @@ class ServerConfigViewSet(views.APIView):
     def get(self, *args, **kwargs):
         data = {'QUEUE_HOST_ADDR': settings.WORKER_RABBITMQ_HOST,
                 'QUEUE_HOST_PORT': settings.WORKER_RABBITMQ_PORT,
-                'FASTAPP_WORKER_THREADCOUNT': settings.FASTAPP_WORKER_THREADCOUNT,
-                'FASTAPP_PUBLISH_INTERVAL': settings.FASTAPP_PUBLISH_INTERVAL
+                'TUMBO_WORKER_THREADCOUNT': settings.TUMBO_WORKER_THREADCOUNT,
+                'TUMBO_PUBLISH_INTERVAL': settings.TUMBO_PUBLISH_INTERVAL
         }
         return Response(data)
 

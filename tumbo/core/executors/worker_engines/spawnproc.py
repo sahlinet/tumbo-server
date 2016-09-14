@@ -28,9 +28,9 @@ class SpawnExecutor(BaseExecutor):
             env.update(default_env)
             env.update(os.environ.copy())
             env['EXECUTOR'] = "Spawn"
-            env['FASTAPP_CORE_SENDER_PASSWORD'] = load_setting("FASTAPP_CORE_SENDER_PASSWORD")
-            env['FASTAPP_WORKER_THREADCOUNT'] = str(load_setting("FASTAPP_WORKER_THREADCOUNT"))
-            env['FASTAPP_PUBLISH_INTERVAL'] = str(load_setting("FASTAPP_PUBLISH_INTERVAL"))
+            env['TUMBO_CORE_SENDER_PASSWORD'] = load_setting("TUMBO_CORE_SENDER_PASSWORD")
+            env['TUMBO_WORKER_THREADCOUNT'] = str(load_setting("TUMBO_WORKER_THREADCOUNT"))
+            env['TUMBO_PUBLISH_INTERVAL'] = str(load_setting("TUMBO_PUBLISH_INTERVAL"))
             env['RABBITMQ_HOST'] = str(load_setting("WORKER_RABBITMQ_HOST"))
             env['RABBITMQ_PORT'] = str(load_setting("WORKER_RABBITMQ_PORT"))
             python_paths = ""

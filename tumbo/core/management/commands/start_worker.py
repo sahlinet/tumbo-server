@@ -54,12 +54,12 @@ class Command(BaseCommand):
         host = getattr(settings, "RABBITMQ_HOST", "localhost")
         port = getattr(settings, "RABBITMQ_PORT", 5672)
 
-        SENDER_PASSWORD = load_setting("FASTAPP_CORE_SENDER_PASSWORD")
+        SENDER_PASSWORD = load_setting("TUMBO_CORE_SENDER_PASSWORD")
 
-        logger.info("FASTAPP_WORKER_THREADCOUNT: %s" % load_setting("FASTAPP_WORKER_THREADCOUNT"))
-        logger.info("FASTAPP_PUBLISH_INTERVAL: %s" % load_setting("FASTAPP_PUBLISH_INTERVAL"))
+        logger.info("TUMBO_WORKER_THREADCOUNT: %s" % load_setting("TUMBO_WORKER_THREADCOUNT"))
+        logger.info("TUMBO_PUBLISH_INTERVAL: %s" % load_setting("TUMBO_PUBLISH_INTERVAL"))
 
-        for c in range(0, settings.FASTAPP_WORKER_THREADCOUNT):
+        for c in range(0, settings.TUMBO_WORKER_THREADCOUNT):
             # start threads
             from core.executors.remote import CONFIGURATION_QUEUE, RPC_QUEUE
             name = "ExecutorSrvThread-%s-%s" % (c, base)
@@ -72,7 +72,7 @@ class Command(BaseCommand):
             thread.daemon = True
             thread.start()
 
-        for c in range(0, settings.FASTAPP_WORKER_THREADCOUNT):
+        for c in range(0, settings.TUMBO_WORKER_THREADCOUNT):
             # start threads
             from core.executors.remote import STATIC_QUEUE
             name = "StaticServerThread-%s-%s" % (c, base)
@@ -101,7 +101,7 @@ class Command(BaseCommand):
 
         for t in threads:
             try:
-                logger.info("%s Thread started" % settings.FASTAPP_WORKER_THREADCOUNT)
+                logger.info("%s Thread started" % settings.TUMBO_WORKER_THREADCOUNT)
                 t.join(1000)
             except KeyboardInterrupt:
                 print "Ctrl-c received."

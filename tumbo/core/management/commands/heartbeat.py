@@ -32,8 +32,8 @@ class Command(BaseCommand):
         host = load_setting("RABBITMQ_HOST")
         port = int(load_setting("RABBITMQ_PORT"))
 
-        SENDER_PASSWORD = load_setting("FASTAPP_CORE_SENDER_PASSWORD")
-        RECEIVER_PASSWORD = load_setting("FASTAPP_CORE_RECEIVER_PASSWORD")
+        SENDER_PASSWORD = load_setting("TUMBO_CORE_SENDER_PASSWORD")
+        RECEIVER_PASSWORD = load_setting("TUMBO_CORE_RECEIVER_PASSWORD")
 
         # create core vhost
         CORE_SENDER_USERNAME = load_setting("CORE_SENDER_USERNAME")
@@ -51,7 +51,7 @@ class Command(BaseCommand):
 
         # heartbeat
         queues_consume = [[HEARTBEAT_QUEUE, True]]
-        HEARTBEAT_THREAD_COUNT = settings.FASTAPP_HEARTBEAT_LISTENER_THREADCOUNT
+        HEARTBEAT_THREAD_COUNT = settings.TUMBO_HEARTBEAT_LISTENER_THREADCOUNT
         for c in range(0, HEARTBEAT_THREAD_COUNT):
             name = "HeartbeatThread-%s" % c
 
@@ -65,7 +65,7 @@ class Command(BaseCommand):
         update_status_thread.start()
 
         # async response thread
-        ASYNC_THREAD_COUNT = settings.FASTAPP_ASYNC_LISTENER_THREADCOUNT
+        ASYNC_THREAD_COUNT = settings.TUMBO_ASYNC_LISTENER_THREADCOUNT
         async_queue_name = load_setting("ASYNC_RESPONSE_QUEUE")
         queues_consume_async = [[async_queue_name, True]]
         for c in range(0, ASYNC_THREAD_COUNT):
@@ -80,7 +80,7 @@ class Command(BaseCommand):
         async_status_thread.start()
 
         # log receiver
-        LOG_THREAD_COUNT = settings.FASTAPP_LOG_LISTENER_THREADCOUNT
+        LOG_THREAD_COUNT = settings.TUMBO_LOG_LISTENER_THREADCOUNT
         log_queue_name = load_setting("LOGS_QUEUE")
         queues_consume_log = [[log_queue_name, True]]
         log_threads = []

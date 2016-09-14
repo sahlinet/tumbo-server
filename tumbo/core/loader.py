@@ -83,7 +83,7 @@ class DropboxAppFolderLoader(FastappBaseLoader):
 class DevLocalRepositoryPathLoader(FastappBaseLoader):
 
   def get_file(self, template_name, short_name, base_model):
-        REPOSITORIES_PATH = getattr(settings, "FASTAPP_REPOSITORIES_PATH", None)
+        REPOSITORIES_PATH = getattr(settings, "TUMBO_REPOSITORIES_PATH", None)
         if REPOSITORIES_PATH:
             logger.debug("in DevLocalRepositoryPathLoader")
             try:

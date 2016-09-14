@@ -49,7 +49,7 @@ def update_job(apy, scheduler):
 def start_scheduler():
 
     jobstores = {
-        'default': SQLAlchemyJobStore(url=settings.FASTAPP_SCHEDULE_JOBSTORE)
+        'default': SQLAlchemyJobStore(url=settings.TUMBO_SCHEDULE_JOBSTORE)
     }
 
     executors1 = {
@@ -64,8 +64,8 @@ def start_scheduler():
     scheduler = BackgroundScheduler(executors=executors1, jobstores=jobstores, job_defaults=job_defaults, timezone=utc)
 
     # Cleanup
-    if hasattr(settings, "FASTAPP_CLEANUP_INTERVAL_MINUTES"):
-        job_id = scheduler.add_job(call_command, 'interval', minutes=int(settings.FASTAPP_CLEANUP_INTERVAL_MINUTES), args=["cleanup_transactions"])
+    if hasattr(settings, "TUMBO_CLEANUP_INTERVAL_MINUTES"):
+        job_id = scheduler.add_job(call_command, 'interval', minutes=int(settings.TUMBO_CLEANUP_INTERVAL_MINUTES), args=["cleanup_transactions"])
         logger.info(job_id)
 
     time.sleep(1)

@@ -560,7 +560,7 @@ class Executor(models.Model):
 
     @property
     def implementation(self):
-        s_exec = getattr(settings, 'FASTAPP_WORKER_IMPLEMENTATION',
+        s_exec = getattr(settings, 'TUMBO_WORKER_IMPLEMENTATION',
                                    'core.executors.worker_engines.spawnproc.SpawnExecutor')
         regex = re.compile("(.*)\.(.*)")
         r = regex.search(s_exec)

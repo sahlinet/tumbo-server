@@ -26,14 +26,14 @@ Add fastapp to your urls.py
 ### Threads
 
     # Server
-    FASTAPP_HEARTBEAT_LISTENER_THREADCOUNT = 10       # How many heartbeat listener threads are started
-    FASTAPP_ASYNC_LISTENER_THREADCOUNT = 2              # How many asynchronous response threads are started
-    FASTAPP_LOG_LISTENER_THREADCOUNT = 2              # How many log listener threads are started
-    FASTAPP_CONSOLE_SENDER_THREADCOUNT = 2            # How many console threads are started
+    TUMBO_HEARTBEAT_LISTENER_THREADCOUNT = 10       # How many heartbeat listener threads are started
+    TUMBO_ASYNC_LISTENER_THREADCOUNT = 2              # How many asynchronous response threads are started
+    TUMBO_LOG_LISTENER_THREADCOUNT = 2              # How many log listener threads are started
+    TUMBO_CONSOLE_SENDER_THREADCOUNT = 2            # How many console threads are started
 
     # Client
-    FASTAPP_WORKER_THREADCOUNT = 30                   # How many worker threads are started
-    FASTAPP_PUBLISH_INTERVAL = 5                      # How often the worker sends a heartbeat message
+    TUMBO_WORKER_THREADCOUNT = 30                   # How many worker threads are started
+    TUMBO_PUBLISH_INTERVAL = 5                      # How often the worker sends a heartbeat message
 
 ### Worker
 
@@ -41,12 +41,12 @@ todo
 
 ### Cleanup
 
-    FASTAPP_CLEANUP_OLDER_THAN_N_HOURS                # Cleanup transactions and logs
-    FASTAPP_CLEANUP_INTERVAL_MINUTES                    # Cleanup interval
+    TUMBO_CLEANUP_OLDER_THAN_N_HOURS                # Cleanup transactions and logs
+    TUMBO_CLEANUP_INTERVAL_MINUTES                    # Cleanup interval
 
 ### Static Files
 
-    FASTAPP_STATIC_CACHE_SECONDS                            # How many seconds a static file got cached
+    TUMBO_STATIC_CACHE_SECONDS                            # How many seconds a static file got cached
 
 
 #### Spawn Process
@@ -59,7 +59,7 @@ Workers are spawned from server process.
 
 >  !!!!
 
-    FASTAPP_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.spawnproc.SpawnExecutor"
+    TUMBO_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.spawnproc.SpawnExecutor"
 
 or
 
@@ -67,11 +67,11 @@ or
 
 Workers are started in a Docker container, Docker environment must be set. Thus `kwargs_from_env()` from docker-py must work. Tested with boot2docker.
 
-    FASTAPP_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.docker.DockerExecutor"
-    FASTAPP_DOCKER_MEM_LIMIT = "128m"
-    FASTAPP_DOCKER_CPU_SHARES = 512
+    TUMBO_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.docker.DockerExecutor"
+    TUMBO_DOCKER_MEM_LIMIT = "128m"
+    TUMBO_DOCKER_CPU_SHARES = 512
 
-    FASTAPP_DOCKER_IMAGE = "tutum.co/philipsahli/skyblue-planet-worker:develop"
+    TUMBO_DOCKER_IMAGE = "tutum.co/philipsahli/skyblue-planet-worker:develop"
 
 or
 
@@ -80,11 +80,11 @@ or
 
 The server process has access to the docker.sock file. Either because the server is running on the docker host or the socket file is added as volume to the server container with `-v /var/run/docker.sock:/var/run/docker.sock`
 
-    FASTAPP_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.docker.DockerSocketExecutor"
-    FASTAPP_DOCKER_MEM_LIMIT = "128m"
-    FASTAPP_DOCKER_CPU_SHARES = 512
+    TUMBO_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.docker.DockerSocketExecutor"
+    TUMBO_DOCKER_MEM_LIMIT = "128m"
+    TUMBO_DOCKER_CPU_SHARES = 512
 
-    FASTAPP_DOCKER_IMAGE = "tutum.co/philipsahli/skyblue-planet-lite-worker:develop"
+    TUMBO_DOCKER_IMAGE = "tutum.co/philipsahli/skyblue-planet-lite-worker:develop"
 
 or
 
@@ -92,13 +92,13 @@ or
 
 Workers are started in a Docker container.
 
-    FASTAPP_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.docker.RemoteDockerExecutor"
-    FASTAPP_DOCKER_MEM_LIMIT = "128m"
-    FASTAPP_DOCKER_CPU_SHARES = 512
+    TUMBO_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.docker.RemoteDockerExecutor"
+    TUMBO_DOCKER_MEM_LIMIT = "128m"
+    TUMBO_DOCKER_CPU_SHARES = 512
 
 Docker image to use:
 
-    FASTAPP_DOCKER_IMAGE = "philipsahli/skyblue-planet-lite-worker:develop"
+    TUMBO_DOCKER_IMAGE = "philipsahli/skyblue-planet-lite-worker:develop"
 
 Point to the docker instance and the stuff for TLS authentication.
 
@@ -136,7 +136,7 @@ or
 
 #### Rancher
 
-    FASTAPP_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.rancher.RancherApiExecutor"
+    TUMBO_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.rancher.RancherApiExecutor"
     RANCHER_ACCESS_KEY="asdfasdf"
     RANCHER_ACCESS_SECRET="asdfasdf"
     RANCHER_ENVIRONMENT_ID="xnx"
@@ -173,8 +173,8 @@ For asynchronous communication RabbitMQ is used. The admin user is used to creat
 
 Following credentials are used for heartbeating between workers and server.
 
-    FASTAPP_CORE_SENDER_PASSWORD = "asdf"
-    FASTAPP_CORE_RECEIVER_PASSWORD = "asdf"
+    TUMBO_CORE_SENDER_PASSWORD = "asdf"
+    TUMBO_CORE_RECEIVER_PASSWORD = "asdf"
 
 Specify on the server the setting `WORKER_RABBITMQ_HOST` and `WORKER_RABBITMQ_PORT` on how the worker can connect to RabbitMQ.
 
@@ -189,8 +189,8 @@ Create a Dropbox App and enter the key and secret.
 
 Development only (runserver) for loading static files, root path used for loading static files:
 
-    FASTAPP_REPOSITORIES_PATH = "/Users/fatrix/Dropbox/Repositories"
-    FASTAPP_DEV_STORAGE_DROPBOX_PATH="/Users/fatrix/Dropbox/Apps/planet dev"
+    TUMBO_REPOSITORIES_PATH = "/Users/fatrix/Dropbox/Repositories"
+    TUMBO_DEV_STORAGE_DROPBOX_PATH="/Users/fatrix/Dropbox/Apps/planet dev"
 
 
 # Running
@@ -206,7 +206,7 @@ Development only (runserver) for loading static files, root path used for loadin
 ## Datastore
 
 
-    FASTAPP_PLUGINS_CONFIG = {
+    TUMBO_PLUGINS_CONFIG = {
         'fastapp.plugins.datastore': {
             'ENGINE': "django.db.backends.postgresql_psycopg2",
             'HOST': "localhost",
@@ -219,7 +219,7 @@ Development only (runserver) for loading static files, root path used for loadin
 
 ## DNSName
 
-    FASTAPP_PLUGINS_CONFIG = {
+    TUMBO_PLUGINS_CONFIG = {
         'fastapp.plugins.dnsname': {
             'provider': "DigitalOcean",
             'token': os.environ['DIGITALOCEAN_CONFIG'],

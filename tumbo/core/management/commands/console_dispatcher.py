@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        THREAD_COUNT = settings.FASTAPP_CONSOLE_SENDER_THREADCOUNT
+        THREAD_COUNT = settings.TUMBO_CONSOLE_SENDER_THREADCOUNT
         threads = []
 
 

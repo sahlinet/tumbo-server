@@ -22,11 +22,11 @@ can create or update the base on the same or on other platform.
 ## Static Files
 
 Place static files in a folder `static` on the Dropbox base directory. When a static file is
-accessed by a client, the file is read from your Dropbox and then cached on Tumbo for {{ FASTAPP_STATIC_CACHE_SECONDS }} seconds.
+accessed by a client, the file is read from your Dropbox and then cached on Tumbo for {{ TUMBO_STATIC_CACHE_SECONDS }} seconds.
 
 {% verbatim %}
 Static files can be accessed over `https://tumbo.example.com/userland/USERNAME/EXAMPLE_BASE/static/FILE`. The
-URL until the word *static* is available as variable in HTML files as {{ FASTAPP_STATIC_URL }}.
+URL until the word *static* is available as variable in HTML files as {{ TUMBO_STATIC_URL }}.
 {% endverbatim %}
 
 * * *

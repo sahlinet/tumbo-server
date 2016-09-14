@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 MEM_LIMIT = "96m"
 #CPU_SHARES = 512
 
-DOCKER_IMAGE = getattr(settings, 'FASTAPP_DOCKER_IMAGE',
+DOCKER_IMAGE = getattr(settings, 'TUMBO_DOCKER_IMAGE',
                             'philipsahli/tumbo-worker:develop')
 
 
@@ -55,9 +55,9 @@ class DockerExecutor(BaseExecutor):
             env.update({
                     'RABBITMQ_HOST': settings.WORKER_RABBITMQ_HOST,
                     'RABBITMQ_PORT': settings.WORKER_RABBITMQ_PORT,
-                    'FASTAPP_WORKER_THREADCOUNT': settings.FASTAPP_WORKER_THREADCOUNT,
-                    'FASTAPP_PUBLISH_INTERVAL': settings.FASTAPP_PUBLISH_INTERVAL,
-                    'FASTAPP_CORE_SENDER_PASSWORD': settings.FASTAPP_CORE_SENDER_PASSWORD,
+                    'TUMBO_WORKER_THREADCOUNT': settings.TUMBO_WORKER_THREADCOUNT,
+                    'TUMBO_PUBLISH_INTERVAL': settings.TUMBO_PUBLISH_INTERVAL,
+                    'TUMBO_CORE_SENDER_PASSWORD': settings.TUMBO_CORE_SENDER_PASSWORD,
                     'EXECUTOR': "docker",
                     'SERVICE_PORT': self.executor.port,
                     'SERVICE_IP': self.executor.ip
