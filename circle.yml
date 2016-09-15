@@ -33,11 +33,15 @@ test:
     - python cli/tumbo.py server docker pull
     - python cli/tumbo.py server docker build
     # Tests
-    - ci_env=`bash <(curl -s https://codecov.io/env)`
-    - env
-    - docker run $ci_env -e CI=true -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run --source=tumbo  /home/tumbo/code/tumbo/manage.py test core --settings=tumbo.dev; cp .coverage coverage.txt; bash <(curl -s https://codecov.io/bash)"
-    - docker run $ci_env -e CI=true -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run --source=tumbo  /home/tumbo/code/tumbo/manage.py test aaa --settings=tumbo.dev; cp .coverage coverage.txt; bash <(curl -s https://codecov.io/bash)"
-    - docker run $ci_env -e CI=true -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run --source=tumbo  /home/tumbo/code/tumbo/manage.py test ui --settings=tumbo.dev; cp .coverage coverage.txt; bash <(curl -s https://codecov.io/bash)"
+    #- ci_env=`bash <(curl -s https://codecov.io/env)`
+    #- env
+    - mkdir shared
+    - chown 1000:1000 shared
+    - docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run --source=tumbo  /home/tumbo/code/tumbo/manage.py test core --settings=tumbo.dev"
+    - docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run --source=tumbo  /home/tumbo/code/tumbo/manage.py test aaa --settings=tumbo.dev"
+    - docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run --source=tumbo  /home/tumbo/code/tumbo/manage.py test ui --settings=tumbo.dev"
+    #
+    - bash <(curl -s https://codecov.io/bash)
     #
     - sh -x build-worker.sh
     #
@@ -58,8 +62,6 @@ test:
     - git config --global user.email "philip@sahli.net"
     - git config --global user.name "Philip Sahli"
     - git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
-  post:
-    - bash <(curl -s https://codecov.io/bash)
 deployment:
   master:
     branch: master
