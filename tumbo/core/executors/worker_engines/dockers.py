@@ -4,7 +4,7 @@ import logging
 from docker import Client
 from docker.tls import TLSConfig
 from docker.utils import kwargs_from_env
-from docker.errors import APIError
+from docker import errors
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -123,7 +123,11 @@ class DockerExecutor(BaseExecutor):
 
     def stop(self, id):
         logger.info("Stop container (%s)" % id)
-        self.api.kill(id)
+        try:
+            self.api.kill(id)
+        except errors.APIError, e:
+            if e.response.status_code == 404:
+                pass
         return True
 
     def destroy(self, id):
@@ -134,7 +138,6 @@ class DockerExecutor(BaseExecutor):
     def _get_container(self, id):
         if not id:
             raise ContainerNotFound()
-        from docker import errors
         logger.debug("Get container (%s)" % id)
         try:
             service = self.api.inspect_container(id)
