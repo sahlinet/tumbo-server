@@ -4,13 +4,16 @@ rp:
     - "80:80"
     - "443:443"
   environment:
-    - SERVER_NAME=codeanywhere.sahli.net
-    - PROXY_HOST=codeanywhere.sahli.net
-    - NOTIFICATION_EMAIL=philip@sahli.net
-    - VHOST_1_DOMAINS=codeanywhere.sahli.net
-    - VHOST_1_SERVERNAME=codeanywhere.sahli.net
+    - SERVER_NAME
+    - PROXY_HOST
+    - NOTIFICATION_EMAIL
+    - VHOST_1_DOMAINS
+    - VHOST_1_SERVERNAME
     - VHOST_1_SSL=True
-    - VHOST_1_PROXYCONF_all_proxy_pass=http://codeanywhere.sahli.net:8000
+    - VHOST_1_PROXYCONF_all_proxy_pass
     - VHOST_1_PROXYCONF_all_location=/
+    - VHOST_1_PROXYCONF_notify_proxy_pass
+    - VHOST_1_PROXYCONF_notify_plain=True
+    - VHOST_1_PROXYCONF_notify_location=/core/dropbox_notify/
   volumes:
     - /var/certs/codeanywhere.sahli.net:/etc/letsencrypt/
