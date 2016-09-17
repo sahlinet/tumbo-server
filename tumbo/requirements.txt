@@ -45,4 +45,4 @@ django-redis-metrics==1.4.0
 redis==2.10.5
 python-social-auth==0.2.21
 python-jose==1.1.0
-coverage==4.1
+coverage==4.2
