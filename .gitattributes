@@ -1,1 +1,7 @@
 tumbo/core/static/bower_components/* linguist-vendored
+tumbo/core/static/codemirror/* linguist-vendored
+tumbo/core/static/grid/* linguist-vendored
+tumbo/core/static/bare/* linguist-vendored
+tumbo/core/static/bootstrap/*
+tumbo/core/static/js/ndatetime-1.4.0.min.js linguist-vendored
+tumbo/core/static/js/angular-base64.min.js linguist-vendored
