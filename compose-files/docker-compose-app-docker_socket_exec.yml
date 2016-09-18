@@ -1,6 +1,6 @@
 app:
-  #build: ..
-  image: philipsahli/tumbo-server:v0.2.0
+  build: ..
+  #image: philipsahli/tumbo-server:v0.2.0
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb
@@ -39,8 +39,8 @@ app:
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
 background:
-  #build: ..
-  image: philipsahli/tumbo-server:v0.2.0
+  build: ..
+  #image: philipsahli/tumbo-server:v0.2.0
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb
