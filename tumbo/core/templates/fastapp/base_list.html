@@ -6,16 +6,12 @@
 <div class="collapse navbar-collapse navbar-ex1-collapse">
     {% if user.is_authenticated %}
     <ul class="nav navbar-nav navbar-right ">
-        {% if active_base %}
-        <li><a href=".?refresh">Refresh</a></li>
-        {% endif %}
-        <!--
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">My Bases<b class="caret"></b></a>
             <ul class="dropdown-menu">
                 {% for base in bases %}
                 <li>
-                    <a class="{% ifequal active_base base %}active{%endifequal%}" href="/core/dashboard/{{ base.name }}/index/">{{ base.name }}</a>
+                    <a class="{% ifequal active_base base %}active{%endifequal%}" href="/core/dashboard/{{ base.name }}/index/">{{base.user.username}}/{{ base.name }}</a>
                 </li>
                 {% endfor %}
                 <li>
@@ -23,7 +19,6 @@
                 </li>
             </ul>
         </li>
-        -->
     </ul>
     {% endif %} {% if not user.is_authenticated %}
     <ul class="nav navbar-nav navbar-right">
@@ -48,7 +43,7 @@
             {% verbatim %}
             <div ng-class="{'running' : one_base.state}" class="highlight bases col-md-4" ng-repeat="one_base in bases | orderBy:'name':false">
                 <h4>
-                    <a href="/core/dashboard/{{ one_base.name }}/index/">{{ one_base.name }}</a>
+                    <a href="/core/dashboard/{{ one_base.name }}/index/">{{ one_base.full_name }}</a>
                     <button type="button" class="btn btn-default btn-xs" ng-click="cycle_state(one_base)">
                         <span ng-show="one_base.state == false">Start</span>
                         <span ng-show="one_base.state == true">Stop</span>

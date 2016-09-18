@@ -2,13 +2,46 @@
 
 {% block title %}{{ block.super }} - {{ active_base.name }} {% endblock title %}
 
+{% block additional_headers %}
+<div class="collapse navbar-collapse navbar-ex1-collapse">
+    {% if user.is_authenticated %}
+    <ul class="nav navbar-nav navbar-right ">
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">My Bases<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                {% for base in bases %}
+                <li>
+                    <a class="{% ifequal active_base base %}active{%endifequal%}" href="/core/dashboard/{{ base.name }}/index/">{{ base.user.username }}/{{ base.name }}</a>
+                </li>
+                {% endfor %}
+                <li>
+
+                </li>
+            </ul>
+        </li>
+    </ul>
+    {% endif %} {% if not user.is_authenticated %}
+    <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Shared Bases<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                {% for name, shared_key in shared_bases.items %}
+                <li><a class="{% ifequal active_base base %}active{%endifequal%}" href="/fastapp/{{ name }}/index/?shared_key={{ shared_key }}">{{ name }}</a></li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+    {% endif %}
+</div>
+{% endblock %}
+
 {% block fastapp_header %} {{ block.super }} {% endblock %} {% block ngapp %} ng-app="execApp" {% endblock %} {% block main %}
 
 <!-- /.container -->
 <div class="container" ng-controller="BasesCtrl">
     <div class="row">
         <h1>
-            {{ TUMBO_NAME }} {% if user.is_authenticated %}
+            {{ active_base.user.username }}/{{ active_base.name }} {% if user.is_authenticated %}
             <button id="share" type="button" class="btn btn-default btn-xs">
                 <span class="glyphicon glyphicon-share"></span> Share</button>
 
@@ -33,12 +66,23 @@
                     </button>
                 </span>
 
+                <span ng-if="base.state">
+                    <button type="button" class="btn btn-default btn-xs" ng-click="destroy(base)">
+                        <span>Destroy</span>
+                    </button>
+                </span>
+
+
             {% endif %}
         </h1>
     </div>
 
     <div class="row">
         <div class="col-md-12" >
+            <h3>State</h3>
+            {% verbatim %}
+            Running: <p>{{ base.state }}</p>
+            {% endverbatim %}
             <h3>Runtime Information</h3>
             <p>{{ active_base.executors.0.plugins.dnsnameplugin.SERVICE_DNS }}</a></p>
             <p>Port: </p>

@@ -175,10 +175,11 @@
           };
 
           $scope.destroy = function(base) {
-              if (base.state === false) {
+              if (base.state === true) {
                   Base.destroy({
                       name: base.name
                   }, base, function(data) {
+                      base.state = false;
                       base.executors = [];
                   });
               }

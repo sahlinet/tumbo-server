@@ -83,6 +83,7 @@ class TransportEndpointSerializer(serializers.ModelSerializer):
 
 class BaseSerializer(serializers.ModelSerializer):
     apy = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    full_name = serializers.SerializerMethodField(method_name="get_full_name")
     state = serializers.Field()
     executors = serializers.Field()
     foreign_apys = serializers.HyperlinkedRelatedField(
@@ -91,10 +92,14 @@ class BaseSerializer(serializers.ModelSerializer):
         view_name='public-apy-detail'
     )
 
+    def get_full_name(self, obj):
+        return "%s/%s" % (obj.user.username, obj.name)
+
     class Meta:
         model = Base
-        fields = ('id', 'name', 'state', 'uuid',
+        fields = ('id', 'name', 'full_name', 'state', 'uuid',
                   'executors', 'content', 'foreign_apys', 'public', 'static_public',)
+
 
     def save_object(self, obj, **kwargs):
         super(BaseSerializer, self).save_object(obj, **kwargs)
