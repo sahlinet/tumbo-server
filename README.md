@@ -23,9 +23,9 @@ See [docs/tumbo-server_on_centos.md](docs/tumbo-server_on_centos.md)
 
 ### On Docker (Production)
 
-To run Tumbo for a production environment use an orchestrated Docker Platform (Rancher tested).
+To run Tumbo for a production use an Docker Orchestration Platform (Rancher tested).
 
-See [docs/deploy_rancher.md](docs/dep_rancher.md)
+See [Ranger Guide](docs/dep_rancher.md)
 
 ## External Services
 
