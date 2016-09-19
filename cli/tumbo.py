@@ -3,7 +3,7 @@
 """Tumbo
 
 Usage:
-  tumbo.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart]
+  tumbo.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage]
   tumbo.py server dev test
   tumbo.py server docker build
   tumbo.py server docker run [--stop-after=<seconds>][--worker=worker] [--ngrok-hostname=host] [--ngrok-authtoken=token]
@@ -64,6 +64,8 @@ from tabulate import tabulate
 
 docker_compose = sh.Command("docker-compose")
 python = sh.Command(sys.executable)
+
+coverage_cmd = "/home/philipsahli/virtualenvs/tumbo/bin/coverage run --timid --source=tumbo --parallel-mode "
 
 def format(s):
 	return highlight(s, JsonLexer(), Terminal256Formatter())
@@ -462,8 +464,10 @@ if __name__ == '__main__':
 
                 def stop():
                     try:
-                        os.killpg(app.pid, 9)
-                        os.killpg(background.pid, 9)
+                        os.killpg(app.pid, 2)
+                        os.killpg(background.pid, 2)
+                        if arguments['--coverage']:
+                            sh.coverage("combine")
                     except OSError:
                         pass
                     try:
@@ -510,17 +514,22 @@ if __name__ == '__main__':
                 syncdb.wait()
 
                 cmd = "tumbo/manage.py makemigrations core --settings=tumbo.dev"
+                if arguments['--coverage']:
+                    cmd = coverage_cmd + cmd
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
 
                 cmd = "tumbo/manage.py migrate --settings=tumbo.dev"
+                if arguments['--coverage']:
+                    cmd = coverage_cmd + cmd
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
 
                 cmd = "tumbo/manage.py migrate aaa --settings=tumbo.dev"
+                if arguments['--coverage']:
+                    cmd = coverage_cmd + cmd
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
-
 
                 try:
                     cmd = "tumbo/manage.py create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev"
@@ -530,13 +539,20 @@ if __name__ == '__main__':
                     print "adminuser already exists?"
 
                 cmd = "tumbo/manage.py import_base --username=admin --file example_bases/generics.zip  --name=generics --settings=tumbo.dev"
+                if arguments['--coverage']:
+                    cmd = coverage_cmd + cmd
                 generics_import = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
 
                 cmd = "tumbo/manage.py heartbeat --settings=tumbo.dev"
+                if arguments['--coverage']:
+                    cmd = coverage_cmd + cmd
                 background = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
 
-                cmd = "tumbo/manage.py runserver 0.0.0.0:8000 --settings=tumbo.dev"
-                app = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _tty_in=True, _in=sys.stdin, _bg=True)
+                cmd = "tumbo/manage.py runserver 0.0.0.0:8000 --noreload --settings=tumbo.dev"
+                if arguments['--coverage']:
+                    cmd = coverage_cmd + cmd
+
+                app = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _tty_in=True, _in=sys.stdin, _bg=True, _cwd="/home/philipsahli/workspace/tumbo-server")
 
                 if arguments['--ngrok-hostname'] and arguments['docker']:
                     if not ngrok:
