@@ -278,6 +278,17 @@ class BaseViewSet(viewsets.ModelViewSet):
         transaction.commit()
         return self.retrieve(request, name=name)
 
+    def recreate(self, request, name):
+        transaction.set_autocommit(False)
+        logger.info("recreate%s: " % name)
+        base = self.get_queryset().get(name=name)
+        base.stop()
+        base.destroy()
+        base.start()
+        transaction.commit()
+        return self.retrieve(request, name=name)
+
+
     def transport(self, request, name):
         base = self.get_queryset().get(name=name)
         transport_url = self.request.DATA['url']
