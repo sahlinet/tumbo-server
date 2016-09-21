@@ -479,8 +479,9 @@ class DjendBaseSaveView(View):
         else:
             logger.info("Save base")
             if content: base.content = content
-            if public: base.public = public
-            if static_public: base.static_public = static_public
+            import distutils
+            if public: base.public = distutils.util.strtobool(public)
+            if static_public: base.static_public = distutils.util.strtobool(static_public)
             base.save()
 
         return HttpResponse()
