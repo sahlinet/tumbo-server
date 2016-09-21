@@ -548,7 +548,7 @@ if __name__ == '__main__':
                     cmd = coverage_cmd + cmd
                 background = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
 
-                cmd = "tumbo/manage.py runserver 0.0.0.0:8000 --noreload --settings=tumbo.dev"
+                cmd = "tumbo/manage.py runserver 0.0.0.0:8000 --settings=tumbo.dev"
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
 
