@@ -17,5 +17,5 @@ urlpatterns = patterns('',
                                             cas_login(DjendStaticView.as_view()), name="userland-static"),
     url(r'^(?P<username>[\w-]+)/(?P<name>[\w-]+)/api/apy/(?P<apy_name>[\w-]+)/execute/$', ApyExecutionViewSet.as_view({'post': 'execute', 'get': 'execute'}), name='userland-apy-public-exec'),
     url(r'^(?P<username>[\w-]+)/(?P<base>[\w-]+)/login$', 'aaa.views.loginpage_userland', name='userland-cas-ticketlogin'),
-    url(r'^(?P<username>[\w-]+)/(?P<base>[\w-]+)/logout$', 'aaa.views.logout_userland', name='userland-logout'),
+    url(r'^(?P<username>[\w-]+)/(?P<base>[\w-]+)/logout/$', 'aaa.views.logout_userland', name='userland-logout'),
 )
