@@ -20,7 +20,6 @@ from ui.views import context
 def dummy(request):
     raise Exception("Dummy")
 
-
 def logout(request):
     """Logs out user"""
     auth_logout(request)
@@ -53,9 +52,7 @@ def login(request):
             return redirect('/core/dashboard/')
         else:
             # Return a 'disabled account' error message
-            #...
             return redirect('/')
     else:
         # Return an 'invalid login' error message.
-        #...
         return redirect('/')

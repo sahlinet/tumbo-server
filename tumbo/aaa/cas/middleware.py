@@ -24,8 +24,9 @@ class CasSessionMiddleware(SessionMiddleware):
         try:
             if "cookie_path" in request.session:
                 cookie_path = request.session.pop('cookie_path')
+                logger.info("Got cookie_path %s to use" % cookie_path)
         except AttributeError:
-            pass
+            logger.error("cookie_path missing")
 
         logger.info("CasSessionMiddleware: _get_cookie_path for URI %s returned SESSION_COOKIE_PATH %s" % (request.path_info, cookie_path))
 
@@ -75,8 +76,8 @@ class CasSessionMiddleware(SessionMiddleware):
                             request.session.session_key, max_age=max_age,
                             expires=expires, domain=settings.SESSION_COOKIE_DOMAIN,
                             path=self._get_cookie_path(request),
-                            #path=settings.SESSION_COOKIE_PATH,
                             secure=settings.SESSION_COOKIE_SECURE or None,
                             httponly=settings.SESSION_COOKIE_HTTPONLY or None,
                         )
+                        logger.info("Create session %s for path: %s" % (request.session.session_key, self._get_cookie_path(request)))
         return response

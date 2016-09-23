@@ -1,5 +1,8 @@
+
 import re
 import logging
+
+from urlparse import urlparse
 
 from social.backends.utils import load_backends
 
@@ -19,25 +22,38 @@ User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
-def login(request):
-    logging.info("Start login")
+def loginpage(request):
+    """
+    If a user wants to login, he opens the url named `cas-login`, which renders the cas_loginpage.html.
+    """
+
+    logging.info("Start login for accessing a base")
     if request.method == "GET":
         service = request.GET['service']
         m = re.match(r".*/userland/(?P<username>.*?)/(?P<basename>.*?)/", service)
-        username = m.group('username')
-        basename = m.group('basename')
-        Base.objects.get(name=basename, user__username=username)
+        if m:
+            # we received an URI
+            username = m.group('username')
+            basename = m.group('basename')
+            Base.objects.get(name=basename, user__username=username)
+            request.session['next'] = service
+        else:
+            # we received an host, project is proxed
+            host = urlparse(service).netloc
+            base = Base.objects.get(frontend_host=host)
+            username = base.user.username
+            basename = base.name
+            request.session['next'] = "https://%s" % host
 
         if request.user.is_authenticated:
             user = request.user
 
-        request.session['next'] = service
+        logger.info("Next: "+request.session['next'])
 
         return render(request, 'aaa/cas_loginpage.html', {'user': user, 'userland': username, 'basename': basename
                 , 'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS)})
 
     elif request.method == "POST":
-        #logger.warn(request)
         username = request.POST['username']
         password = request.POST['password']
         service = request.POST['service']
@@ -45,19 +61,20 @@ def login(request):
         if user is not None:
             if user.is_active:
                 auth_login(request, user)
-                #return redirect('/core/dashboard/')
                 ticket = Ticket.objects.create_ticket(user=user)
                 return redirect(service+"?ticket=%s" % ticket.ticket)
             else:
-                # Return a 'disabled account' error message
-                #...
                 return redirect('/disabled')
         else:
             # Return an 'invalid login' error message.
             #...
             return redirect('/')
 
+
 def verify(request):
+    """
+    Used for verifying a ticket, if successfull it returns a JWT for the user object.
+    """
     ticket_s = request.GET['ticket']
     service = request.GET['service']
 

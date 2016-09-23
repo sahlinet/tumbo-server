@@ -69,6 +69,10 @@ class Base(models.Model):
 
     foreign_apys = models.ManyToManyField("Apy", related_name="foreign_base")
 
+    frontend_host = models.CharField(max_length=40,
+                               blank=True, null=True,
+                               default=None)
+
     class Meta:
         db_table = "fastapp_base"
         unique_together = (("name", "user"),)

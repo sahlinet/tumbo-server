@@ -329,6 +329,8 @@ if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
     SOCIAL_AUTH_GITHUB_KEY = os.environ.get('SOCIAL_AUTH_GITHUB_KEY', None)
     SOCIAL_AUTH_GITHUB_SECRET = os.environ.get('SOCIAL_AUTH_GITHUB_SECRET', None)
 
+    SOCIAL_AUTH_SANITIZE_REDIRECTS = False
+
 
 SESSION_COOKIE_PATH = reverse_lazy('root')
 CSRF_COOKIE_PATH="/core/"

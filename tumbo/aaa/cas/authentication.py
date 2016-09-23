@@ -30,13 +30,22 @@ def cas_login(function):
             return function(request, *args, **kwargs)
 
         service = reverse('userland-static', args=[kwargs['username'], kwargs['base'], "index.html"])
-        url = reverse('cas-login')+"?service=%s" % service
+        proto = request.META.get('HTTP_X_FORWARDED_PROTO', 'https')
+        host = request.META.get('HTTP_X_FORWARDED_HOST', request.META.get('HTTP_HOST', None))
+        if base.frontend_host:
+            # if frontend_host is set, we do not want to present the backend uri in the service URL
+            service_full = "%s://%s" % (proto, host)
+        else:
+            service_full = "%s://%s%s" % (proto, host, service)
 
         ticket = request.GET.get("ticket", None)
-        logger.info("Using ticket from GET %s" % ticket)
+
         if ticket:
+            """ 
+            if the service is called with a ticket, verify the ticket and redirect to the service
+            """ 
             cas_ticketverify=reverse('cas-ticketverify')
-            cas_ticketverify+="?ticket=%s&service=%s" % (ticket, service)
+            cas_ticketverify+="?ticket=%s&service=%s" % (ticket, service_full)
             response = requests.get("https://codeanywhere.sahli.net"+cas_ticketverify)
             logger.info("Response from verify: "+str(response.status_code))
             logger.info("Response from verify: "+response.text)
@@ -51,11 +60,12 @@ def cas_login(function):
             auth_login(request, user)
 
             request.session['cookie_path'] = "/userland/%s/%s" % (base.user.username, base.name)
+
+            # user is logged in successfully, redirect to service URL
             return HttpResponseRedirect(service)
 
+        # User need to authenticate first on cas
+        url = reverse('cas-login')+"?service=%s" % service_full
         logger.info("Redirecting to CAS login %s" % url)
-
         return HttpResponseRedirect(url)
     return wrapper
-
-
