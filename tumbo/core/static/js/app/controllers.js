@@ -175,7 +175,7 @@
           };
 
           $scope.destroy = function(base) {
-              if (base.state === true) {
+              if (base.executors.length > 0 ) {
                   Base.destroy({
                       name: base.name
                   }, base, function(data) {
