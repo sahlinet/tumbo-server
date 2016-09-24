@@ -84,7 +84,6 @@ def verify(request):
         token = create_jwt(ticket.user, secret)
 
         ticket.user.backend = 'django.contrib.auth.backends.ModelBackend'
-        #auth_login(request, ticket.user)
     return HttpResponse(token)
 
 def logout(request):

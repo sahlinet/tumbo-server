@@ -1,6 +1,8 @@
 import logging
 import requests
 
+from urlparse import urlparse
+
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
@@ -46,9 +48,10 @@ def cas_login(function):
             """ 
             cas_ticketverify=reverse('cas-ticketverify')
             cas_ticketverify+="?ticket=%s&service=%s" % (ticket, service_full)
-            response = requests.get("https://codeanywhere.sahli.net"+cas_ticketverify)
-            logger.info("Response from verify: "+str(response.status_code))
-            logger.info("Response from verify: "+response.text)
+            host = urlparse(request.build_absolute_uri()).netloc
+            response = requests.get("https://%s%s" % (host, cas_ticketverify))
+            logger.info("Response from verify: " + str(response.status_code))
+            logger.info("Response from verify: " + response.text)
 
             # read jwt for identity
             username, decoded_dict = read_jwt(response.text, settings.SECRET_KEY)
@@ -60,6 +63,7 @@ def cas_login(function):
             auth_login(request, user)
 
             request.session['cookie_path'] = "/userland/%s/%s" % (base.user.username, base.name)
+            request.session.cycle_key()
 
             # user is logged in successfully, redirect to service URL
             return HttpResponseRedirect(service)
