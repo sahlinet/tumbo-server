@@ -18,7 +18,7 @@ from django.template import Template, RequestContext
 
 from core.utils import totimestamp, fromtimestamp
 from core.queue import generate_vhost_configuration
-from core.models import Base
+from core.models import Base, StaticFile
 from core.executors.remote import get_static
 from core.plugins.datastore import PsqlDataStore
 from core.views import ResponseUnavailableViewMixing
@@ -36,23 +36,29 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             t = Template(t)
         else:
             t = Template(t.read())
-        c = RequestContext(request, kwargs)
+        c = RequestContext(request, kwargs, processors=None)
+        if request.user.is_anonymous():
+            c['user'] = None
+        else:
+            c['user'] = {}
+            c['user']['id'] = request.user.authprofile.internalid
+            c['user']['username'] = request.user.username
+            c['user']['email'] = request.user.email
         return t.render(c)
-
 
     def get(self, request, **kwargs):
         static_path = "%s/%s/%s" % (kwargs['base'], "static", kwargs['name'])
         logger.debug("%s GET" % static_path)
 
-        base_model = Base.objects.get(name=kwargs['base'])
+        base_obj = Base.objects.get(name=kwargs['base'])
 
         last_modified = None
 
-        response = self.verify(request, base_model)
+        response = self.verify(request, base_obj)
         if response:
             return response
 
-        cache_key = "%s-%s-%s" % (base_model.user.username, base_model.name, static_path)
+        cache_key = "%s-%s-%s" % (base_obj.user.username, base_obj.name, static_path)
         cache_obj = cache.get(cache_key)
 
         file = None
@@ -71,8 +77,13 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                         filepath = os.path.join(REPOSITORIES_PATH, static_path)
                         file = open(filepath, 'r')
                         size = os.path.getsize(filepath)
-                        logger.debug("%s: load from local filesystem (repositories) (%s) (%s)" % (static_path, filepath, size))
+                        logger.info("%s: load from local filesystem (repositories) (%s) (%s)" % (static_path, filepath, size))
                         last_modified = datetime.fromtimestamp(os.stat(filepath).st_mtime)
+                        obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="FS")
+
+                        if created or obj.rev != os.stat(filepath).st_mtime:
+                            obj.rev = os.stat(filepath).st_mtime
+                            obj.save()
                     except IOError, e:
                         logger.warning(e)
                     if not file:
@@ -83,6 +94,11 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                             size = os.path.getsize(filepath)
                             logger.debug("%s: load from local filesystem (dropbox app) (%s) (%s)" % (static_path, filepath, size))
                             last_modified = datetime.fromtimestamp(os.stat(filepath).st_mtime)
+
+                            obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="FS")
+                            if created or obj.rev != os.stat(filepath).st_mtime:
+                                obj.rev = os.stat(filepath).st_mtime
+                                obj.save()
                         except IOError, e:
                             logger.warning(e)
                             return HttpResponseNotFound(static_path + " not found")
@@ -90,13 +106,13 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                     # try to load from installed module in worker
                     logger.info("%s: load from module in worker" % static_path)
                     response_data = get_static(
-                        json.dumps({"base_name": base_model.name, "path": static_path}),
+                        json.dumps({"base_name": base_obj.name, "path": static_path}),
                         generate_vhost_configuration(
-                            base_model.user.username,
-                            base_model.name
+                            base_obj.user.username,
+                            base_obj.name
                             ),
-                        base_model.name,
-                        base_model.executor.password
+                        base_obj.name,
+                        base_obj.executor.password
                         )
                     data = json.loads(response_data)
 
@@ -109,16 +125,21 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                         file = base64.b64decode(data['file'])
                         last_modified = datetime.fromtimestamp(data['LM'])
                         logger.info("%s: file received from worker with timestamp: %s" % (static_path, str(last_modified)))
+
+                        obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="MO")
+                        if obj.rev != data['LM'] or created:
+                            obj.rev = data['LM']
+                            obj.save()
                     # get from dropbox
                     elif data['status'] == "NOT_FOUND":
                         logger.info(data)
                         logger.info("%s: file not found on worker, try to load from dropbox" % static_path)
                         # get file from dropbox
-                        auth_token = base_model.user.authprofile.dropbox_access_token
+                        auth_token = base_obj.user.authprofile.dropbox_access_token
                         client = dropbox.client.DropboxClient(auth_token)
                         try:
                             # TODO: read file only when necessary
-                            dropbox_path = os.path.join(base_model.user.username, static_path)
+                            dropbox_path = os.path.join(base_obj.user.username, static_path)
                             file, metadata = client.get_file_and_metadata(dropbox_path)
                             file = file.read()
 
@@ -126,6 +147,11 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                             dropbox_frmt = "%a, %d %b %Y %H:%M:%S +0000"
                             last_modified = datetime.strptime(metadata['modified'], dropbox_frmt)
                             logger.info("%s: file loaded from dropbox (lm: %s)" % (dropbox_path, last_modified))
+
+                            obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="MO")
+                            if created or obj.rev != metadata['modified']:
+                                obj.rev = metadata['modified']
+                                obj.save()
                         except Exception, e:
                             logger.warning("File '%s'not found on dropbox" % dropbox_path)
                             raise e
@@ -172,7 +198,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             mimetype = "image/x-icon"
         elif static_path.lower().endswith('.html'):
             mimetype = "text/html"
-            context_data = self._setup_context(request, base_model)
+            context_data = self._setup_context(request, base_obj)
             file = self._render_html(request, file, **context_data)
             context_data['datastore'] = None
             context_data = None
@@ -220,17 +246,18 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
         return response
 
 
-    def _setup_context(self, request, base_model):
-        data = dict((s.key, s.value) for s in base_model.setting.all())
+    def _setup_context(self, request, base_obj):
+        data = dict((s.key, s.value) for s in base_obj.setting.all())
 
-        data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % ("userland", base_model.user.username, base_model.name)
+        data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % ("userland", base_obj.user.username, base_obj.name)
 
         try:
             logger.debug("Setup datastore for context starting")
             plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.datastore']
-            data['datastore'] = PsqlDataStore(schema=base_model.name, keep=False, **plugin_settings)
+            data['datastore'] = PsqlDataStore(schema=base_obj.name, keep=False, **plugin_settings)
             logger.debug("Setup datastore for context done")
             logger.debug("Datastore-Size: %s" % data['datastore'].count())
+            data['is_authenticated'] = request.user.is_authenticated()
         except KeyError, e:
             logger.error("Setup datastore for context failed")
         updated = request.GET.copy()
