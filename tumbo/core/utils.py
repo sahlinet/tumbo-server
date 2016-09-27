@@ -193,16 +193,12 @@ def check_code(code, name):
         logger.error("problem decoding source")
         logger.exception()
 
-    #if len(errors) > 0:
-    #    return errors
-
     r = []
     try:
         w = checker.Checker(tree, name)
         r = w.messages
         for message in w.messages:
             logger.info(str(message))
-        #    r.append(str(message).split(":"))
     except UnboundLocalError, e:
         pass
     return not (len(r) > 0 or len(errors) > 0), r, errors
