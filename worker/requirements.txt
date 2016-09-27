@@ -20,7 +20,7 @@ psutil==3.3.0
 SQLAlchemy==1.1.0b1
 jsonfield==0.9.22
 -e git+https://github.com/rpalacios/django-sequence-field.git#egg=django_sequence_field-master
-dropbox==1.6
+dropbox==6.8.0
 django-extensions==1.6.7
 pyflakes==0.8.1
 django-redis-metrics==1.4.0
