@@ -274,12 +274,14 @@ class DataStorePlugin(Plugin):
             ) t;"""
         CONNECTIONS = "SELECT * FROM pg_stat_activity;"
         CONNECTIONS_COUNT = "SELECT count(*) FROM pg_stat_activity;"
+        LOCKS = "SELECT query,state,waiting,pid FROM pg_stat_activity WHERE datname='store' AND NOT (state='idle' OR pid=pg_backend_pid());"
 
         return {
             'SCHEMAS': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(SCHEMAS, commit=False)],
             'TABLESPACES': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(TABLESPACES, commit=False)][0],
             'CONNECTIONS': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(CONNECTIONS, commit=False)],
-            'CONNECTIONS_COUNT': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(CONNECTIONS_COUNT, commit=False)]
+            'CONNECTIONS_COUNT': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(CONNECTIONS_COUNT, commit=False)],
+            'LOCKS': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(LOCKS, commit=False)]
         }
         return {}
 
