@@ -28,7 +28,8 @@ def cas_login(function):
             return function(request, *args, **kwargs)
 
         base = Base.objects.get(user__username=kwargs['username'], name=kwargs['base'])
-        if base.public or base.static_public:
+        ticket = request.GET.get("ticket", None)
+        if not ticket and (base.public or base.static_public):
             return function(request, *args, **kwargs)
 
         service = reverse('userland-static', args=[kwargs['username'], kwargs['base'], "index.html"])
@@ -36,7 +37,7 @@ def cas_login(function):
         host = request.META.get('HTTP_X_FORWARDED_HOST', request.META.get('HTTP_HOST', None))
         if base.frontend_host:
             # if frontend_host is set, we do not want to present the backend uri in the service URL
-            service_full = "%s://%s" % (proto, host)
+            service_full = "%s://%s" % (proto, base.frontend_host)
         else:
             service_full = "%s://%s%s" % (proto, host, service)
 

@@ -18,7 +18,7 @@ class CasSessionMiddleware(SessionMiddleware):
     def _get_cookie_path(self, request):
         cookie_path = None
         if "cas/" in request.path_info:
-            cookie_path = "/cas/"
+            cookie_path = "/cas"
 
         # authorization step for service saved the cookie_path in session
         try:
