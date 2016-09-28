@@ -315,6 +315,7 @@ class Env(object):
 				"In", transaction['created'], tin[:5000]
 			])
 		for log in transaction['logs']:
+			created = tolocaltime(log['created'])
 			level = int(log['level'])
 			if level == logging.DEBUG:
                 		level_s = "DEBUG"
@@ -328,14 +329,12 @@ class Env(object):
                 		level_s = "CRITICAL"
 			else:
                 		level_s = "UNKNOWN"
-			
 			table.append([
-
-				"Log (%s)" % level_s, log['created'], log['msg']
+				"Log (%s)" % level_s, created, log['msg']
 			])
 		if not logs_only:
 			table.append([
-				"Out", transaction['modified'], tout[:5000]
+				"Out", tolocaltime(transaction['modified']), tout[:5000]
 			])
         	print tabulate(table, headers=[rid, "Date", "Type"], tablefmt="simple")
 
@@ -378,6 +377,16 @@ def do_ngrok():
         port = 8000
     cmd = '-hostname=%s -authtoken=%s localhost:%s' % (ngrok_hostname, ngrok_authtoken, port)
     ngrok(cmd.split(), _out="/dev/null", _err="/dev/stderr", _bg=True)
+
+def tolocaltime(dt):
+    from datetime import datetime
+    import pytz    # $ pip install pytz
+    import tzlocal # $ pip install tzlocal
+
+    local_timezone = tzlocal.get_localzone() # get pytz tzinfo
+    utc_time = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S.%fZ")
+    local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_timezone)
+    return local_time
 
 
 if __name__ == '__main__':
@@ -504,7 +513,6 @@ if __name__ == '__main__':
                                    'DROPBOX_REDIRECT_URL': os.environ['DROPBOX_REDIRECT_URL'],
                            })
                 PROPAGATE_VARIABLES = os.environ.get("PROPAGATE_VARIABLES", None)
-                print PROPAGATE_VARIABLES
                 if PROPAGATE_VARIABLES:
                     env['PROPAGATE_VARIABLES'] = PROPAGATE_VARIABLES
 
