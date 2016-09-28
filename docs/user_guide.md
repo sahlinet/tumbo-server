@@ -22,11 +22,11 @@ can create or update the base on the same or on other platform.
 ## Static Files
 
 Place static files in a folder `static` on the Dropbox base directory. When a static file is
-accessed by a client, the file is read from your Dropbox and then cached on Tumbo for {{ TUMBO_STATIC_CACHE_SECONDS }} seconds.
+accessed, the file is read from your Dropbox and then cached on Tumbo for {{ TUMBO_STATIC_CACHE_SECONDS }} seconds.
 
 {% verbatim %}
-Static files can be accessed over `https://tumbo.example.com/userland/USERNAME/EXAMPLE_BASE/static/FILE`. The
-URL until the word *static* is available as variable in HTML files as {{ TUMBO_STATIC_URL }}.
+Static files can be accessed over `https://HOST/userland/USERNAME/EXAMPLE_BASE/static/FILE`.
+The URL until the word *static* is available as variable in HTML files as {{ TUMBO_STATIC_URL }}.
 {% endverbatim %}
 
 * * *
@@ -39,13 +39,14 @@ An Exec is function, which can be called by an HTTP Request.
 
 You can edit the Execs in the browser editor or in the Dropbox base folder.
 
-An Exec is always a function named `func`:
+An Exec is always a function named `func` with an argument:
 
     def func(self):
         return True
 
-If the Exec has changed on Dropbox, it will be refreshed on *Tumbo* automatically. This
-can take up to 30 seconds.
+The single argument, here called self, contains data about the request and has functions attached:
+
+If the Exec has changed on Dropbox, it will be refreshed on *Tumbo* automatically. This can take up to 30 seconds.
 
 ### Initialize
 
@@ -63,6 +64,11 @@ From within python code write log messages with following line:
 `self.info(self.rid, "info")`
 
 `self.debug(self.rid, "debug")`
+
+The log messages are attached to the transaction and Tumbo's *CLi* displays the log:
+
+    tumbo.py project helloworld transactions
+
 
 ### Siblings
 
@@ -108,6 +114,7 @@ In the Exec some basic data about the request is available:
 
     def func(self):
         return self.responses.RedirectResponse("http://another-url")
+
 
 ### Sharing
 
@@ -187,10 +194,21 @@ in python code in a exec as `self.settings.SETTING_KEY`.
 
 * * *
 
+## Access Control
+
+*TODO*
+
+### Core
+
+### Userland
+
+### Static
+
+### Apy's
+
 ## Service Port
 
-On every worker a service port is allocated for usage. This let's you for example to run
-a webserver or any other daemon.
+For every worker a service port is reserved. This let's you for example to run a webserver or any other daemon.
 
 ### Port
 
@@ -210,17 +228,22 @@ A host record is registered in a DNS zone in the form:
 
     USERNAME-BASENAME-INSTANCE_NUM[-V4,-V6].ZONE
 
+Examples:
+
 IPv4 (A) and IPv6 (AAAA) record:
 
     print os.environ['SERVICE_DNS']
+    johndoe-helloworld-0.ZONE
 
 IPv4 only:
 
     print os.environ['SERVICE_DNS_V4']
+    johndoe-helloworld-0-v4.ZONE
 
 IPv6 only:
 
     print os.environ['SERVICE_DNS_V6']
+    johndoe-helloworld-0-v6.ZONE
 
 * * *
 
@@ -268,6 +291,7 @@ Per value in key
     row = self.datastore.get("name", "Rolf")
     self.datastore.delete(row)
 
+
 ### Static Files
 
 You can access the data in the static files. The data is rendered on server-side.
@@ -289,6 +313,11 @@ You can access the data in the static files. The data is rendered on server-side
     </html>
 
 {% endverbatim %}
+
+For querying only data for a logged in user, use the templatetag ˋdata_for_userˋ:
+
+    {% load datastore %}
+    {% data_for_user as data %}
 
 * * *
 
