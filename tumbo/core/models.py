@@ -769,6 +769,24 @@ def base_to_storage_on_delete(sender, *args, **kwargs):
         logger.exception(e)
 
 
+class StaticFile(models.Model):
+
+    STORAGE= (
+        ("FS", 'filesystem'),
+        ("DR", 'dropbox'),
+        ("MO", 'module'),
+    )
+
+    base = models.ForeignKey(Base, related_name="staticfiles")
+    name = models.CharField(max_length=300, blank=False, null=False)
+    storage = models.CharField(max_length=2, choices=STORAGE)
+    rev = models.CharField(max_length=32, blank=True, null=True)
+    updated = models.DateTimeField(auto_now=True, auto_now_add=True)
+
+    def __str__(self):
+        return "%s://%s" % (self.get_storage_display(), self.name)
+
+
 @receiver(post_delete, sender=Apy)
 def synchronize_to_storage_on_delete(sender, *args, **kwargs):
     instance = kwargs['instance']

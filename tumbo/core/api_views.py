@@ -20,6 +20,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import link
 from rest_framework.exceptions import APIException
 
+from api_authentication import CustomSessionAuthentication
+
 from django.contrib.auth import get_user_model
 
 from core.importer import import_base
@@ -153,8 +155,12 @@ class ApyExecutionViewSet(viewsets.ModelViewSet):
     model = Apy
     serializer_class = ApySerializer
     renderer_classes = [JSONRenderer, JSONPRenderer]
-    authentication_classes = (TokenAuthentication, SessionAuthentication,)
+    #authentication_classes = (TokenAuthentication, SessionAuthentication,)
+    authentication_classes = (TokenAuthentication, CustomSessionAuthentication,)
 
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(ApyExecutionViewSet, self).dispatch(*args, **kwargs)
 
     def execute(self, request, username, name, apy_name):
         apy_obj = get_object_or_404(Apy, base__user__username=username, name=apy_name, base__name=name)

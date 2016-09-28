@@ -31,7 +31,7 @@ from dropbox.rest import ErrorResponse
 
 from core.utils import UnAuthorized, Connection, NoBasesFound, message, create_jwt
 from core.queue import generate_vhost_configuration
-from core.models import AuthProfile, Base, Apy, Setting, Executor, Process, Thread, Transaction
+from core.models import AuthProfile, Base, Apy, Setting, Executor, Process, Thread, Transaction, StaticFile
 from core.models import RUNNING, FINISHED
 from core import responses
 from core.executors.remote import call_rpc_client
@@ -644,13 +644,17 @@ def process_file(path, metadata, client, user):
         #    continue
 
         # setup recognition
-        regex = re.compile("\/(.*)\/(.*)\/.*")
+        regex = re.compile(".*?\/(.*?)\/(.*?)\/(.*)")
         r = regex.search(path)
         if not r:
             logger.warn("regex '/(.*)/(.*).py' no results in '%s'" % path)
             return
         names = r.groups()
         base_name = names[1]
+        try:
+            base_obj = Base.objects.get(name=base_name, user=user)
+        except:
+            logger.warn("Base for %s %s not found" % (user, base_name))
         appconfig_path = "%s/app.config" % base_name
         logger.info("notification for: base_name: %s, user: %s" % (base_name, user))
 
@@ -661,17 +665,16 @@ def process_file(path, metadata, client, user):
         # Handle app.config
         elif "app.config" in path:
             appconfig = get_app_config(client, path)
-            logger.info("Read app.config for base %s" % base_name)
+            logger.debug("Read app.config for base %s" % base_name)
             # base
             base_obj, created = Base.objects.get_or_create(name=base_name, user=user)
             base_obj.save()
-            logger.info("base %s created?: %s" % (base_name, created))
+            logger.debug("base %s created?: %s" % (base_name, created))
             # settings
             _handle_settings(appconfig['settings'], base_obj)
 
         # Handle index.html
         elif path is "index.html":
-            base_obj = Base.objects.get(name=base_name, user=user)
             index_html = client.get_file_content(path)
             base_obj.content = index_html
             base_obj.save()
@@ -688,7 +691,7 @@ def process_file(path, metadata, client, user):
                 if created:
                     apy.save()
                     logger.info("new apy %s created" % apy_name)
-                logger.info("apy %s already exists" % apy_name)
+                logger.debug("apy %s already exists" % apy_name)
             except Apy.DoesNotExist, e:
                 logger.warn(e.message)
                 return
@@ -699,14 +702,13 @@ def process_file(path, metadata, client, user):
                     apy.description = get_app_config(client, appconfig_path)['modules'][apy_name]['description']
                     apy.save()
             except Exception, e:
-                logger.warn("Description could not be read for %s" % apy_name)
-                logger.warn(repr(e))
+                logger.warn("Description could not be read for %s: %s" % (apy_name, repr(e)))
 
             new_rev = metadata['rev']
             logger.debug("local rev: %s, remote rev: %s" % (apy.rev, new_rev))
 
             if apy.rev == new_rev:
-                logger.info("No changes in %s" % path)
+                logger.debug("No changes in %s" % path)
             else:
                 logger.info("Load changes for %s" % path)
 
@@ -717,14 +719,24 @@ def process_file(path, metadata, client, user):
                 apy.save()
                 logger.info("Apy %s updated" % apy.name)
         else:
-            logger.warn("Path %s ignored" % path)
+            logger.warn("Handling staticfile %s" % path)
             if "static" in path:
+
+                path_orig = path
+                path = re.search('\/.*?\/(.*)', path).group(1)
+                content, rev = client.get_file_content_and_rev("%s" % path_orig)
+                obj, created = StaticFile.objects.get_or_create(base=base_obj, name=path, storage="DR")
+                if obj.rev != rev or created:
+                    obj.rev = rev
+                    obj.save()
                 try:
                     cache_path = path.lstrip("/")
                     base_obj = Base.objects.get(name=base_name, user=user)
                     cache_key = "%s-%s-%s" % (base_obj.user.username, base_obj.name, cache_path)
-                    logger.info("Delete cache entry: %s" % cache_key)
+                    logger.debug("Delete cache entry: %s" % cache_key)
                     cache.delete(cache_key)
+
+
                 except Exception, e:
                     logger.error("Problem cleaning cache for static file %s" % cache_path)
                     logger.warn("Looking for %s for user %s" % (base_name, user.username))
@@ -739,7 +751,7 @@ def process_user(uid):
     token = auth_profile.dropbox_access_token
     user = auth_profile.user
     logger.info("START process user '%s'" % user)
-    logger.info("Process change notfication for user: %s" % user.username)
+    logger.debug("Process change notfication for user: %s" % user.username)
     cursor = cache.get("cursor-%s" % uid)
 
     client = Connection(token)
@@ -752,9 +764,9 @@ def process_user(uid):
         for path, metadata in result['entries']:
             logger.info("Add task for %s to pool" % path)
             pool.add_task(process_file, path, metadata, client, user)
-        logger.info("Waiting for completion ... %s" % path)
+            logger.debug("Waiting for completion ... %s" % path)
         pool.wait_completion()
-        logger.info("Tasks completed.")
+        logger.debug("Tasks completed.")
 
         # Update cursor
         cursor = result['cursor']
@@ -772,7 +784,7 @@ class DropboxNotifyView(View):
         try:
             challenge = request.GET['challenge']
         except:
-            logger.info("DropboxNotifyView called without challenge")
+            logger.warn("DropboxNotifyView called without challenge")
             return HttpResponseNotFound("Not Found")
         return HttpResponse(challenge)
 
@@ -781,7 +793,7 @@ class DropboxNotifyView(View):
 
         # get delta for user
         for uid in json.loads(request.body)['delta']['users']:
-            logger.info("Start thread for handling delta for user '%s'" % uid)
+            logger.debug("Start thread for handling delta for user '%s'" % uid)
             thread = threading.Thread(target=process_user, args=(uid,))
             thread.daemon = True
             thread.start()

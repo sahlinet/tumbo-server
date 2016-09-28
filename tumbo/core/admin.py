@@ -1,5 +1,5 @@
 from django.contrib import admin
-from core.models import Base, Apy, Transaction, TransportEndpoint, AuthProfile, Executor, Instance, Process
+from core.models import Base, Apy, Transaction, TransportEndpoint, AuthProfile, Executor, Instance, Process, StaticFile
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -25,6 +25,10 @@ class UserAdmin(admin.ModelAdmin):
 class AuthProfileAdmin(admin.ModelAdmin):
     pass
 
+class StaticFileAdmin(admin.ModelAdmin):
+    list_display = ('name', 'base', 'storage', 'rev', 'updated')
+    list_filter = ('name', 'base', 'storage', 'rev', 'updated')
+
 class ProcessAdmin(admin.ModelAdmin):
     list_display = ('name', 'rss', 'version', 'running')
 
@@ -39,3 +43,4 @@ admin.site.register(AuthProfile, AuthProfileAdmin)
 admin.site.register(Executor, ExecutorAdmin)
 admin.site.register(Instance, InstanceAdmin)
 admin.site.register(Process, ProcessAdmin)
+admin.site.register(StaticFile, StaticFileAdmin)
