@@ -16,7 +16,7 @@ RUN mkdir $CODE_DIR && chown tumbo:tumbo code && mkdir $HOME/.virtualenvs && mkd
 
 RUN virtualenv --no-site-packages $HOME/.virtualenvs/tumbo
 
-RUN rpm -iUvh http://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-1.noarch.rpm && yum -y install postgresql93
+RUN rpm -iUvh http://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm && yum -y install postgresql93
 
 
 RUN $PIP install newrelic j2cli
