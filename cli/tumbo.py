@@ -6,7 +6,7 @@ Usage:
   tumbo.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage]
   tumbo.py server dev test
   tumbo.py server docker build
-  tumbo.py server docker run [--stop-after=<seconds>][--worker=worker] [--ngrok-hostname=host] [--ngrok-authtoken=token]
+  tumbo.py server docker run [--stop-after=<seconds>] [--ngrok-hostname=host] [--ngrok-authtoken=token]
   tumbo.py server docker stop
   tumbo.py server docker test
   tumbo.py server docker pull
@@ -29,7 +29,7 @@ Usage:
   tumbo.py project <base-name> transport <env>
   tumbo.py project <base-name> function <function-name> execute [--async] [--public]
   tumbo.py project <base-name> function <function-name> show
-  tumbo.py project <base-name> transactions [--tid=<tid>]  [--logs]
+  tumbo.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>]
   tumbo.py project <base-name> export [filename]
   tumbo.py project <base-name> import <zipfile>
   # tumbo.py project <name> settings edit
@@ -39,8 +39,7 @@ Usage:
 Options:
   -h --help         Show this screen.
   --version         Show version.
-  --worker=worker   How to start the worker, can be 'spawn', 'docker' or 'rancher'.
-
+  --cut=cut         Cut output after n character.
 """
 import sys
 import os
@@ -67,8 +66,10 @@ python = sh.Command(sys.executable)
 
 coverage_cmd = "/home/philipsahli/virtualenvs/tumbo/bin/coverage run --timid --source=tumbo --parallel-mode "
 
-def format(s):
-	return highlight(s, JsonLexer(), Terminal256Formatter())
+def format(s, l=None):
+    if l:
+        s = s[:int(l)]
+    return highlight(s, JsonLexer(), Terminal256Formatter())
 
 class EnvironmentList(object):
     @staticmethod
@@ -303,14 +304,15 @@ class Env(object):
         status_code, transactions = self._call_api("/core/api/base/%s/transactions/" % name, method="GET", data=data)
 	import pprint
 	logs_only = arguments.get('--logs', False)
+	cut = arguments.get('--cut', None)
 	for transaction in transactions:
 		rid=transaction['rid']
         	table = []
 		if not logs_only:
 			tin=pprint.pformat(transaction['tin'], indent=8)
-			tin=format(tin)
+			tin=format(tin, cut)
 			tout=pprint.pformat(transaction['tout'], indent=8)
-			tout=format(tout)
+			tout=format(tout, cut)
 			table.append([
 				"In", transaction['created'], tin[:5000]
 			])
@@ -330,11 +332,11 @@ class Env(object):
 			else:
                 		level_s = "UNKNOWN"
 			table.append([
-				"Log (%s)" % level_s, created, log['msg']
+				"Log (%s)" % level_s, created, format(log['msg'], cut)
 			])
 		if not logs_only:
 			table.append([
-				"Out", tolocaltime(transaction['modified']), tout[:5000]
+				"Out", tolocaltime(transaction['modified']), format(tout, cut)
 			])
         	print tabulate(table, headers=[rid, "Date", "Type"], tablefmt="simple")
 
