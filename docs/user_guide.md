@@ -33,7 +33,7 @@ The URL until the word *static* is available as variable in HTML files as {{ TUM
 
 ## Exec
 
-An Exec is function, which can be called by an HTTP Request.
+An Exec is function, which can be called by an HTTP Request to `https://HOST/userland/USERNAME/johndoe/helloworld/api/apy/greet`.
 
 ### Editing
 
