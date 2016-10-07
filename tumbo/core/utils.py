@@ -248,7 +248,7 @@ def call_apy(base_name, apy_name):
         request_factory = RequestFactory()
         request = request_factory.get(url, data={'json': "", 'base': apy.base.name,
                                                  'id': apy.id})
-        # TODO: fails if user admin is not created
+        # TODO: fails if user admin is not created, and must have a authprofile, knockknock
         request.user = get_user_model().objects.get(username='admin')
         request.META['HTTP_ACCEPT'] = "text/html"
 
