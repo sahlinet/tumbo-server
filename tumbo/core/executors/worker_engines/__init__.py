@@ -72,5 +72,4 @@ class BaseExecutor(object):
     def get_default_env(self):
         env = {}
         env.update({'secret': self.secret})
-        print env
         return env
