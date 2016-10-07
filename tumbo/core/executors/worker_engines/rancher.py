@@ -39,7 +39,6 @@ class RancherApiExecutor(BaseExecutor):
         else:
             logger.debug("GET to %s" % url)
             r = requests.get(url, auth=self.auth)
-        # logger.debug(r.text)
         try:
             json_response = r.json()
         except:
@@ -98,7 +97,8 @@ class RancherApiExecutor(BaseExecutor):
                 'TUMBO_CORE_SENDER_PASSWORD': settings.TUMBO_CORE_SENDER_PASSWORD,
                 'EXECUTOR': "docker",
                 'SERVICE_PORT': self.executor.port,
-                'SERVICE_IP': self.executor.ip
+                'SERVICE_IP': self.executor.ip,
+                'secret': self.secret
                 }
 
             try:
