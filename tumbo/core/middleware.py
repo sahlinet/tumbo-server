@@ -3,6 +3,8 @@ from re import compile
 from django.http import HttpResponseRedirect
 from django.conf import settings
 
+from BeautifulSoup import BeautifulSoup
+
 from core.models import Base
 
 EXEMPT_URLS = [compile(settings.LOGIN_URL.lstrip('/'))]
@@ -26,3 +28,11 @@ class LoginRequiredOrSharedkeyMiddleware:
                 return
                 assert Base.objects.get(uuid=shared_key),  "does not exist"
                 return HttpResponseRedirect(settings.LOGIN_URL)
+
+
+class PrettifyMiddleware(object):
+    """HTML code prettification middleware."""
+    def process_response(self, request, response):
+        if settings.DEBUG and response.status_code is 200 and response['Content-Type'].split(';', 1)[0] == 'text/html':
+            response.content = BeautifulSoup(response.content).prettify()
+        return response
