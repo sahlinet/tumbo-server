@@ -89,7 +89,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
 	rid = self.request.GET.get('rid', None)
 	if rid is not None:
 		return queryset.filter(rid=rid)
-	return queryset.order_by("-modified")[:10]
+	return queryset.order_by("modified")[10:]
 
 
 class ApyViewSet(viewsets.ModelViewSet):
