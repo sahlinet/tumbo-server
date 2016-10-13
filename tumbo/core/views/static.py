@@ -85,7 +85,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                             obj.rev = os.stat(filepath).st_mtime
                             obj.save()
                     except IOError, e:
-                        logger.warning(e)
+                        logger.debug(e)
                     if not file:
                         try:
                             DEV_STORAGE_DROPBOX_PATH = getattr(settings, "TUMBO_DEV_STORAGE_DROPBOX_PATH")
@@ -100,7 +100,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                                 obj.rev = os.stat(filepath).st_mtime
                                 obj.save()
                         except IOError, e:
-                            logger.warning(e)
+                            logger.debug(e)
                             return HttpResponseNotFound(static_path + " not found")
                 else:
                     # try to load from installed module in worker
@@ -153,7 +153,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                                 obj.rev = metadata['modified']
                                 obj.save()
                         except Exception, e:
-                            logger.warning("File '%s'not found on dropbox" % dropbox_path)
+                            logger.debug("File '%s'not found on dropbox" % dropbox_path)
                             raise e
                     if 'content="no-cache"' in file:
                          logger.info("Not caching because no-cache present in HTML")
@@ -164,7 +164,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                                }, int(settings.TUMBO_STATIC_CACHE_SECONDS))
             except (ErrorResponse, IOError), e:
                 logger.exception(e)
-                logger.warning("%s: not found" % static_path)
+                logger.debug("%s: not found" % static_path)
                 logger.info("%s: 404" % file)
                 return HttpResponseNotFound("Not Found: "+static_path)
         else:
