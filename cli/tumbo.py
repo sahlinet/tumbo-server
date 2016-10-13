@@ -29,7 +29,7 @@ Usage:
   tumbo.py project <base-name> transport <env>
   tumbo.py project <base-name> function <function-name> execute [--async] [--public]
   tumbo.py project <base-name> function <function-name> show
-  tumbo.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>]
+  tumbo.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>] [--nocolor]
   tumbo.py project <base-name> export [filename]
   tumbo.py project <base-name> import <zipfile>
   # tumbo.py project <name> settings edit
@@ -66,9 +66,11 @@ python = sh.Command(sys.executable)
 
 coverage_cmd = "/home/philipsahli/virtualenvs/tumbo/bin/coverage run --timid --source=tumbo --parallel-mode "
 
-def format(s, l=None):
+def format(s, l=None, nocolor=False):
     if l:
         s = s[:int(l)]
+    if nocolor:
+        return s
     return highlight(s, JsonLexer(), Terminal256Formatter())
 
 class EnvironmentList(object):
@@ -305,14 +307,15 @@ class Env(object):
 	import pprint
 	logs_only = arguments.get('--logs', False)
 	cut = arguments.get('--cut', None)
+	nocolor = arguments.get('--nocolor', False)
 	for transaction in transactions:
 		rid=transaction['rid']
         	table = []
 		if not logs_only:
 			tin=pprint.pformat(transaction['tin'], indent=8)
-			tin=format(tin, cut)
+			tin=format(tin, cut, nocolor)
 			tout=pprint.pformat(transaction['tout'], indent=8)
-			tout=format(tout, cut)
+			tout=format(tout, cut, nocolor)
 			table.append([
 				"In", transaction['created'], tin[:5000]
 			])
@@ -332,11 +335,11 @@ class Env(object):
 			else:
                 		level_s = "UNKNOWN"
 			table.append([
-				"Log (%s)" % level_s, created, format(log['msg'], cut)
+				"Log (%s)" % level_s, created, format(log['msg'], cut, nocolor)
 			])
 		if not logs_only:
 			table.append([
-				"Out", tolocaltime(transaction['modified']), format(tout, cut)
+				"Out", tolocaltime(transaction['modified']), format(tout, cut, nocolor)
 			])
         	print tabulate(table, headers=[rid, "Date", "Type"], tablefmt="simple")
 
