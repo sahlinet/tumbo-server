@@ -67,7 +67,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
 
         if not file:
             try:
-                logger.info("%s: not in cache" % static_path)
+                logger.debug("%s: not in cache" % static_path)
 
                 REPOSITORIES_PATH = getattr(settings, "TUMBO_REPOSITORIES_PATH", None)
                 if "runserver" in sys.argv and REPOSITORIES_PATH:
@@ -156,7 +156,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                             logger.debug("File '%s'not found on dropbox" % dropbox_path)
                             raise e
                     if 'content="no-cache"' in file:
-                         logger.info("Not caching because no-cache present in HTML")
+                         logger.debug("Not caching because no-cache present in HTML")
                     else:
                          cache.set(cache_key, {
                                'f': file,
@@ -168,8 +168,8 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                 logger.info("%s: 404" % file)
                 return HttpResponseNotFound("Not Found: "+static_path)
         else:
-            logger.info("%s: found in cache" % static_path)
-            logger.info("%s: last_modified in cache" % cache_obj['lm'])
+            logger.debug("%s: found in cache" % static_path)
+            logger.debug("%s: last_modified in cache" % cache_obj['lm'])
             try:
                 last_modified = fromtimestamp(cache_obj['lm'])
             except Exception, e:
@@ -218,7 +218,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
 
     def _handle_cache(self, static_path, request, mimetype, last_modified, file):
         if 'content="no-cache"' in file:
-            logger.info("Not caching because no-cache present in HTML")
+            logger.debug("Not caching because no-cache present in HTML")
             response = HttpResponse(file, content_type=mimetype)
         else:
             # handle browser caching

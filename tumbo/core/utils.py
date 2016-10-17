@@ -286,11 +286,11 @@ def totimestamp(t):
 
 
 def fromtimestamp(t):
-    logger.info("fromtimestamp: %s" % t)
+    logger.debug("fromtimestamp: %s" % t)
     return datetime.datetime.fromtimestamp(t)
 
 def create_jwt(user, secret): 
-    logger.info("Create JWT with secret %s" % secret)
+    logger.debug("Create JWT with secret %s" % secret)
     """ the above token need to be saved in database, and a one-to-one relation should exist with the username/user_pk """ 
     #username = request.POST['username'] 
     #password = request.POST['password'] 
@@ -304,13 +304,13 @@ def create_jwt(user, secret):
     else:
         payload = {'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': None, 'email': None}
         token = jws.sign(payload, secret, algorithm='HS256') 
-    logger.info("Payload: %s" % payload)
+    logger.debug("Payload: %s" % payload)
     #logger.info("Token: %s" % token)
     return token
 
 def read_jwt(payload, secret):
-    logger.info("Read JWT with secret %s" % secret)
-    logger.info("Payload: %s" % payload)
+    logger.debug("Read JWT with secret %s" % secret)
+    logger.debug("Payload: %s" % payload)
     decoded_dict = json.loads(jws.verify(payload, secret, algorithms=['HS256']))
     logger.info("Identity: %s" % decoded_dict)
     #print decoded_dict
