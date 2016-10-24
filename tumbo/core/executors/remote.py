@@ -617,7 +617,6 @@ class StaticServerThread(CommunicationThread):
                                     'LM': last_modified
                                     })
                             except Exception, e:
-                                logger.warning(e)
                                 logger.warning("Could not open file %s" % full_path)
                                 rc = "ERROR"
                             finally:
