@@ -188,6 +188,8 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             mimetype = "image/png"
         elif static_path.endswith('.woff'):
             mimetype = "application/x-font-woff"
+        elif static_path.endswith('.woff2'):
+            mimetype = "application/font-woff2"
         elif static_path.endswith('.svg'):
             mimetype = "image/svg+xml"
         elif static_path.endswith('.ttf'):
