@@ -82,3 +82,5 @@ REDIS_METRICS['PASSWORD'] = os.environ.get('CACHE_ENV_REDIS_PASS', None)
 TEMPLATE_LOADERS += (
      'core.loader.DevLocalRepositoryPathLoader',
 )
+
+SOCIAL_AUTH_USER_GROUP = "users"

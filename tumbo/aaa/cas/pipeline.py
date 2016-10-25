@@ -1,18 +1,10 @@
 import logging
 
-from django.http import HttpResponse
-from django.conf import settings
-
 from aaa.cas.models import Ticket
 
 
 logger = logging.getLogger(__name__)
 
-
-def restrict_user(backend, user, response, *args, **kwargs):
-    if hasattr(settings, "RESTRICTED_TO_USERS"):
-        if _is_member(user):
-            return HttpResponse("Not allowed to login")
 
 def create_ticket(backend, user, response, *args, **kwargs):
     """
