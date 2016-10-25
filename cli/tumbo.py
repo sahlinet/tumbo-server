@@ -396,7 +396,7 @@ def tolocaltime(dt):
 
 if __name__ == '__main__':
     # arguments = docopt(__doc__, version=version)
-    arguments = docopt(__doc__, version="0.2.3")
+    arguments = docopt(__doc__, version="0.2.4")
     #import pprint; pprint.pprint(arguments)
     if arguments['--ngrok-hostname'] and arguments['docker']:
 	    try:
