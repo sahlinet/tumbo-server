@@ -79,9 +79,7 @@ Siblings are Exec's in the same base and are available for execution on `self.si
 
 ### Request Arguments
 
-In the Exec some basic data about the request is available:
-
-* Username of authenticated user `self.user`
+In the Exec following request data is available:
 
 * HTTP Request Method `self.method`
 
@@ -92,6 +90,20 @@ In the Exec some basic data about the request is available:
 * POST parameters `self.POST`
 
 * Clients IP Address `self.REMOTE_ADDR`
+
+* Users identity
+
+The users identity call is available on `self.identiy` as dictionary:
+
+    {
+        "username": "user1",
+        "type": "AuthenticatedUser",
+        "email": "user1@example.com",
+        "internalid": "177899378"
+    }
+
+Type can be AuthenticatedUser or AnonymousUser.
+
 
 ### Responses
 
