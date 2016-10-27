@@ -401,7 +401,6 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
         response_class = None
 
 
-
         # worker does not know apy
         if model['fields']['name'] not in functions:
             status = STATE_NOT_FOUND
@@ -416,6 +415,7 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
             try:
 
                 token, payload = read_jwt(request['token'], os.environ.get('secret'))
+                del payload['expiry']
                 del request['token']
 
                 func.identity = payload
