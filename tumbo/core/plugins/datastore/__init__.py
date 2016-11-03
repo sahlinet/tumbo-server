@@ -169,9 +169,6 @@ class DataStore(object):
     def count(self):
         return self.session.query(DataObject).count()
 
-    #def filter(self, k, v):
-    #    return self.session.query(DataObject).filter(text("data->>'"+k+"' = '"+v+"';")).all()
-
     def filter(self, k, v, lock=False, nowait=True, skip_locked=False, read=False):
         if lock:
             try:
