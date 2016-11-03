@@ -25,6 +25,7 @@ def cas_login(function):
         # if logged in
         if request.user.is_authenticated():
             logger.info("user.is_authenticated with user %s" % request.user.username)
+            logger.info("user has internalid: %s" % request.user.authprofile.internalid)
             return function(request, *args, **kwargs)
 
         base = Base.objects.get(user__username=kwargs['username'], name=kwargs['base'])
