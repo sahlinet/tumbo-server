@@ -27,8 +27,9 @@ Usage:
   tumbo.py project <base-name> delete
   tumbo.py project <base-name> create
   tumbo.py project <base-name> transport <env>
-  tumbo.py project <base-name> function <function-name> execute [--async] [--public]
+  tumbo.py project <base-name> function <function-name> execute [--async] [--public] [--nocolor]
   tumbo.py project <base-name> function <function-name> show
+  tumbo.py project <base-name> function <function-name> create
   tumbo.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>] [--nocolor]
   tumbo.py project <base-name> export [filename]
   tumbo.py project <base-name> import <zipfile>
@@ -112,20 +113,21 @@ class Env(object):
             self.active_str = ""
             self.active = False
 
-    def _call_api(self, url, method="GET", data=None):
+    def _call_api(self, url, method="GET", params=None, json=None):
         try:
             r = requests.request(method, self.config_data['url']+url,
                                  #allow_redirects=False,
                                  headers={
-                                 'Authorization':
-                                 "Token %s" % self.config_data['token']
+                                    'Authorization': "Token %s" % self.config_data['token']
                                  },
-				 params=data
+                                 params=params,
+                                 json=json
                                  )
             response = r.json() if 'Content-Type' in r.headers and "json" in r.headers['Content-Type'] else r.text
-	    r.raise_for_status()
-	except requests.exceptions.HTTPError as e:
+            r.raise_for_status()
+        except requests.exceptions.HTTPError as e:
             print "Error (%s)" % e.message
+            print response
             sys.exit(1)
         except requests.exceptions.ConnectionError:
             print "Could not connect to %s" % self.config_data['url']
@@ -251,7 +253,6 @@ class Env(object):
         status_code, projects = self._call_api("/core/base/%s/delete/" % name, method="POST")
 
     def project_show(self, name):
-
         status_code, project = self._call_api("/core/api/base/%s/" % name)
         print "\nStatus\n******"
         state = "Running" if project['state'] else "Stopped"
@@ -303,7 +304,7 @@ class Env(object):
 	data={}
 	if tid:
 		data['rid'] = tid
-        status_code, transactions = self._call_api("/core/api/base/%s/transactions/" % name, method="GET", data=data)
+        status_code, transactions = self._call_api("/core/api/base/%s/transactions/" % name, method="GET", params=data)
 	import pprint
 	logs_only = arguments.get('--logs', False)
 	cut = arguments.get('--cut', None)
@@ -343,6 +344,11 @@ class Env(object):
 			])
         	print tabulate(table, headers=[rid, "Date", "Type"], tablefmt="simple")
 
+    def create_function(self, project_name, function_name):
+        status_code, response = self._call_api("/core/api/base/%s/apy/" % (project_name), method="POST", json={"name": function_name})
+        if status_code == 201:
+            print "Function %s/%s created" % (project_name, function_name)
+
     def execute(self, project_name, function_name, async=False):
         if not async:
             status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
@@ -368,8 +374,9 @@ class Env(object):
         sys.stdout.write("Response: ")
 	#print response
 	response=pprint.pformat(response, indent=4)
+	nocolor = arguments.get('--nocolor', False)
 	#print response
-        print format(response)
+        print format(response, nocolor=nocolor)
 
 def do_ngrok():
     time.sleep(1)
@@ -463,6 +470,9 @@ if __name__ == '__main__':
                 if arguments['<function-name>']:
                     if arguments['execute']:
                         env.execute(arguments['<base-name>'], arguments['<function-name>'], async=arguments['--async'])
+
+                    if arguments['create']:
+                        env.create_function(arguments['<base-name>'], arguments['<function-name>'])
 
             if arguments['transactions']:
 		tid = arguments.get('--tid', None)
