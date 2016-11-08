@@ -30,6 +30,7 @@ Usage:
   tumbo.py project <base-name> function <function-name> execute [--async] [--public] [--nocolor]
   tumbo.py project <base-name> function <function-name> show
   tumbo.py project <base-name> function <function-name> create
+  tumbo.py project <base-name> function <function-name> edit
   tumbo.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>] [--nocolor]
   tumbo.py project <base-name> export [filename]
   tumbo.py project <base-name> import <zipfile>
@@ -52,6 +53,7 @@ import getpass
 import json
 import pprint
 import logging
+import tempfile
 
 from pygments import highlight
 from pygments.lexers import JsonLexer
@@ -66,6 +68,45 @@ docker_compose = sh.Command("docker-compose")
 python = sh.Command(sys.executable)
 
 coverage_cmd = "/home/philipsahli/virtualenvs/tumbo/bin/coverage run --timid --source=tumbo --parallel-mode "
+
+def confirm(prompt=None, resp=False):
+    """prompts for yes or no response from the user. Returns True for yes and
+    False for no.
+
+    'resp' should be set to the default value assumed by the caller when
+    user simply types ENTER.
+
+    >>> confirm(prompt='Create Directory?', resp=True)
+    Create Directory? [y]|n: 
+    True
+    >>> confirm(prompt='Create Directory?', resp=False)
+    Create Directory? [n]|y: 
+    False
+    >>> confirm(prompt='Create Directory?', resp=False)
+    Create Directory? [n]|y: y
+    True
+
+    """
+    
+    if prompt is None:
+        prompt = 'Confirm'
+
+    if resp:
+        prompt = '%s [%s]|%s: ' % (prompt, 'y', 'n')
+    else:
+        prompt = '%s [%s]|%s: ' % (prompt, 'n', 'y')
+        
+    while True:
+        ans = raw_input(prompt)
+        if not ans:
+            return resp
+        if ans not in ['y', 'Y', 'n', 'N']:
+            print 'please enter y or n.'
+            continue
+        if ans == 'y' or ans == 'Y':
+            return True
+        if ans == 'n' or ans == 'N':
+            return False
 
 def format(s, l=None, nocolor=False):
     if l:
@@ -349,6 +390,27 @@ class Env(object):
         if status_code == 201:
             print "Function %s/%s created" % (project_name, function_name)
 
+    def edit_function(self, project_name, function_name):
+        status_code, response = self._call_api("/core/api/base/%s/apy/%s" % (project_name, function_name), method="GET")
+        file, path = tempfile.mkstemp()
+        f = open(path, "w")
+        f.write(response['module'])
+        f.close()
+        from subprocess import call
+        print path
+        call(["/usr/bin/vim", path])
+
+        if confirm():
+
+            f = open(path, "r")
+            status_code, response = self._call_api("/core/api/base/%s/apy/%s/" % (project_name, function_name), method="PATCH", json={'module': f.read()})
+            if status_code == 200:
+                print "Saved"
+            #if status_code == 201:
+            #    print "Function %s/%s created" % (project_name, function_name)
+            #status_code, response = self._call_api("/core/api/base/%s/apy/" % (project_name), method="POST", json={"name": function_name})
+
+
     def execute(self, project_name, function_name, async=False):
         if not async:
             status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
@@ -474,6 +536,9 @@ if __name__ == '__main__':
 
                     if arguments['create']:
                         env.create_function(arguments['<base-name>'], arguments['<function-name>'])
+
+                    if arguments['edit']:
+                        env.edit_function(arguments['<base-name>'], arguments['<function-name>'])
 
             if arguments['transactions']:
 		tid = arguments.get('--tid', None)
