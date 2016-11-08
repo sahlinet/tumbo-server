@@ -373,6 +373,7 @@ class Env(object):
         print "HTTP Status Code: %s" % status_code
         sys.stdout.write("Response: ")
 	#print response
+	nocolor = arguments.get('--nocolor', False)
 	response=pprint.pformat(response, indent=4)
 	nocolor = arguments.get('--nocolor', False)
 	#print response

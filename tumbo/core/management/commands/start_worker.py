@@ -84,6 +84,7 @@ class Command(BaseCommand):
             threads_static.append(thread)
             thread.daemon = True
             thread.start()
+
         logger.info('StaticServerThreads started')
 
         thread = HeartbeatThread("HeartbeatThread-%s" % c, host, port,

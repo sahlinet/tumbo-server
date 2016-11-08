@@ -156,9 +156,10 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                             logger.debug("File '%s'not found on dropbox" % dropbox_path)
                             raise e
                     if 'content="no-cache"' in file:
-                         logger.debug("Not caching because no-cache present in HTML")
+                        logger.debug("Not caching because no-cache present in HTML")
                     else:
-                         cache.set(cache_key, {
+                        logger.info("Caching %s" % cache_key)
+                        cache.set(cache_key, {
                                'f': file,
                                'lm': totimestamp(last_modified)
                                }, int(settings.TUMBO_STATIC_CACHE_SECONDS))
@@ -188,6 +189,8 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             mimetype = "image/png"
         elif static_path.endswith('.woff'):
             mimetype = "application/x-font-woff"
+        elif static_path.endswith('.woff2'):
+            mimetype = "application/font-woff2"
         elif static_path.endswith('.svg'):
             mimetype = "image/svg+xml"
         elif static_path.endswith('.ttf'):
