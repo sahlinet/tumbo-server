@@ -156,9 +156,10 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                             logger.debug("File '%s'not found on dropbox" % dropbox_path)
                             raise e
                     if 'content="no-cache"' in file:
-                         logger.debug("Not caching because no-cache present in HTML")
+                        logger.debug("Not caching because no-cache present in HTML")
                     else:
-                         cache.set(cache_key, {
+                        logger.info("Caching %s" % cache_key)
+                        cache.set(cache_key, {
                                'f': file,
                                'lm': totimestamp(last_modified)
                                }, int(settings.TUMBO_STATIC_CACHE_SECONDS))
