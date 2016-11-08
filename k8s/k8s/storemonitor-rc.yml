@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  creationTimestamp: null
+  labels:
+    service: storemonitor
+  name: storemonitor
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    service: storemonitor
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: storemonitor
+    spec:
+      containers:
+      - env:
+        - name: MODE
+          value: docker-postgresql-test
+        image: philipsahli/newrelic-plugin-agent
+        imagePullPolicy: ""
+        name: storemonitor
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status:
+  replicas: 0

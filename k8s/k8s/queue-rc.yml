@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  creationTimestamp: null
+  labels:
+    service: queue
+  name: queue
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    service: queue
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: queue
+    spec:
+      containers:
+      - image: tutum/rabbitmq
+        imagePullPolicy: ""
+        name: queue
+        ports:
+        - containerPort: 5672
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status:
+  replicas: 0

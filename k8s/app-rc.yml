@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  creationTimestamp: null
+  labels:
+    service: app
+  name: app
+  namespace: tumbo
+spec:
+  replicas: 1
+  selector:
+    service: app
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: app
+    spec:
+      containers:
+      - env:
+        - name: MODE
+          value: web
+        - name: DB_HOST
+          value: $${DB_PORT_5432_TCP_ADDR}
+        - name: DB_NAME
+          value: planet
+        - name: DB_PASS
+          value: $${DB_ENV_PASSWORD}
+        - name: DB_PORT
+          value: $${DB_PORT_5432_TCP_PORT}
+        - name: DB_USER
+          value: planet
+        - name: JOBSTOREDB_NAME
+          value: $${JOBSTOREDB_ENV_DB_NAME}
+        - name: JOBSTOREDB_USER
+          value: $${JOBSTOREDB_ENV_DB_USER}
+        - name: JOBSTOREDB_PASS
+          value: $${JOBSTOREDB_ENV_PASSWORD}
+        - name: JOBSTOREDB_PORT
+          value: $${JOBSTOREDB_PORT_5432_TCP_PORT}
+        - name: JOBSTOREDB_HOST
+          value: $${JOBSTOREDB_PORT_5432_TCP_ADDR}
+        - name: TUMBO_WORKER_IMPLEMENTATION
+          value: core.executors.worker_engines.rancher.RancherApiExecutor
+        - name: RABBITMQ_ADMIN_PASSWORD
+          value: $${QUEUE_ENV_RABBITMQ_PASS}
+        - name: RABBITMQ_ADMIN_USER
+          value: admin
+        - name: TUMBO_DOCKER_MEM_LIMIT
+          value: '"128m"'
+        - name: TUMBO_DOCKER_IMAGE
+          value: philipsahli/tumbo-worker:v0.2.4
+        - name: TUMBO_SOCIAL_AUTH
+          value: "true"
+        image: philipsahli/tumbo-server:v0.2.4
+        imagePullPolicy: ""
+        name: app
+        ports:
+        - containerPort: 80
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status:
+  replicas: 0

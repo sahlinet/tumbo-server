@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  creationTimestamp: null
+  labels:
+    io.rancher.loadbalancer.target.app: 8880=80
+    service: lb
+  name: lb
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    service: lb
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: lb
+    spec:
+      containers:
+      - image: rancher/load-balancer-service
+        imagePullPolicy: ""
+        name: lb
+        ports:
+        - containerPort: 8880
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status:
+  replicas: 0
