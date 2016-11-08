@@ -27,7 +27,7 @@ Usage:
   tumbo.py project <base-name> delete
   tumbo.py project <base-name> create
   tumbo.py project <base-name> transport <env>
-  tumbo.py project <base-name> function <function-name> execute [--async] [--public]
+  tumbo.py project <base-name> function <function-name> execute [--async] [--public] [--nocolor]
   tumbo.py project <base-name> function <function-name> show
   tumbo.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>] [--nocolor]
   tumbo.py project <base-name> export [filename]
@@ -367,9 +367,10 @@ class Env(object):
         print "HTTP Status Code: %s" % status_code
         sys.stdout.write("Response: ")
 	#print response
+	nocolor = arguments.get('--nocolor', False)
 	response=pprint.pformat(response, indent=4)
 	#print response
-        print format(response)
+        print format(response, nocolor=nocolor)
 
 def do_ngrok():
     time.sleep(1)
