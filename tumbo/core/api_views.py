@@ -91,7 +91,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
             return queryset.filter(rid=rid)
         return queryset.order_by("modified")[10:]
 
-
 class ApyViewSet(viewsets.ModelViewSet):
     model = Apy
     serializer_class = ApySerializer
@@ -100,12 +99,12 @@ class ApyViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
-        name = self.kwargs['name']
+        name = self.kwargs['base_name']
         get_object_or_404(Base, user=self.request.user, name=name)
         return Apy.objects.filter(base__user=self.request.user, base__name=name)
 
     def pre_save(self, obj):
-        obj.base = Base.objects.get(name=self.kwargs['name'], user=self.request.user)
+        obj.base = Base.objects.get(name=self.kwargs['base_name'], user=self.request.user)
         result, warnings, errors = check_code(obj.module, obj.name)
         warnings_prep = []
         errors_prep = []
@@ -149,6 +148,10 @@ class ApyViewSet(viewsets.ModelViewSet):
         self.object = cloned_exec
         self.kwargs['pk'] = self.object.id
         return self.retrieve(request, new_pk=cloned_exec.id)
+
+
+class ApyViewSetByName(ApyViewSet):
+    lookup_field = ('name')
 
 
 class ApyExecutionViewSet(viewsets.ModelViewSet):

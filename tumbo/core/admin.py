@@ -11,7 +11,7 @@ class InstanceAdmin(admin.ModelAdmin):
     pass
 
 class ApyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'public', 'schedule', 'rev')
+    list_display = ('id', 'name', 'public', 'schedule', 'rev')
 
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('rid', 'apy_name', 'base_name', 'status', 'created', 'modified')

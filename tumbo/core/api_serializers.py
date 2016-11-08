@@ -31,10 +31,15 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 class ApySerializer(serializers.ModelSerializer):
     counter = CounterSerializer(many=False, read_only=True)
+    #mynum = serializers.SerializerMethodField(method_name="get_id")
+
+    def get_id(self, obj):
+        print obj.id
+        return obj.id
 
     class Meta:
         model = Apy
-        fields = ('id', 'name', 'module', 'counter', 'description', 'public', 'schedule', 'everyone')
+        fields = ('name', 'module', 'counter', 'description', 'public', 'schedule', 'everyone')
 
     def save_object(self, obj, **kwargs):
         obj.save_and_sync(**kwargs)

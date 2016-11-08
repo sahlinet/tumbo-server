@@ -127,6 +127,12 @@ Type can be AuthenticatedUser or AnonymousUser.
     def func(self):
         return self.responses.RedirectResponse("http://another-url")
 
+### Actions
+
+On a response an action with the string "RESTART" can be added to restart the Base.
+
+    def func(self):
+        return self.responses.JSONResponse({'status': "installed"}, action="RESTART")
 
 ### Sharing
 

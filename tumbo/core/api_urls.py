@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url, include
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
 
-from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, CoreApyExecutionViewSet
+from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, CoreApyExecutionViewSet, ApyViewSetByName
 
 # Routers provide an easy way of automatically determining the URL conf
 router = routers.DefaultRouter(trailing_slash=True)
@@ -29,12 +29,16 @@ urlpatterns = patterns('',
     url(r'^base/(?P<name>[\w-]+)/recreate/$', BaseViewSet.as_view({'post': 'recreate'}), name='base-recreate'),
     url(r'^base/(?P<name>[\w-]+)/export/$', BaseExportViewSet.as_view({'get': 'export'}), name='base-export'),
     url(r'^base/(?P<name>[\w-]+)/transport/$', BaseViewSet.as_view({'post': 'transport'}), name='base-transport'),
-    url(r'^base/(?P<name>[\w-]+)/apy/$', ApyViewSet.as_view({'get': 'list', 'post': 'create'}), name='apy-list'),
+
+    url(r'^base/(?P<base_name>[\w-]+)/apy/$', ApyViewSet.as_view({'get': 'list', 'post': 'create'}), name='apy-list'),
+    url(r'^base/(?P<base_name>[\w-]+)/apy/(?P<name>[\w-]+)/$', ApyViewSetByName.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='apy-detail2'),
+
+    url(r'^base/(?P<base_name>[\w-]+)/apy/(?P<pk>\d+)/$', ApyViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='apy-detail'),
+
     url(r'^public-apy/$', PublicApyViewSet.as_view({'get': 'list'}), name='public-apy-list'),
     url(r'^public-apy/(?P<pk>\d+)/$', PublicApyViewSet.as_view({'get': 'retrieve'}), name='public-apy-detail'),
     # Apy CRUD operations
-    url(r'^base/(?P<name>[\w-]+)/apy/(?P<pk>\d+)/$', ApyViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='apy-detail'),
-    url(r'^base/(?P<name>[\w-]+)/apy/(?P<pk>\d+)/clone/$', ApyViewSet.as_view({'post': 'clone'}), name='apy-clone'),
+    url(r'^base/(?P<base_name>[\w-]+)/apy/(?P<pk>\d+)/clone/$', ApyViewSet.as_view({'post': 'clone'}), name='apy-clone'),
     url(r'^username/(?P<username>[\w-]+)/base/(?P<name>[\w-]+)/apy/(?P<apy_name>[\w-]+)/execute/$', ApyExecutionViewSet.as_view({'post': 'execute', 'get': 'execute'}), name='apy-public-exec'),
     url(r'^base/(?P<name>[\w-]+)/apy/(?P<apy_name>[\w-]+)/execute/$', CoreApyExecutionViewSet.as_view({'post': 'execute', 'get': 'execute'}), name='apy-exec'),
     url(r'^base/(?P<name>[\w-]+)/setting/$', SettingViewSet.as_view({'get': 'list', 'post': 'create'}), name='apy-list'),

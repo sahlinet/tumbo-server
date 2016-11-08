@@ -305,6 +305,11 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
 
         # response
         response = self._handle_response(request, data, exec_model)
+        print data
+        if not request.GET.get('async', False) and "action" in data['returned'] and data['returned']['action'] == "RESTART":
+            logger.info("Restarting")
+            base_model.stop()
+            base_model.start()
         return response
 
 
