@@ -86,10 +86,10 @@ class TransactionViewSet(viewsets.ModelViewSet):
         name = self.kwargs['name']
         get_object_or_404(Base, user=self.request.user, name=name)
         queryset = Transaction.objects.filter(apy__base__name=name)
-	rid = self.request.GET.get('rid', None)
-	if rid is not None:
-		return queryset.filter(rid=rid)
-	return queryset.order_by("modified")[10:]
+        rid = self.request.GET.get('rid', None)
+        if rid is not None:
+            return queryset.filter(rid=rid)
+        return queryset.order_by("modified")[10:]
 
 
 class ApyViewSet(viewsets.ModelViewSet):
@@ -181,7 +181,8 @@ class ApyExecutionViewSet(viewsets.ModelViewSet):
                 #request.session['shared_key'] = shared_key
                 return DjendExecView.as_view()(self.request, **kwargs)
         raise Http404
-    
+
+
 class CoreApyExecutionViewSet(ApyExecutionViewSet):
 
     def execute(self, request, name, apy_name):
