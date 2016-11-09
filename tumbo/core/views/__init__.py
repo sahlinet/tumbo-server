@@ -305,11 +305,11 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
 
         # response
         response = self._handle_response(request, data, exec_model)
-        print data
-        if not request.GET.get('async', False) and "action" in data['returned'] and data['returned']['action'] == "RESTART":
-            logger.info("Restarting")
-            base_model.stop()
-            base_model.start()
+        if response:
+            if not request.GET.get('async', False) and data['returned'] and "action" in data['returned'] and data['returned']['action'] == "RESTART":
+                logger.info("Restarting base %s" % base_model.name)
+                base_model.stop()
+                base_model.start()
         return response
 
 
@@ -604,7 +604,6 @@ def dropbox_auth_finish(request):
         dropbox_access_token, user_id, url_state = get_dropbox_auth_flow(request.session).finish(request.GET)
         auth, created = AuthProfile.objects.get_or_create(user=request.user)
         # store dropbox_access_token
-        print dropbox_access_token
         auth.dropbox_access_token = dropbox_access_token
         auth.dropbox_userid = user_id
         auth.user = request.user
