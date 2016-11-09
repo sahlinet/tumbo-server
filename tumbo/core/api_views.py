@@ -132,8 +132,8 @@ class ApyViewSet(viewsets.ModelViewSet):
             }
             raise APIException(response_data)
 
-    def clone(self, request, name, pk):
-        base = get_object_or_404(Base, name=name,
+    def clone(self, request, base_name, pk):
+        base = get_object_or_404(Base, name=base_name,
                         user=User.objects.get(username=request.user.username))
         clone_count = base.apys.filter(name__startswith="%s_clone" % pk).count()
         created = False

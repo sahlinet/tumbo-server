@@ -114,9 +114,10 @@ class ApiTestCase(BaseTestCase):
 
     def test_get_one_apy_for_base(self):
         self.client1.login(username='user1', password='pass')
-        response = self.client1.get("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.id))
+        response = self.client1.get("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name))
         self.assertEqual(200, response.status_code)
-        self.assertTrue(json.loads(response.content).has_key('id'))
+        self.assertTrue(json.loads(response.content).has_key('name'))
+        self.assertTrue(json.loads(response.content).has_key('module'))
 
     @patch("core.models.distribute")
     def test_clone_apy_for_base_and_delete(self, distribute_mock):
@@ -126,7 +127,7 @@ class ApiTestCase(BaseTestCase):
         self.assertEqual(200, response.status_code)
         assert json.loads(response.content)
 
-        response = self.client1.delete("/core/api/base/%s/apy/%s/" % (self.base1.name, json.loads(response.content)['id']))
+        response = self.client1.delete("/core/api/base/%s/apy/%s/" % (self.base1.name, json.loads(response.content)['name']))
         self.assertEqual(204, response.status_code)
 
 
@@ -439,7 +440,7 @@ import asdf
         self.base1_apy1.module = "import asdf, blublub"
 
         self.client1.login(username='user1', password='pass')
-        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.id),
+        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
                 data = json.dumps({'module': self.base1_apy1.module}), content_type='application/json'
             )
         self.assertEqual(500, response.status_code)
@@ -450,7 +451,7 @@ import asdf
 print django"""
 
         self.client1.login(username='user1', password='pass')
-        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.id),
+        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
                 data = json.dumps({'module': self.base1_apy1.module}), content_type='application/json'
             )
         print response.content
@@ -460,7 +461,7 @@ print django"""
         self.base1_apy1.module = "def blu()"
 
         self.client1.login(username='user1', password='pass')
-        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.id),
+        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
                 data = json.dumps({'module': self.base1_apy1.module}), content_type='application/json'
             )
         self.assertEqual(500, response.status_code)
