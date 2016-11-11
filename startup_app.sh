@@ -48,8 +48,11 @@ elif [ "$MODE" == "background" ]; then
 
     if [ "$ARG" != "" ]; then
         if [ "$ARG" == "all" ] || [ "$ARG" == "heartbeat" ]; then
-            /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py heartbeat --mode=$ARG --settings=tumbo.container
+
+            echo "Import examples"
+            /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py import_base  --username=admin --file=/home/tumbo/code/examples/example.zip --name generics --settings=tumbo.container
         fi
+        /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py heartbeat --mode=$ARG --settings=tumbo.container
 
     else
         echo "Import examples"
