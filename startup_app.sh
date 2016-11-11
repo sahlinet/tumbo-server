@@ -47,7 +47,7 @@ if [ "$MODE" == "web" ]; then
 elif [ "$MODE" == "background" ]; then
 
     if [ "$ARG" != "" ]; then
-        if [ "$ARG" == "all" || "$ARG" == "heartbeat" ]; then
+        if [ "$ARG" == "all" ] || ["$ARG" == "heartbeat" ]; then
             /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py heartbeat --mode=$ARG --settings=tumbo.container
         fi
 
