@@ -1,4 +1,4 @@
-APScheduler==3.2.0
+APScheduler==3.3.0
 bumpversion==0.5.3
 bunch==1.0.1
 configobj==5.0.6
