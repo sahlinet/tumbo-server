@@ -40,7 +40,6 @@ PLUGIN_CONFIG_QUEUE = "pluginconfig"
 def log_mem(**kwargs):
 
     name = kwargs['name']
-    print name
 
     p = psutil.Process(os.getpid())
 
@@ -49,13 +48,13 @@ def log_mem(**kwargs):
             m = p.memory_info()
 
             slug = "Background %s %s rss" % (socket.gethostname(), name)
-            print slug
             set_metric(slug, float(m.rss)/(1024*1024)+50, expire=86400)
             slug = "Background %s %s vms" % (socket.gethostname(), name)
-            print slug
             set_metric(slug, float(m.vms)/(1024*1024)+50, expire=86400)
 
-            time.sleep(10)
+            logger.debug("Saving rss/vms for background process '%s'" % name)
+
+            time.sleep(30)
     except Exception, e:
         logger.exception(e)
 
