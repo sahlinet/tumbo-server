@@ -1,7 +1,7 @@
 app:
-  build: ..
+    #build: ..
   #image: philipsahli/tumbo-server:v0.2.4
-  #image: philipsahli/tumbo-server:develop
+  image: philipsahli/tumbo-server:develop
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb
@@ -40,9 +40,9 @@ app:
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
 background:
-  build: ..
+    #build: ..
   #image: philipsahli/tumbo-server:v0.2.4
-  #image: philipsahli/tumbo-server:develop
+  image: philipsahli/tumbo-server:develop
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb
@@ -87,9 +87,9 @@ lb:
   ports:
    - "80"
 background:
-  build: ..
+    #build: ..
   #image: philipsahli/tumbo-server:v0.2.4
-  #image: philipsahli/tumbo-server:develop
+  image: philipsahli/tumbo-server:develop
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb
@@ -128,9 +128,9 @@ background:
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
 background:
-  build: ..
+    #build: ..
   #image: philipsahli/tumbo-server:v0.2.4
-  #image: philipsahli/tumbo-server:develop
+  image: philipsahli/tumbo-server:develop
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb
@@ -169,9 +169,9 @@ background:
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
 background:
-  build: ..
+    #build: ..
   #image: philipsahli/tumbo-server:v0.2.4
-  #image: philipsahli/tumbo-server:develop
+  image: philipsahli/tumbo-server:develop
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb
@@ -210,9 +210,9 @@ background:
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
 background:
-  build: ..
+    #build: ..
   #image: philipsahli/tumbo-server:v0.2.4
-  #image: philipsahli/tumbo-server:develop
+  image: philipsahli/tumbo-server:develop
   external_links:
    - tumboserver_db_1:db
    - tumboserver_jobstoredb_1:jobstoredb
