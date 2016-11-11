@@ -39,7 +39,7 @@ app:
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
-backgroundcleanup:
+cleaner:
   build: ..
   #image: philipsahli/tumbo-server:v0.2.4
   #image: philipsahli/tumbo-server:develop
@@ -86,7 +86,7 @@ lb:
    - app
   ports:
    - "80"
-backgroundheartbeat:
+heartbeat:
   build: ..
   #image: philipsahli/tumbo-server:v0.2.4
   #image: philipsahli/tumbo-server:develop
@@ -127,7 +127,7 @@ backgroundheartbeat:
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
-backgroundasync:
+async:
   build: ..
   #image: philipsahli/tumbo-server:v0.2.4
   #image: philipsahli/tumbo-server:develop
@@ -168,7 +168,7 @@ backgroundasync:
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
-backgroundlog:
+logger:
   build: ..
   #image: philipsahli/tumbo-server:v0.2.4
   #image: philipsahli/tumbo-server:develop
@@ -209,7 +209,7 @@ backgroundlog:
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
-backgroundscheduler:
+scheduler:
   build: ..
   #image: philipsahli/tumbo-server:v0.2.4
   #image: philipsahli/tumbo-server:develop
