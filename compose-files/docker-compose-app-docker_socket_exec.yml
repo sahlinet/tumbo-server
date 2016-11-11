@@ -39,7 +39,7 @@ app:
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
-background:
+cleaner:
   build: ..
   #image: philipsahli/tumbo-server:v0.2.6
   #image: philipsahli/tumbo-server:develop
@@ -53,12 +53,12 @@ background:
    - app
   environment:
    - MODE=background
+   - ARG=cleanup
    - ADMIN_PASSWORD=tumbo
    - ALLOWED_HOSTS="*"
    - DB_HOST=$${DB_PORT_5432_TCP_ADDR}
    - DB_NAME=tumbo
    - DB_PASS=$${DB_ENV_PASSWORD}
-   #- DB_PORT=$DB_1_PORT_5432_TCP_PORT
    - DB_PORT=$${DB_PORT_5432_TCP_PORT}
    - DB_USER=tumbo
    - JOBSTOREDB_NAME=$${JOBSTOREDB_ENV_DB_NAME}
@@ -86,3 +86,167 @@ lb:
    - app
   ports:
    - "80"
+heartbeat:
+  build: ..
+  #image: philipsahli/tumbo-server:v0.2.4
+  #image: philipsahli/tumbo-server:develop
+  external_links:
+   - tumboserver_db_1:db
+   - tumboserver_jobstoredb_1:jobstoredb
+   - tumboserver_store_1:store
+   - tumboserver_queue_1:queue
+   - tumboserver_cache_1:cache
+  links:
+   - app
+  environment:
+   - MODE=background
+   - ARG=heartbeat
+   - ADMIN_PASSWORD=tumbo
+   - ALLOWED_HOSTS="*"
+   - DB_HOST=$${DB_PORT_5432_TCP_ADDR}
+   - DB_NAME=tumbo
+   - DB_PASS=$${DB_ENV_PASSWORD}
+   - DB_PORT=$${DB_PORT_5432_TCP_PORT}
+   - DB_USER=tumbo
+   - JOBSTOREDB_NAME=$${JOBSTOREDB_ENV_DB_NAME}
+   - JOBSTOREDB_USER=$${JOBSTOREDB_ENV_DB_USER}
+   - JOBSTOREDB_PASS=$${JOBSTOREDB_ENV_PASSWORD}
+   - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
+   - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
+   - TUMBO_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
+   - DROPBOX_CONSUMER_KEY
+   - DROPBOX_CONSUMER_SECRET
+   - DROPBOX_REDIRECT_URL
+   - FRONTEND_HOST
+   - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
+   - RABBITMQ_ADMIN_USER=admin
+   - TUMBO_DOCKER_MEM_LIMIT="128m"
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.2.4
+   - DEBUG=True
+   - DIGITALOCEAN_CONFIG
+   - DIGITALOCEAN_ZONE
+  volumes:
+   - /var/run/docker.sock:/var/run/docker.sock
+async:
+  build: ..
+  #image: philipsahli/tumbo-server:v0.2.4
+  #image: philipsahli/tumbo-server:develop
+  external_links:
+   - tumboserver_db_1:db
+   - tumboserver_jobstoredb_1:jobstoredb
+   - tumboserver_store_1:store
+   - tumboserver_queue_1:queue
+   - tumboserver_cache_1:cache
+  links:
+   - app
+  environment:
+   - MODE=background
+   - ARG=async
+   - ADMIN_PASSWORD=tumbo
+   - ALLOWED_HOSTS="*"
+   - DB_HOST=$${DB_PORT_5432_TCP_ADDR}
+   - DB_NAME=tumbo
+   - DB_PASS=$${DB_ENV_PASSWORD}
+   - DB_PORT=$${DB_PORT_5432_TCP_PORT}
+   - DB_USER=tumbo
+   - JOBSTOREDB_NAME=$${JOBSTOREDB_ENV_DB_NAME}
+   - JOBSTOREDB_USER=$${JOBSTOREDB_ENV_DB_USER}
+   - JOBSTOREDB_PASS=$${JOBSTOREDB_ENV_PASSWORD}
+   - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
+   - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
+   - TUMBO_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
+   - DROPBOX_CONSUMER_KEY
+   - DROPBOX_CONSUMER_SECRET
+   - DROPBOX_REDIRECT_URL
+   - FRONTEND_HOST
+   - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
+   - RABBITMQ_ADMIN_USER=admin
+   - TUMBO_DOCKER_MEM_LIMIT="128m"
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.2.4
+   - DEBUG=True
+   - DIGITALOCEAN_CONFIG
+   - DIGITALOCEAN_ZONE
+  volumes:
+   - /var/run/docker.sock:/var/run/docker.sock
+logger:
+  build: ..
+  #image: philipsahli/tumbo-server:v0.2.4
+  #image: philipsahli/tumbo-server:develop
+  external_links:
+   - tumboserver_db_1:db
+   - tumboserver_jobstoredb_1:jobstoredb
+   - tumboserver_store_1:store
+   - tumboserver_queue_1:queue
+   - tumboserver_cache_1:cache
+  links:
+   - app
+  environment:
+   - MODE=background
+   - ARG=log
+   - ADMIN_PASSWORD=tumbo
+   - ALLOWED_HOSTS="*"
+   - DB_HOST=$${DB_PORT_5432_TCP_ADDR}
+   - DB_NAME=tumbo
+   - DB_PASS=$${DB_ENV_PASSWORD}
+   - DB_PORT=$${DB_PORT_5432_TCP_PORT}
+   - DB_USER=tumbo
+   - JOBSTOREDB_NAME=$${JOBSTOREDB_ENV_DB_NAME}
+   - JOBSTOREDB_USER=$${JOBSTOREDB_ENV_DB_USER}
+   - JOBSTOREDB_PASS=$${JOBSTOREDB_ENV_PASSWORD}
+   - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
+   - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
+   - TUMBO_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
+   - DROPBOX_CONSUMER_KEY
+   - DROPBOX_CONSUMER_SECRET
+   - DROPBOX_REDIRECT_URL
+   - FRONTEND_HOST
+   - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
+   - RABBITMQ_ADMIN_USER=admin
+   - TUMBO_DOCKER_MEM_LIMIT="128m"
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.2.4
+   - DEBUG=True
+   - DIGITALOCEAN_CONFIG
+   - DIGITALOCEAN_ZONE
+  volumes:
+   - /var/run/docker.sock:/var/run/docker.sock
+scheduler:
+  build: ..
+  #image: philipsahli/tumbo-server:v0.2.4
+  #image: philipsahli/tumbo-server:develop
+  external_links:
+   - tumboserver_db_1:db
+   - tumboserver_jobstoredb_1:jobstoredb
+   - tumboserver_store_1:store
+   - tumboserver_queue_1:queue
+   - tumboserver_cache_1:cache
+  links:
+   - app
+  environment:
+   - MODE=background
+   - ARG=scheduler
+   - ADMIN_PASSWORD=tumbo
+   - ALLOWED_HOSTS="*"
+   - DB_HOST=$${DB_PORT_5432_TCP_ADDR}
+   - DB_NAME=tumbo
+   - DB_PASS=$${DB_ENV_PASSWORD}
+   - DB_PORT=$${DB_PORT_5432_TCP_PORT}
+   - DB_USER=tumbo
+   - JOBSTOREDB_NAME=$${JOBSTOREDB_ENV_DB_NAME}
+   - JOBSTOREDB_USER=$${JOBSTOREDB_ENV_DB_USER}
+   - JOBSTOREDB_PASS=$${JOBSTOREDB_ENV_PASSWORD}
+   - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
+   - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
+   - TUMBO_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
+   - DROPBOX_CONSUMER_KEY
+   - DROPBOX_CONSUMER_SECRET
+   - DROPBOX_REDIRECT_URL
+   - FRONTEND_HOST
+   - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
+   - RABBITMQ_ADMIN_USER=admin
+   - TUMBO_DOCKER_MEM_LIMIT="128m"
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.2.4
+   - DEBUG=True
+   - DIGITALOCEAN_CONFIG
+   - DIGITALOCEAN_ZONE
+  volumes:
+   - /var/run/docker.sock:/var/run/docker.sock

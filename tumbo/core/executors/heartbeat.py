@@ -37,27 +37,35 @@ FOREIGN_CONFIGURATION_QUEUE = "fconfiguration"
 SETTING_QUEUE = "setting"
 PLUGIN_CONFIG_QUEUE = "pluginconfig"
 
+def log_mem(**kwargs):
 
-def inactivate():
+    name = kwargs['name']
+    print name
 
     p = psutil.Process(os.getpid())
+
+    try:
+        while True:
+            m = p.memory_info()
+
+            slug = "Background %s %s rss" % (socket.gethostname(), name)
+            print slug
+            set_metric(slug, float(m.rss)/(1024*1024)+50, expire=86400)
+            slug = "Background %s %s vms" % (socket.gethostname(), name)
+            print slug
+            set_metric(slug, float(m.vms)/(1024*1024)+50, expire=86400)
+
+            time.sleep(10)
+    except Exception, e:
+        logger.exception(e)
+
+
+def inactivate():
 
     transaction.set_autocommit(False)
     try:
         while True:
             logger.debug("Inactivate Thread run")
-            m = p.memory_info()
-            #slug="Heartbeat %s rss" % socket.gethostname()
-            #set_metric(slug, float(m.rss)/(1024*1024), expire=86400)
-            #slug="Heartbeat %s vms" % socket.gethostname()
-            #set_metric(slug, float(m.vms)/(1024*1024), expire=86400)
-
-            slug = "Heartbeat %s rss" % socket.gethostname()
-            set_metric(slug, float(m.rss)/(1024*1024)+50, expire=86400)
-            slug = "Heartbeat %s vms" % socket.gethostname()
-            set_metric(slug, float(m.vms)/(1024*1024)+50, expire=86400)
-
-            # logger.debug("Send metric data")
 
             time.sleep(0.1)
             now = datetime.now().replace(tzinfo=pytz.UTC)

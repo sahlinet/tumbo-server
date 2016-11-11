@@ -46,10 +46,18 @@ if [ "$MODE" == "web" ]; then
     /home/tumbo/.virtualenvs/tumbo/bin/gunicorn tumbo.wsgi:application localhost:8000 --max-requests=600 --workers=2 --env DJANGO_SETTINGS_MODULE=tumbo.container
 elif [ "$MODE" == "background" ]; then
 
-    echo "Import examples"
-    /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py import_base  --username=admin --file=/home/tumbo/code/examples/example.zip --name generics --settings=tumbo.container
+    if [ "$ARG" != "" ]; then
+        if [ "$ARG" == "all" ] || [ "$ARG" == "heartbeat" ]; then
 
-    /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py heartbeat --settings=tumbo.container
-elif [ "$MODE" == "stream" ]; then
-    /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py runsd 0.0.0.0:80 --settings=tumbo.container
+            echo "Import examples"
+            /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py import_base  --username=admin --file=/home/tumbo/code/examples/example.zip --name generics --settings=tumbo.container
+        fi
+        /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py heartbeat --mode=$ARG --settings=tumbo.container
+
+    else
+        echo "Import examples"
+        /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py import_base  --username=admin --file=/home/tumbo/code/examples/example.zip --name generics --settings=tumbo.container
+
+        /home/tumbo/.virtualenvs/tumbo/bin/python /home/tumbo/code/tumbo/manage.py heartbeat --settings=tumbo.container
+    fi
 fi

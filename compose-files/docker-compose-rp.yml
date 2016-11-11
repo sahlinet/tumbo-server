@@ -4,16 +4,55 @@ rp:
     - "80:80"
     - "443:443"
   environment:
-    - SERVER_NAME
+    - TEST_CERT=--test-cert --no-self-upgrade
+    - SERVERNAME
     - PROXY_HOST
     - NOTIFICATION_EMAIL
-    - VHOST_1_DOMAINS
-    - VHOST_1_SERVERNAME
+    - VHOST_1_SERVERNAME=httptest.dev.sahli.net
+    - VHOST_1_DOMAINS=httptest.dev.sahli.net
     - VHOST_1_SSL=True
-    - VHOST_1_PROXYCONF_all_proxy_pass
-    - VHOST_1_PROXYCONF_all_location=/
-    - VHOST_1_PROXYCONF_notify_proxy_pass
-    - VHOST_1_PROXYCONF_notify_plain=True
-    - VHOST_1_PROXYCONF_notify_location=/core/dropbox_notify/
+    - VHOST_1_COOKIEPATH=/userland/admin/httptest
+    - VHOST_1_COOKIEREPLACEMENT=/
+
+
+    - VHOST_1_PROXYCONF_logout_proxy_pass=https://codeanywhere.sahli.net/userland/admin/httptest/logout
+    - VHOST_1_PROXYCONF_logout_location=/logout
+    - VHOST_1_PROXYCONF_logout_no_proxy_header=True
+
+    - VHOST_1_PROXYCONF_test_proxy_pass=https://codeanywhere.sahli.net/userland/admin/httptest/static/test.html
+    - VHOST_1_PROXYCONF_test_location=/test/
+    - VHOST_1_PROXYCONF_test_no_proxy_header=True
+
+    - VHOST_1_PROXYCONF_testlist_proxy_pass=https://codeanywhere.sahli.net/userland/admin/httptest/static/tests_list.html
+    - VHOST_1_PROXYCONF_testlist_location=/mytests/
+    - VHOST_1_PROXYCONF_testlist_no_proxy_header=True
+
+    - VHOST_1_PROXYCONF_httpteststatic_proxy_pass=https://codeanywhere.sahli.net/userland/admin/httptest/static/
+    - VHOST_1_PROXYCONF_httpteststatic_location=/static/
+    - VHOST_1_PROXYCONF_httpteststatic_no_proxy_header=True
+
+    - VHOST_1_PROXYCONF_about_proxy_pass=https://codeanywhere.sahli.net/userland/admin/httptest/static/about.html
+    - VHOST_1_PROXYCONF_about_location=/about.html
+    - VHOST_1_PROXYCONF_about_no_proxy_header=True
+    - VHOST_1_PROXYCONF_usage_proxy_pass=https://codeanywhere.sahli.net/userland/admin/httptest/static/usage.html
+    - VHOST_1_PROXYCONF_usage_location=/usage.html
+    - VHOST_1_PROXYCONF_usage_no_proxy_header=True
+
+    - VHOST_1_PROXYCONF_index_proxy_pass=https://codeanywhere.sahli.net/userland/admin/httptest/static/index.html
+    - VHOST_1_PROXYCONF_index_location=/
+    - VHOST_1_PROXYCONF_index_no_proxy_header=True
+
+    - VHOST_1_PROXYCONF_api_proxy_pass=https://codeanywhere.sahli.net/userland/admin/httptest/api/apy/entrypoint/execute/
+    - VHOST_1_PROXYCONF_api_location=/api/
+    - VHOST_1_PROXYCONF_api_no_proxy_header=True
+    - VHOST_2_DOMAINS
+    - VHOST_2_SERVERNAME
+    - VHOST_2_SSL=True
+    - VHOST_2_PROXYCONF_all_proxy_pass
+    - VHOST_2_PROXYCONF_all_location=/
+    - VHOST_2_PROXYCONF_notify_proxy_pass
+    - VHOST_2_PROXYCONF_notify_plain=True
+    - VHOST_2_PROXYCONF_notify_location=/core/dashboard/dropbox_notify/
   volumes:
     - /var/certs/codeanywhere.sahli.net:/etc/letsencrypt/
+    - /etc/nginx/ssl:/etc/nginx/ssl
