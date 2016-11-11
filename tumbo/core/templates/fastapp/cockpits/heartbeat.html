@@ -12,20 +12,25 @@
   {% endcomment %}
 
   <div>
-      {% get_slug_list "Heartbeat" as slug_list %}
+      {% get_slug_list "Background" as slug_list %}
       <h2>Last 7 days</h2>
+      {% if slug_list|length %}
       {% get_past_datetime 7 "d" as starttime %}
       {% aggregate_history slug_list "daily" starttime %}
+      {% endif %}
   </div>
 
   <div>
-      {% get_slug_list "Heartbeat" as slug_list %}
       <h2>Last 24 hours</h2>
+      {% if slug_list|length %}
       {% get_past_datetime 24 "h" as starttime %}
       {% aggregate_history slug_list "hourly" starttime %}
+      {% endif %}
   </div>
   <div>
       <h2>Last 30 minutes</h2>
+      {% if slug_list|length %}
       {% get_past_datetime 30 "m" as starttime %}
       {% aggregate_history slug_list "minutes" starttime %}
+      {% endif %}
   </div>

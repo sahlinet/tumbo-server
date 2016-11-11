@@ -555,7 +555,9 @@ if __name__ == '__main__':
                 def stop():
                     try:
                         os.killpg(app.pid, 2)
-                        os.killpg(background.pid, 2)
+                        print background_pids
+                        for pid in background_pids:
+                            os.killpg(pid, signal.SIGTERM)
                         if arguments['--coverage']:
                             sh.coverage("combine")
                     except OSError:
@@ -632,10 +634,14 @@ if __name__ == '__main__':
                     cmd = coverage_cmd + cmd
                 generics_import = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
 
-                cmd = "tumbo/manage.py heartbeat --settings=tumbo.dev"
-                if arguments['--coverage']:
-                    cmd = coverage_cmd + cmd
-                background = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                background_pids = []
+
+                for mode in ["cleanup", "heartbeat", "async", "log", "scheduler"]:
+                    cmd = "tumbo/manage.py heartbeat --mode=%s --settings=tumbo.dev" % mode
+                    if arguments['--coverage']:
+                        cmd = coverage_cmd + cmd
+                    background = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                    background_pids.append(background.pid)
 
                 cmd = "tumbo/manage.py runserver 0.0.0.0:8000 --settings=tumbo.dev"
                 if arguments['--coverage']:
