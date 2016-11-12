@@ -104,20 +104,25 @@ def update_status(parent_name, thread_count, threads):
             rss = str(out).rstrip().strip().lstrip()
             process, created = Process.objects.get_or_create(name=parent_name)
             process.rss = int(rss)
+            process.version = __VERSION__
             process.save()
 
             # threads
             for t in threads:
-                #logger.debug(t.name+": "+str(t.isAlive()))
+                logger.info(t.name+": "+str(t.isAlive()))
 
                 # store in db
                 thread_model, created = Thread.objects.get_or_create(name=t.name, parent=process)
-                if t.isAlive() and t.health():
-                    #logger.debug("Thread '%s' is healthy." % t.name)
+                if t.isAlive():
+                    logger.debug("Thread '%s' is alive." % t.name)
+                    thread_model.started()
+                    alive_thread_count=alive_thread_count+1
+                elif hasattr(t, "health") and t.health():
+                    logger.debug("Thread '%s' is healthy." % t.name)
                     thread_model.started()
                     alive_thread_count=alive_thread_count+1
                 else:
-                    logger.warn("Thread '%s' is not healthy." % t.name)
+                    logger.warn("Thread '%s' is not alive or healthy." % t.name)
                     thread_model.not_connected()
                 thread_model.save()
 
@@ -125,7 +130,7 @@ def update_status(parent_name, thread_count, threads):
             if thread_count == alive_thread_count:
                 process.up()
                 process.save()
-                #logger.debug("Process '%s' is healthy." % parent_name)
+                logger.debug("Process '%s' is healthy." % parent_name)
             else:
                 logger.error("Process '%s' is not healthy. Threads: %s / %s" % (parent_name, alive_thread_count, thread_count))
             time.sleep(10)

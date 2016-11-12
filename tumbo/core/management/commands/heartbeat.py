@@ -42,8 +42,6 @@ class Command(BaseCommand):
             mode = "all"
             print "Starting in default mode: %s" % mode
 
-        #sys.exit(1)
-
         core_threads = []
 
 
@@ -53,6 +51,11 @@ class Command(BaseCommand):
             inactivate_thread.daemon = True
             inactivate_thread.start()
             core_threads.append(inactivate_thread)
+
+            update_status_thread = threading.Thread(target=update_status, args=["InactiveThread", 1, [inactivate_thread]])
+            update_status_thread.daemon = True
+            update_status_thread.start()
+
 
         log_mem_thread = threading.Thread(target=log_mem, kwargs={'name': "Background-%s" % mode})
         log_mem_thread.daemon = True
@@ -131,7 +134,16 @@ class Command(BaseCommand):
         if mode in  ["scheduler", "all"]:
             # start scheduler
             from core import scheduler
-            scheduler.start_scheduler()
+            #scheduler.start_scheduler()
+
+            scheduler_thread = threading.Thread(target=scheduler.start_scheduler)
+            scheduler_thread.daemon = True
+            scheduler_thread.start()
+
+            update_status_thread = threading.Thread(target=update_status, args=["SchedulerThread", 1, [scheduler_thread]])
+            update_status_thread.daemon = True
+            update_status_thread.start()
+
 
         threads = core_threads+heartbeat_threads+async_threads+log_threads
         for t in threads:
