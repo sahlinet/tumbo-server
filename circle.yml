@@ -86,7 +86,11 @@ deployment:
       - docker images
       - docker push philipsahli/tumbo-server:$CIRCLE_TAG
       - docker push philipsahli/tumbo-worker:$CIRCLE_TAG
-
+      - >
+        if [ -n "${CIRCLE_TOKEN}"] && [ -n "${DEPLOY_URL}" ]; then
+            echo "curl -v -X POST $DEPLOY_URL?circle-token=$CIRCLE_TOKEN&TUMBO_TAG=$CIRCLE_TAG"
+            curl -v -X POST $DEPLOY_URL?circle-token=$CIRCLE_TOKEN&TUMBO_TAG=$CIRCLE_TAG
+        fi
   trunk:
     branch: develop
     commands:
