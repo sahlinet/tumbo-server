@@ -334,9 +334,10 @@ You can access the data in the static files. The data is rendered on server-side
 
 For querying only data for a logged in user, use the templatetag ˋdata_for_userˋ:
 
+{% verbatim %}
     {% load datastore %}
     {% data_for_user as data %}
-
+{% endverbatim %}
 * * *
 
 ## Transport
