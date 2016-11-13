@@ -17,7 +17,7 @@ Usage:
   tumbo.py env <env-id> logout
   tumbo.py env <env-id> active
   tumbo.py env <env-id> open
-  tumbo.py project list
+  tumbo.py project list [--env=<env>]
   tumbo.py project <base-name> show
   tumbo.py project <base-name> open
   tumbo.py project <base-name> start
@@ -130,11 +130,14 @@ class EnvironmentList(object):
         print tabulate(table, headers=['ID', 'URL', 'active'])
 
     @staticmethod
-    def get_active():
-        try:
-            active_envId = os.path.basename(os.readlink("%s/.tumbo/active_env" % expanduser("~")).replace(".json", ""))
-        except OSError:
-            return None
+    def get_active(env=None):
+        if not env:
+            try:
+                active_envId = os.path.basename(os.readlink("%s/.tumbo/active_env" % expanduser("~")).replace(".json", ""))
+            except OSError:
+                return None
+        else:
+            active_envId = env
         return Env.load(active_envId)
 
 
@@ -241,16 +244,12 @@ class Env(object):
         if not os.path.exists(path):
             os.mkdir(path)
         config_path = "%s/%s.json" % (path, envId)
-        #print config_path
         with open(config_path, 'r') as config_file:
             try:
                 config_data = json.load(config_file)
             except ValueError:
                 pass
-                config_data = {}
 
-            #print "return Env(envId)"
-            #print config_data
             id = Env(envId)
             id.config_data = config_data
             return id
@@ -466,7 +465,7 @@ def tolocaltime(dt):
 
 if __name__ == '__main__':
     # arguments = docopt(__doc__, version=version)
-    arguments = docopt(__doc__, version="0.2.9")
+    arguments = docopt(__doc__, version="0.2.10")
     #import pprint; pprint.pprint(arguments)
     if arguments['--ngrok-hostname'] and arguments['docker']:
 	    try:
@@ -496,8 +495,9 @@ if __name__ == '__main__':
             Env.load(arguments['<env-id>']).open_browser()
 
     if arguments['project']:
-        env = EnvironmentList.get_active()
-        #print arguments
+        envId = arguments.get('--env', None)
+        env = EnvironmentList.get_active(env=envId)
+
         if arguments['list']:
             env.projects_list()
         if arguments['<base-name>']:
@@ -541,8 +541,8 @@ if __name__ == '__main__':
                         env.edit_function(arguments['<base-name>'], arguments['<function-name>'])
 
             if arguments['transactions']:
-		tid = arguments.get('--tid', None)
-		print env.project_transactions(arguments['<base-name>'], tid)
+                tid = arguments.get('--tid', None)
+                print env.project_transactions(arguments['<base-name>'], tid)
 
     if arguments['server']:
         #print arguments
