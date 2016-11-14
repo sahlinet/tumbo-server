@@ -88,8 +88,8 @@ deployment:
       - docker push philipsahli/tumbo-worker:$CIRCLE_TAG
       - >
         if [ -n "${CIRCLE_TOKEN}" ] && [ -n "${DEPLOY_URL}" ]; then
-            echo "curl -v -X POST $DEPLOY_URL?circle-token=$CIRCLE_TOKEN&TUMBO_TAG=$CIRCLE_TAG"
-            curl -v -X POST $DEPLOY_URL?circle-token=$CIRCLE_TOKEN&TUMBO_TAG=$CIRCLE_TAG
+            echo curl -v X POST --header "Content-Type: application/json" --data '{"build_parameters": {"TUMBO_TAG": "'"$CIRCLE_TAG"'"}}' -X POST $DEPLOY_URL?circle-token=$CIRCLE_TOKEN
+            curl -v X POST --header "Content-Type: application/json" --data '{"build_parameters": {"TUMBO_TAG": "'"$CIRCLE_TAG"'"}}' -X POST $DEPLOY_URL?circle-token=$CIRCLE_TOKEN
         fi
   trunk:
     branch: develop
