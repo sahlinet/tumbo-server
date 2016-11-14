@@ -109,7 +109,7 @@ def update_status(parent_name, thread_count, threads):
 
             # threads
             for t in threads:
-                logger.info(t.name+": "+str(t.isAlive()))
+                logger.debug(t.name+": "+str(t.isAlive()))
 
                 # store in db
                 thread_model, created = Thread.objects.get_or_create(name=t.name, parent=process)

@@ -18,22 +18,23 @@ Usage:
   tumbo.py env <env-id> active
   tumbo.py env <env-id> open
   tumbo.py project list [--env=<env>]
-  tumbo.py project <base-name> show
-  tumbo.py project <base-name> open
-  tumbo.py project <base-name> start
-  tumbo.py project <base-name> stop
-  tumbo.py project <base-name> restart
-  tumbo.py project <base-name> destroy
-  tumbo.py project <base-name> delete
-  tumbo.py project <base-name> create
-  tumbo.py project <base-name> transport <env>
-  tumbo.py project <base-name> function <function-name> execute [--async] [--public] [--nocolor]
-  tumbo.py project <base-name> function <function-name> show
-  tumbo.py project <base-name> function <function-name> create
-  tumbo.py project <base-name> function <function-name> edit
-  tumbo.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>] [--nocolor]
-  tumbo.py project <base-name> export [filename]
-  tumbo.py project <base-name> import <zipfile>
+  tumbo.py project <base-name> show [--env=<env>]
+  tumbo.py project <base-name> open [--env=<env>]
+  tumbo.py project <base-name> start [--env=<env>]
+  tumbo.py project <base-name> stop [--env=<env>]
+  tumbo.py project <base-name> restart [--env=<env>]
+  tumbo.py project <base-name> destroy [--env=<env>]
+  tumbo.py project <base-name> delete [--env=<env>]
+  tumbo.py project <base-name> create [--env=<env>]
+  tumbo.py project <base-name> transport <env> [--env=<env>]
+  tumbo.py project <base-name> function <function-name> execute [--async] [--public] [--nocolor] [--env=<env>]
+  tumbo.py project <base-name> function <function-name> show [--env=<env>]
+  tumbo.py project <base-name> function <function-name> create [--env=<env>]
+  tumbo.py project <base-name> function <function-name> edit [--env=<env>]
+  tumbo.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>] [--nocolor] [--env=<env>]
+  tumbo.py project <base-name> export [filename] [--env=<env>]
+  tumbo.py project <base-name> import <zipfile> [--env=<env>]
+
   # tumbo.py project <name> settings edit
   # tumbo.py project <name> datastore <show>
   # tumbo.py --version
