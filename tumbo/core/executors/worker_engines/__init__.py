@@ -42,7 +42,6 @@ class BaseExecutor(object):
         # replace the original socket.getaddrinfo by our version
         socket.getaddrinfo = getAddrInfoWrapper
 
-        #--------------------
         import urllib2
         return urllib2.urlopen("https://icanhazip.com").read().replace("\n", "")
 
