@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__VERSION__ = "0.2.14"
+__VERSION__ = "0.2.15"
 
 
 # http://stackoverflow.com/questions/14399534/how-can-i-reference-requirements-txt-for-the-install-requires-kwarg-in-setuptool
