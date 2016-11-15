@@ -68,7 +68,7 @@ deployment:
   master:
     branch: master
     commands:
-      # publish master tag
+      # publish master
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker tag tumboserver_app philipsahli/tumbo-server:master
       - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:master
@@ -79,7 +79,7 @@ deployment:
     tag: /v[0-9]+(\.[0-9]+)*/
     owner: sahlinet
     commands:
-      # publish master tag
+      # publish tags
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker tag tumboserver_app philipsahli/tumbo-server:$CIRCLE_TAG
       - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_TAG
@@ -94,19 +94,9 @@ deployment:
   trunk:
     branch: develop
     commands:
-      # publish develop tag
+      # publish develop
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker tag tumboserver_app philipsahli/tumbo-server:develop
       - docker images
       - docker push philipsahli/tumbo-server:develop
       - docker push philipsahli/tumbo-worker:develop
-    #branch: social-auth
-    #commands:
-    #  # publish develop tag
-    #  - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-    #  - docker images
-    #  - docker tag -f tumboserver_app philipsahli/tumbo-server:$CIRCLE_BRANCH
-    #  - docker tag -f philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_BRANCH
-    #  - docker images
-    #  - docker push philipsahli/tumbo-server:$CIRCLE_BRANCH
-    #  - docker push philipsahli/tumbo-worker:$CIRCLE_BRANCH
