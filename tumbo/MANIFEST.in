@@ -1,3 +1,0 @@
-include README.md LICENSE AUTHORS CHANGELOG
-recursive-include fastapp/templates *
-recursive-include fastapp/static *

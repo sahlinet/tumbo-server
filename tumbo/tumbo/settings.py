@@ -74,6 +74,10 @@ DATABASES = {
     }
 }
 
+# If tumbo is run from an egg, use db in $HOME/.tumbo
+if "site-packages" in BASE_DIR:
+    DATABASES['default']['NAME'] = os.path.join(os.path.expanduser('~'), ".tumbo", "db.sqlite3")
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 

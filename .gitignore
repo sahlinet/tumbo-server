@@ -74,3 +74,4 @@ history
 *.dump
 
 output
+MANIFEST.in

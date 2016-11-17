@@ -30,7 +30,7 @@ The above step is only needed if you fork the repository and want to push to you
     virtualenv $HOME/virtualenvs/tumbo
     . $HOME/virtualenvs/tumbo/bin/activate
     pip install --upgrade pip
-    pip install -r tumbo/requirements.txt
+    pip install -r requirements.txt
 
 
 # Install services
@@ -81,7 +81,7 @@ Add the dropbox configuration to your .bashrc
     DROPBOX_REDIRECT_URL
     
     cd workspace/tumbo
-    cli/tumbo.py dev server run --autostart   # This will start postgres, redis-server and rabbitmq-server
+    cli/tumbo-cli.py dev server run --autostart   # This will start postgres, redis-server and rabbitmq-server
 
 
 # Workarounds

@@ -67,7 +67,7 @@ From within python code write log messages with following line:
 
 The log messages are attached to the transaction and Tumbo's *CLi* displays the log:
 
-    tumbo.py project helloworld transactions
+    tumbo-cli.py project helloworld transactions
 
 
 ### Siblings
