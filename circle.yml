@@ -23,6 +23,7 @@ test:
     - pip install sh==1.11
     - pip install Pygments==2.1.3
     - pip install tabulate==0.7.5
+    - pip install requests
     #
     - sed -i 's|/var/run/docker.sock|/run/docker.sock|g' compose-files/docker-compose-app-docker_socket_exec.yml
     - cat compose-files/docker-compose-app-docker_socket_exec.yml
