@@ -46,7 +46,7 @@ if [ "$MODE" == "web" ]; then
     sudo /usr/sbin/nginx -g "daemon off;" &
 
     # Django
-    /home/tumbo/.virtualenvs/tumbo/bin/gunicorn tumbo.wsgi:application localhost:8000 --max-requests=600 --workers=2 --env DJANGO_SETTINGS_MODULE=tumbo.container
+    cd /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo && /home/tumbo/.virtualenvs/tumbo/bin/gunicorn tumbo.wsgi:application localhost:8000 --max-requests=600 --workers=2 --env DJANGO_SETTINGS_MODULE=tumbo.container
 elif [ "$MODE" == "background" ]; then
 
     if [ "$ARG" != "" ]; then
