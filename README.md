@@ -8,6 +8,8 @@
 
 <script type='text/javascript' src='https://www.openhub.net/p/tumbo-server/widgets/project_thin_badge?format=js'></script>
 
+[![PyPI version](https://badge.fury.io/py/tumbo-server.svg)](https://badge.fury.io/py/tumbo-server)
+
 See [https://tumbo.io](https://tumbo.io)
 See [https://sahli.net/page/tumbo-io](https://sahli.net/page/tumbo-io)
 
