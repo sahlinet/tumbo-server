@@ -34,7 +34,7 @@ import sys
 #sys.exit(0)
 
 #version=__VERSION__+".1"
-version="0.2.25"
+version="0.2.26"
 print [('tumbo_server', data_files)]
 
 setup(name='tumbo-server',
@@ -45,6 +45,7 @@ setup(name='tumbo-server',
     author="Philip Sahli",
     author_email="philip@sahli.net",
     license ='MIT',
+    install_requires = reqs,
     packages = find_packages(),
     data_files = data_files,
     include_package_data=True,

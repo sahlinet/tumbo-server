@@ -30,12 +30,14 @@ RUN $PIP install --upgrade setuptools==20.3.1
 RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm && yum -y install nginx && yum install -y epel-release && yum install -y moreutils pwgen
 
 
-ADD tumbo $CODE_DIR/tumbo
+ADD dist $CODE_DIR/dist
 ADD example_bases $CODE_DIR/examples
 #ADD worker $CODE_DIR/worker
-RUN cd $CODE_DIR/tumbo && $HOME/.virtualenvs/tumbo/bin/python setup.py install
+RUN ls -al $CODE_DIR
+RUN $PIP install --upgrade pip
+RUN cd $CODE_DIR/dist && $PIP install tumbo-server --find-links=.
 # workaround because setup.py installs django-rest-framework as egg and django migrate fails with "Not a directory" when looking up for migrations instructions
-RUN $PIP uninstall -y djangorestframework && $PIP install djangorestframework==2.4.3
+#RUN $PIP uninstall -y djangorestframework && $PIP install djangorestframework==2.4.3
 
 RUN echo cachebust_1470943960
 # WORKAROUND

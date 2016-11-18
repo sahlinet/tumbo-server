@@ -36,6 +36,10 @@ test:
     #
     - sudo chmod 777 /run/docker.sock
     #
+    - python setup.py sdist --formats=gztar
+    #
+    - bash create_package.sh
+    - ls al dist/
     - python cli/tumbo-cli.py server docker pull
     - python cli/tumbo-cli.py server docker build
 
