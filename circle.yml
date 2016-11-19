@@ -30,9 +30,11 @@ test:
     - egrep sock compose-files/docker-compose-app-docker_socket_exec.yml
     ## docs
     - markdown_py -o html5 -f tumbo/ui/templates/docs_content.html docs/user_guide.md
+    - git config --global push.default current
     - git config --global user.email "philip@sahli.net"
     - git config --global user.name "Philip Sahli"
     - git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
+    - git push
     #
     - sudo chmod 777 /run/docker.sock
     #

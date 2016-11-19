@@ -478,15 +478,13 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    # arguments = docopt(__doc__, version=version)
-    arguments = docopt(__doc__, version="0.2.16")
-    #import pprint; pprint.pprint(arguments)
+    arguments = docopt(__doc__, version="0.2.17")
     if arguments['--ngrok-hostname'] and arguments['docker']:
-	    try:
-		ngrok = sh.Command("ngrok")
-	    except sh.CommandNotFound:
-		print "ngrok is not installed"
-		ngrok = None
+        try:
+            ngrok = sh.Command("ngrok")
+        except sh.CommandNotFound:
+            print "ngrok is not installed"
+            ngrok = None
 
     time.sleep(0.5)
     if arguments['env']:
