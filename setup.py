@@ -17,7 +17,7 @@ for directory in directories:
         data_files.append(("tumbo_server/"+directory, files))
 
 setup(name='tumbo-server',
-    version=version,
+    version=__VERSION__,
     description='Highly flexible Application Runtime Platform',
     long_description='Tumbo is a Server Platform for simplifying common development and deployment tasks. It conduce to go live quickly with an application - with less deployment- and configuration requirements.',
     url="https://tumbo.io",
