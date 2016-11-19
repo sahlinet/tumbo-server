@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import glob
 import os
 
-__VERSION__ = "0.2.17"
+__VERSION__ = "0.3.0"
 
 
 # http://stackoverflow.com/questions/14399534/how-can-i-reference-requirements-txt-for-the-install-requires-kwarg-in-setuptool
