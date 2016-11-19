@@ -34,7 +34,7 @@ test:
     - git config --global user.email "philip@sahli.net"
     - git config --global user.name "Philip Sahli"
     - git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
-    - git push
+      #- git push
     #
     - sudo chmod 777 /run/docker.sock
     #

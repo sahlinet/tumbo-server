@@ -1,4 +1,4 @@
-# Tumbo Server
+# Tumbo Server - Highly flexible Application Runtime Platform
 
 `develop` [![Circle  CI (master)](https://circleci.com/gh/sahlinet/tumbo-server/tree/develop.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/sahlinet/tumbo-server/tree/develop)
 [![codecov](https://codecov.io/gh/sahlinet/tumbo-server/branch/master/graph/badge.svg)](https://codecov.io/gh/sahlinet/tumbo-server)
@@ -14,6 +14,23 @@ See [https://tumbo.io](https://tumbo.io)
 See [https://sahli.net/page/tumbo-io](https://sahli.net/page/tumbo-io)
 
 Current version: 0.3.0
+
+Tumbo is a Server Platform for simplifying common development and deployment tasks. It conduce to go live quickly with an application - with less deployment- and configuration requirements. The Tumbo Stack is based on Linux, Django and Docker.
+
+## Features
+
+- Run Python Code synchronous, asynchronous or scheduled
+- Static Content Delivery with dynamic rendering
+- Transport Projects between Tumbo instances
+- Run custom Applications in Container
+- Management with Command Line Utility or API
+
+## Install Tumbo and start stack
+
+For starters it is fine use use the package from pip.
+
+    pip install tumbo-server==0.3.0
+    tumbo-cli.py server dev run
 
 ## Run Tumbo
 
