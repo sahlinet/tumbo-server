@@ -91,6 +91,7 @@ deployment:
       - docker push philipsahli/tumbo-server:$CIRCLE_TAG
       - docker push philipsahli/tumbo-worker:$CIRCLE_TAG
       - bash create_package.sh
+      - pip install twine==1.8.1
       - twine upload -r pypi -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz
       - >
         if [ -n "${CIRCLE_TOKEN}" ] && [ -n "${DEPLOY_URL}" ]; then
@@ -106,4 +107,5 @@ deployment:
       - docker images
       - docker push philipsahli/tumbo-server:develop
       - docker push philipsahli/tumbo-worker:develop
+      - pip install twine==1.8.1
       - twine upload --skip-existing -r pypitest -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz
