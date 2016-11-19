@@ -91,6 +91,7 @@ deployment:
       - docker push philipsahli/tumbo-server:$CIRCLE_TAG
       - docker push philipsahli/tumbo-worker:$CIRCLE_TAG
       - bash create_package.sh
+      - twine upload -r pypi -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz
       - >
         if [ -n "${CIRCLE_TOKEN}" ] && [ -n "${DEPLOY_URL}" ]; then
             echo curl -v X POST --header "Content-Type: application/json" --data '{"build_parameters": {"TUMBO_TAG": "'"$CIRCLE_TAG"'"}}' -X POST $DEPLOY_URL?circle-token=$CIRCLE_TOKEN
@@ -105,4 +106,4 @@ deployment:
       - docker images
       - docker push philipsahli/tumbo-server:develop
       - docker push philipsahli/tumbo-worker:develop
-      - bash create_package.sh
+      - twine upload --skip-existing -r pypitest -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz
