@@ -60,9 +60,7 @@ from pygments import highlight
 from pygments.lexers import JsonLexer
 from pygments.formatters import Terminal256Formatter
 
-
 from docopt import docopt
-from os.path import expanduser
 from tabulate import tabulate
 
 docker_compose = sh.Command("docker-compose")
@@ -132,7 +130,7 @@ def format(s, l=None, nocolor=False):
 class EnvironmentList(object):
     @staticmethod
     def print_list():
-        path = "%s/.tumbo" % expanduser("~")
+        path = "%s/.tumbo" % os.path.expanduser("~")
         table = []
         if not os.path.exists(path):
             os.mkdir(path) 
@@ -147,7 +145,7 @@ class EnvironmentList(object):
     def get_active(env=None):
         if not env:
             try:
-                active_envId = os.path.basename(os.readlink("%s/.tumbo/active_env" % expanduser("~")).replace(".json", ""))
+                active_envId = os.path.basename(os.readlink("%s/.tumbo/active_env" % os.path.expanduser("~")).replace(".json", ""))
             except OSError:
                 return None
         else:
@@ -161,7 +159,7 @@ class Env(object):
         self.envId = envId
 
         try:
-            if self.envId+".json" in os.readlink("%s/.tumbo/active_env" % expanduser("~")):
+            if self.envId+".json" in os.readlink("%s/.tumbo/active_env" % os.path.expanduser("~")):
                 self.active = True
                 self.active_str = "*"
             else:
@@ -201,7 +199,6 @@ class Env(object):
             sys.exit(1)
         else:
             token = r.json()['token']
-
         return token
 
     def _getcredentials(self):
@@ -210,7 +207,7 @@ class Env(object):
 
     @property
     def config_path(self):
-        path = "%s/.tumbo" % expanduser("~")
+        path = "%s/.tumbo" % os.path.expanduser("~")
         if not os.path.exists(path):
             os.mkdir(path)
         config_path = "%s/%s.json" % (path, self.envId)
@@ -233,13 +230,10 @@ class Env(object):
 
             config_file.write(json.dumps(self.config_data))
             config_file.close()
-
             if "lchmod" in os.__dict__:
                 os.lchmod(self.config_path, 0600)
             else:
                 os.chmod(self.config_path, 0600)
-
-
             print "Logged in to '%s' with '%s' successfully" % (self.envId, self.user)
 
     def logout(self):
@@ -254,7 +248,7 @@ class Env(object):
 
     @staticmethod
     def load(envId):
-        path = "%s/.tumbo" % expanduser("~")
+        path = "%s/.tumbo" % os.path.expanduser("~")
         if not os.path.exists(path):
             os.mkdir(path)
         config_path = "%s/%s.json" % (path, envId)
@@ -273,7 +267,7 @@ class Env(object):
         return "%-20s   %-30s" % (self.envId, self.config_data['url'])
 
     def set_active(self):
-        link = "%s/.tumbo/active_env" % expanduser("~")
+        link = "%s/.tumbo/active_env" % os.path.expanduser("~")
         if os.path.exists(link):
             os.remove(link)
         os.symlink(self.config_path, link)
@@ -355,48 +349,49 @@ class Env(object):
 
 
     def project_transactions(self, name, tid=None):
-	data={}
-	if tid:
-		data['rid'] = tid
+        data={}
+        if tid:
+            data['rid'] = tid
         status_code, transactions = self._call_api("/core/api/base/%s/transactions/" % name, method="GET", params=data)
-	import pprint
-	logs_only = arguments.get('--logs', False)
-	cut = arguments.get('--cut', None)
-	nocolor = arguments.get('--nocolor', False)
-	for transaction in transactions:
-		rid=transaction['rid']
-        	table = []
-		if not logs_only:
-			tin=pprint.pformat(transaction['tin'], indent=8)
-			tin=format(tin, cut, nocolor)
-			tout=pprint.pformat(transaction['tout'], indent=8)
-			tout=format(tout, cut, nocolor)
-			table.append([
-				"In", transaction['created'], tin[:5000]
-			])
-		for log in transaction['logs']:
-			created = tolocaltime(log['created'])
-			level = int(log['level'])
-			if level == logging.DEBUG:
-                		level_s = "DEBUG"
-			elif level == logging.INFO:
-                		level_s = "INFO"
-			elif level == logging.WARNING:
-                		level_s = "WARNING"
-			elif level == logging.ERROR:
-                		level_s = "ERROR"
-			elif level == logging.CRITICAL:
-                		level_s = "CRITICAL"
-			else:
-                		level_s = "UNKNOWN"
-			table.append([
-				"Log (%s)" % level_s, created, format(log['msg'], cut, nocolor)
-			])
-		if not logs_only:
-			table.append([
-				"Out", tolocaltime(transaction['modified']), format(tout, cut, nocolor)
-			])
-        	print tabulate(table, headers=[rid, "Date", "Type"], tablefmt="simple")
+
+        logs_only = arguments.get('--logs', False)
+        cut = arguments.get('--cut', None)
+        nocolor = arguments.get('--nocolor', False)
+
+        for transaction in transactions:
+            rid=transaction['rid']
+            table = []
+            if not logs_only:
+                tin = pprint.pformat(transaction['tin'], indent=8)
+                tin = format(tin, cut, nocolor)
+                tout = pprint.pformat(transaction['tout'], indent=8)
+                tout = format(tout, cut, nocolor)
+                table.append([
+                    "In", transaction['created'], tin[:5000]
+                ])
+            for log in transaction['logs']:
+                created = tolocaltime(log['created'])
+                level = int(log['level'])
+                if level == logging.DEBUG:
+                            level_s = "DEBUG"
+                elif level == logging.INFO:
+                            level_s = "INFO"
+                elif level == logging.WARNING:
+                            level_s = "WARNING"
+                elif level == logging.ERROR:
+                            level_s = "ERROR"
+                elif level == logging.CRITICAL:
+                            level_s = "CRITICAL"
+                else:
+                            level_s = "UNKNOWN"
+                table.append([
+                    "Log (%s)" % level_s, created, format(log['msg'], cut, nocolor)
+                ])
+            if not logs_only:
+                table.append([
+                    "Out", tolocaltime(transaction['modified']), format(tout, cut, nocolor)
+                ])
+            print tabulate(table, headers=[rid, "Date", "Type"], tablefmt="simple")
 
     def create_function(self, project_name, function_name):
         status_code, response = self._call_api("/core/api/base/%s/apy/" % (project_name), method="POST", json={"name": function_name})
@@ -437,21 +432,18 @@ class Env(object):
             while True:
                 status_code, response = self._call_api(state_url)
                 state = response['status']
-		if state != "RUNNING":
-			break
-		#print "Still running..."
-		sys.stdout.write('.')
-		sys.stdout.flush()
-		time.sleep(2)
+                if state != "RUNNING":
+                    break
+                sys.stdout.write('.')
+                sys.stdout.flush()
+                time.sleep(2)
 
         response = response[:1000]+"... truncated ..." if len(response) > 999 else response
         print "HTTP Status Code: %s" % status_code
         sys.stdout.write("Response: ")
-	#print response
-	nocolor = arguments.get('--nocolor', False)
-	response=pprint.pformat(response, indent=4)
-	nocolor = arguments.get('--nocolor', False)
-	#print response
+        nocolor = arguments.get('--nocolor', False)
+        response=pprint.pformat(response, indent=4)
+        nocolor = arguments.get('--nocolor', False)
         print format(response, nocolor=nocolor)
 
 def do_ngrok():
