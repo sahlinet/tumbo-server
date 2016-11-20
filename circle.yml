@@ -16,6 +16,7 @@ test:
   override:
     #
     - pip install coveralls
+    - pip install -r requirements.txt
     # TODO: coverage should be run in cotainer and data directory for output should be added as volume
     - coverage run --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
     - coverage run --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
