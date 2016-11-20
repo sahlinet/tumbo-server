@@ -18,9 +18,9 @@ test:
     - pip install coveralls
     - pip install -r requirements.txt
     # TODO: coverage should be run in cotainer and data directory for output should be added as volume
-    - coverage run --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
-    - coverage run --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
-    - coverage run --source=tumbo tumbo/manage.py test ui--settings=tumbo.dev
+    - DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
+    - DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
+    - DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
     #
     - pip install docopt==0.6.2 sh==1.11 Pygments==2.1.3 tabulate==0.7.5 requests
     #
