@@ -1,5 +1,6 @@
 #!/bin/bash
 DATE=$(date +%s)
+#cd ..
 docker pull philipsahli/centos-v2:latest
 rm -rf build &&  mkdir -p build
 tar -cf - --exclude build . | tar -xf - -C build/

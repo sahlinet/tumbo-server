@@ -633,7 +633,7 @@ if __name__ == '__main__':
                 except:
                     print "adminuser already exists?"
 
-                cmd = "%s import_base --username=admin --file %s/example_bases/generics.zip  --name=generics --settings=tumbo.dev" % (manage_py, tumbo_path)
+                cmd = "%s import_base --username=admin --file %s/examples/generics.zip  --name=generics --settings=tumbo.dev" % (manage_py, tumbo_path)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
                 generics_import = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
