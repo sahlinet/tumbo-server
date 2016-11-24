@@ -9,7 +9,7 @@ from rest_framework import status
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.conf import settings
 from django.db import transaction
 from django.core.management import call_command
@@ -71,7 +71,6 @@ class TransportEndpointViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return TransportEndpoint.objects.filter(user=self.request.user)
-
     def pre_save(self, obj):
         obj.user = self.request.user
 
@@ -132,17 +131,17 @@ class ApyViewSet(viewsets.ModelViewSet):
             }
             raise APIException(response_data)
 
-    def clone(self, request, base_name, pk):
+    def clone(self, request, base_name, name):
         base = get_object_or_404(Base, name=base_name,
                         user=User.objects.get(username=request.user.username))
-        clone_count = base.apys.filter(name__startswith="%s_clone" % pk).count()
+        clone_count = base.apys.filter(name__startswith="%s_clone" % name).count()
         created = False
         while not created:
             cloned_exec, created = Apy.objects.get_or_create(base=base,
-                                name="%s_clone_%s" % (pk, str(clone_count+1)))
+                                name="%s_clone_%s" % (name, str(clone_count+1)))
             clone_count += 1
 
-        cloned_exec.module = base.apys.get(id=pk).module
+        cloned_exec.module = base.apys.get(name=name).module
         cloned_exec.save()
 
         self.object = cloned_exec
@@ -251,6 +250,10 @@ class BaseViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     lookup_field = 'name'
 
+    def pre_save(self, obj):
+        print self.request.user
+        obj.user = self.request.user
+
     def get_queryset(self):
         return Base.objects.all()._clone().filter(user=self.request.user)
 
@@ -290,7 +293,7 @@ class BaseViewSet(viewsets.ModelViewSet):
 
     def recreate(self, request, name):
         transaction.set_autocommit(False)
-        logger.info("recreate%s: " % name)
+        logger.info("recreate: %s" % name)
         base = self.get_queryset().get(name=name)
         base.stop()
         base.destroy()
@@ -298,6 +301,18 @@ class BaseViewSet(viewsets.ModelViewSet):
         transaction.commit()
         return self.retrieve(request, name=name)
 
+    def delete(self, request, name):
+        transaction.set_autocommit(False)
+        logger.info("delete: %s" % name)
+        try:
+            base = self.get_queryset().get(name=name)
+        except Base.DoesNotExist:
+            raise Http404
+        base.stop()
+        base.destroy()
+        base.delete()
+        transaction.commit()
+        return HttpResponse()
 
     def transport(self, request, name):
         base = self.get_queryset().get(name=name)

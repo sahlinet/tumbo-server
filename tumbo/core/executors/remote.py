@@ -282,7 +282,7 @@ class ExecutorServerThread(CommunicationThread):
                 try:
                     response_data = {}
                     response_data = _do(json.loads(body), self.functions, self.foreign_functions, self.settings, self.pluginconfig)
-		    logger.debug("RECEIVED: %s" % str(response_data))
+                    logger.debug("RECEIVED: %s" % str(response_data))
                 except Exception, e:
                     logger.exception(e)
                 finally:

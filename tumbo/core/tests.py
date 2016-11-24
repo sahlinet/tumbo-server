@@ -123,7 +123,7 @@ class ApiTestCase(BaseTestCase):
     def test_clone_apy_for_base_and_delete(self, distribute_mock):
         distribute_mock.return_value = True
         self.client1.login(username='user1', password='pass')
-        response = self.client1.post("/core/api/base/%s/apy/%s/clone/" % (self.base1.name, self.base1_apy1.id))
+        response = self.client1.post("/core/api/base/%s/apy/%s/clone/" % (self.base1.name, self.base1_apy1.name))
         self.assertEqual(200, response.status_code)
         assert json.loads(response.content)
 
