@@ -1,0 +1,16 @@
+---
+exclude_paths:
+    - ".git/"
+    - "**.gif"
+    - "**.html"
+    - "**.json"
+    - "**.png"
+    - "**.svg"
+    - "**.xml"
+    - "**.yaml"
+    - "**.yml"
+    - "**/bower_components/"
+    - "**/boot**css"
+    - "**/boot**js"
+    - "**/codemirror/"
+    - "**/grid/"
