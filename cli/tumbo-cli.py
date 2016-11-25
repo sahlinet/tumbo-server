@@ -1,4 +1,4 @@
-#!/home/philipsahli/virtualenvs/tumbo/bin/python
+#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 """Tumbo
 
@@ -68,7 +68,7 @@ from tabulate import tabulate
 docker_compose = sh.Command("docker-compose")
 python = sh.Command(sys.executable)
 
-coverage_cmd = "/home/philipsahli/virtualenvs/tumbo/bin/coverage run --timid --source=tumbo --parallel-mode "
+coverage_cmd = "coverage run --timid --source=tumbo --parallel-mode "
 
 try:
     import tumbo

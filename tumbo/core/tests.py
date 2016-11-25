@@ -441,10 +441,10 @@ import asdf
 
         self.client1.login(username='user1', password='pass')
         response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
-                data = json.dumps({'module': self.base1_apy1.module}), content_type='application/json'
+                data = json.dumps({'name': self.base1_apy1.module, 'module': self.base1_apy1.module}), content_type='application/json'
             )
         self.assertEqual(500, response.status_code)
-        self.assertTrue(json.loads(response.content)['detail'].has_key('warnings'))
+        self.assertTrue(len(json.loads(response.content)['warnings']) > 0 )
 
     def test_save_valid_module(self):
         self.base1_apy1.module = """import django
@@ -452,9 +452,8 @@ print django"""
 
         self.client1.login(username='user1', password='pass')
         response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
-                data = json.dumps({'module': self.base1_apy1.module}), content_type='application/json'
+                data = json.dumps({'name': self.base1_apy1.name, 'module': self.base1_apy1.module}), content_type='application/json'
             )
-        print response.content
         self.assertEqual(200, response.status_code)
 
     def test_save_unparsebla_module(self):
@@ -462,7 +461,7 @@ print django"""
 
         self.client1.login(username='user1', password='pass')
         response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
-                data = json.dumps({'module': self.base1_apy1.module}), content_type='application/json'
+                data = json.dumps({'name': self.base1_apy1.module, 'module': self.base1_apy1.module}), content_type='application/json'
             )
         self.assertEqual(500, response.status_code)
-        self.assertTrue(json.loads(response.content)['detail'].has_key('warnings'))
+        self.assertTrue(len(json.loads(response.content)['errors']) > 0 )

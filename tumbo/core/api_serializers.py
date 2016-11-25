@@ -34,14 +34,13 @@ class ApySerializer(serializers.ModelSerializer):
     #mynum = serializers.SerializerMethodField(method_name="get_id")
 
     def get_id(self, obj):
-        print obj.id
         return obj.id
 
     class Meta:
         model = Apy
         fields = ('name', 'module', 'counter', 'description', 'public', 'schedule', 'everyone')
 
-    def save_object(self, obj, **kwargs):
+    def save(self, obj, **kwargs):
         obj.save_and_sync(**kwargs)
 
 
@@ -87,13 +86,13 @@ class TransportEndpointSerializer(serializers.ModelSerializer):
 
 
 class BaseSerializer(serializers.ModelSerializer):
-    apy = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    full_name = serializers.SerializerMethodField(method_name="get_full_name")
-    state = serializers.Field()
-    executors = serializers.Field()
+    apys = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    full_name = serializers.SerializerMethodField()
+    state = serializers.ReadOnlyField()
+    executors = serializers.ReadOnlyField()
     foreign_apys = serializers.HyperlinkedRelatedField(
         many=True,
-        read_only=False,
+        read_only=True,
         view_name='public-apy-detail'
     )
 
@@ -103,9 +102,8 @@ class BaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Base
         fields = ('id', 'name', 'full_name', 'state', 'uuid',
-                  'executors', 'content', 'foreign_apys', 'public', 'static_public',)
+                  'executors', 'content', 'foreign_apys', 'public', 'static_public', 'apys')
 
-
-    def save_object(self, obj, **kwargs):
-        super(BaseSerializer, self).save_object(obj, **kwargs)
-        obj.save_and_sync(**kwargs)
+    #def save(self, obj, **kwargs):
+        #super(BaseSerializer, self).save(obj, *args, **kwargs)
+        #obj.save_and_sync(**kwargs)

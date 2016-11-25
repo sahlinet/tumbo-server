@@ -4,7 +4,7 @@ import json
 import base64
 
 from django.template import TemplateDoesNotExist
-from django.template.loader import BaseLoader
+from django.template.loaders.base import Loader
 from core.utils import Connection
 
 from django.conf import settings
@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 
-class FastappBaseLoader(BaseLoader):
+class FastappLoader(Loader):
     is_usable = True
-    
+
     def get_file(self, template_name, short_name, base_model):
         raise NotImplementedError("get_file method is missing on " % self.__class__.name)
 
@@ -34,14 +34,15 @@ class FastappBaseLoader(BaseLoader):
             except Exception, e:
                 pass
         raise TemplateDoesNotExist()
-        
+
 
     load_template_source.is_usable = True
+
 """
 Wrapper for loading templates from the filesystem.
 """
 
-class RemoteWorkerLoader(FastappBaseLoader):
+class RemoteWorkerLoader(FastappLoader):
 
   def get_file(self, template_name, short_name, base_model):
         logger.debug("%s: load from module in worker" % template_name)
@@ -68,7 +69,7 @@ class RemoteWorkerLoader(FastappBaseLoader):
         return file, template_name
 
 
-class DropboxAppFolderLoader(FastappBaseLoader):
+class DropboxAppFolderLoader(FastappLoader):
 
   def get_file(self, template_name, short_name, base_model):
         connection = Connection(base_model.user.authprofile.access_token)
@@ -80,7 +81,7 @@ class DropboxAppFolderLoader(FastappBaseLoader):
         return f, template_name
 
 
-class DevLocalRepositoryPathLoader(FastappBaseLoader):
+class DevLocalRepositoryPathLoader(FastappLoader):
 
   def get_file(self, template_name, short_name, base_model):
         REPOSITORIES_PATH = getattr(settings, "TUMBO_REPOSITORIES_PATH", None)
