@@ -115,7 +115,7 @@ def confirm(prompt=None, resp=False):
         if not ans:
             return resp
         if ans not in ['y', 'Y', 'n', 'N']:
-            print 'please enter y or n.'
+            print('please enter y or n.')
             continue
         if ans == 'y' or ans == 'Y':
             return True
@@ -363,7 +363,7 @@ class Env(object):
         print tabulate(table, headers=["Name", "Public", "Schedule", "Counter success", "Counter failed"])
 
     def project_transactions(self, name, tid=None):
-        data={}
+        data = {}
         if tid:
             data['rid'] = tid
         status_code, transactions = self._call_api("/core/api/base/%s/transactions/" % name, method="GET", params=data)
@@ -373,7 +373,7 @@ class Env(object):
         nocolor = arguments.get('--nocolor', False)
 
         for transaction in transactions:
-            rid=transaction['rid']
+            rid = transaction['rid']
             table = []
             if not logs_only:
                 tin = pprint.pformat(transaction['tin'], indent=8)
@@ -456,9 +456,10 @@ class Env(object):
         print "HTTP Status Code: %s" % status_code
         sys.stdout.write("Response: ")
         nocolor = arguments.get('--nocolor', False)
-        response=pprint.pformat(response, indent=4)
+        respone = pprint.pformat(response, indent=4)
         nocolor = arguments.get('--nocolor', False)
         print format(response, nocolor=nocolor)
+
 
 def do_ngrok():
     time.sleep(1)
@@ -472,10 +473,11 @@ def do_ngrok():
     cmd = '-hostname=%s -authtoken=%s localhost:%s' % (ngrok_hostname, ngrok_authtoken, port)
     ngrok(cmd.split(), _out="/dev/null", _err="/dev/stderr", _bg=True)
 
+
 def tolocaltime(dt):
     from datetime import datetime
-    import pytz    # $ pip install pytz
-    import tzlocal # $ pip install tzlocal
+    import pytz     # $ pip install pytz
+    import tzlocal  # $ pip install tzlocal
 
     local_timezone = tzlocal.get_localzone() # get pytz tzinfo
     utc_time = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -494,7 +496,6 @@ if __name__ == '__main__':
 
     time.sleep(0.5)
     if arguments['env']:
-        #import pprint; pprint.pprint(arguments)
         if arguments['login']:
             env = Env(arguments['<env-id>'], arguments['<url>'])
             env.login()
@@ -619,7 +620,6 @@ if __name__ == '__main__':
                 PROPAGATE_VARIABLES = os.environ.get("PROPAGATE_VARIABLES", None)
                 if PROPAGATE_VARIABLES:
                     env['PROPAGATE_VARIABLES'] = PROPAGATE_VARIABLES
-
 
                 cmd = "%s syncdb --noinput --settings=tumbo.dev" % manage_py
                 syncdb = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)

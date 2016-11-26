@@ -7,6 +7,7 @@ import StringIO
 import hashlib
 import os
 import re
+import cProfile
 
 from jose import jws
 from dropbox.rest import ErrorResponse
@@ -27,14 +28,18 @@ from pyflakes.messages import Message
 from django.core.urlresolvers import reverse
 from django.test import RequestFactory
 
+
 class UnAuthorized(Exception):
     pass
+
 
 class NotFound(Exception):
     pass
 
+
 class NoBasesFound(Exception):
     pass
+
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +118,7 @@ class Connection(object):
                 for content in f_metadata['contents']:
                     logger.info("download "+content['path'])
 
-                    if content['is_dir'] == True:
+                    if content['is_dir']:
                         self.directory_zip(content['path'], zf)
                     else:
                         # get the file
@@ -205,7 +210,7 @@ def check_code(code, name):
 
 
 def load_setting(name, fail=True):
-    v=None
+    v = None
     default = getattr(defaults, name, None)
     setting = getattr(settings, name, None)
     if setting:
@@ -261,18 +266,18 @@ def call_apy(base_name, apy_name):
         logger.error("ERROR call_apy")
         logger.exception(e)
 
-import cProfile
+
 def profileit(func):
     """
     Taken from http://stackoverflow.com/questions/5375624/a-decorator-that-profiles-a-method-call-and-logs-the-profiling-result
     """
     def wrapper(*args, **kwargs):
         prof = cProfile.Profile()
-        #if not os.environ.has_key("PROFILE_DO_FUNC"):
+        # if not os.environ.has_key("PROFILE_DO_FUNC"):
         #    return func(*args, **kwargs)
         retval = prof.runcall(func, *args, **kwargs)
-		# Note use of name from outer scope
-		#prof.dump_stats(name)
+        # Note use of name from outer scope
+        # prof.dump_stats(name)
         import pstats
         s = pstats.Stats(prof).sort_stats('time')
         s.print_stats(8)
@@ -289,23 +294,23 @@ def fromtimestamp(t):
     logger.debug("fromtimestamp: %s" % t)
     return datetime.datetime.fromtimestamp(t)
 
-def create_jwt(user, secret): 
+def create_jwt(user, secret):
     logger.debug("Create JWT with secret %s" % secret)
-    """ the above token need to be saved in database, and a one-to-one relation should exist with the username/user_pk """ 
-    #username = request.POST['username'] 
-    #password = request.POST['password'] 
+    """ the above token need to be saved in database, and a one-to-one relation should exist with the username/user_pk """
+    # username = request.POST['username']
+    # password = request.POST['password'
 
-    expiry = datetime.datetime.now() + datetime.timedelta(seconds=30) 
+    expiry = datetime.datetime.now() + datetime.timedelta(seconds=30)
     expiry_s = time.mktime(expiry.timetuple())
     if user.is_authenticated():
         internalid = user.authprofile.internalid
-        payload = {'username': user.username, 'expiry':expiry_s, 'type': "AuthenticatedUser", 'internalid': internalid, 'email': user.email}
-        token = jws.sign(payload, secret, algorithm='HS256') 
+        payload = {'username': user.username, 'expiry': expiry_s, 'type': "AuthenticatedUser", 'internalid': internalid, 'email': user.email}
+        token = jws.sign(payload, secret, algorithm='HS256')
     else:
         payload = {'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': None, 'email': None}
-        token = jws.sign(payload, secret, algorithm='HS256') 
+        token = jws.sign(payload, secret, algorithm='HS256')
     logger.debug("Payload: %s" % payload)
-    #logger.info("Token: %s" % token)
+    # logger.info("Token: %s" % token)
     return token
 
 def read_jwt(payload, secret):
@@ -313,11 +318,11 @@ def read_jwt(payload, secret):
     logger.debug("Payload: %s" % payload)
     decoded_dict = json.loads(jws.verify(payload, secret, algorithms=['HS256']))
     logger.info("Identity: %s" % decoded_dict)
-    #print decoded_dict
-    #print type(decoded_dict)
-    username = decoded_dict.get('username', None) 
-    expiry = decoded_dict.get('expiry', None) 
+    # print decoded_dict
+    # print type(decoded_dict)
+    username = decoded_dict.get('username', None)
+    expiry = decoded_dict.get('expiry', None)
 
-    #if datetime.datetime.utcfromtimestamp(expiry) < datetime.datetime.now(): 
+    # if datetime.datetime.utcfromtimestamp(expiry) < datetime.datetime.now():
     #    raise Exception("AuthenticationFailed: (_('Token Expired.')")
     return (username, decoded_dict)
