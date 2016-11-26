@@ -8,6 +8,8 @@
 
 [![Code Climate](https://codeclimate.com/github/sahlinet/tumbo-server/badges/gpa.svg)](https://codeclimate.com/github/sahlinet/tumbo-server)
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b5a70b9303884bad87271b81fb78c11a)](https://www.codacy.com/app/philipsahli/tumbo-server?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sahlinet/tumbo-server&amp;utm_campaign=Badge_Grade)
+
 <script type='text/javascript' src='https://www.openhub.net/p/tumbo-server/widgets/project_thin_badge?format=js'></script>
 
 [![PyPI version](https://badge.fury.io/py/tumbo-server.svg)](https://badge.fury.io/py/tumbo-server)
