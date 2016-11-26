@@ -322,12 +322,11 @@ class Apy(models.Model):
         unique_together = (("name", "base"),)
 
     def mark_executed(self):
-        with transaction.atomic():
-            if not hasattr(self, "counter"):
-                self.counter = Counter(apy=self)
-                self.counter.save()
-            self.counter.executed = F('executed')+1
+        if not hasattr(self, "counter"):
+            self.counter = Counter(apy=self)
             self.counter.save()
+        self.counter.executed = F('executed')+1
+        self.counter.save()
 
     def mark_failed(self):
         if not hasattr(self, "counter"):
@@ -474,7 +473,7 @@ class Host(models.Model):
 class Process(models.Model):
     running = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=64, null=True)
-    rss = models.IntegerField(max_length=7, default=0)
+    rss = models.IntegerField(default=0)
     version = models.CharField(max_length=7, default=0)
 
     class Meta:
@@ -781,7 +780,7 @@ class StaticFile(models.Model):
     name = models.CharField(max_length=300, blank=False, null=False)
     storage = models.CharField(max_length=2, choices=STORAGE)
     rev = models.CharField(max_length=32, blank=True, null=True)
-    updated = models.DateTimeField(auto_now=True, auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "%s://%s" % (self.get_storage_display(), self.name)

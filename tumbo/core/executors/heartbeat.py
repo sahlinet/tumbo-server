@@ -61,7 +61,7 @@ def log_mem(**kwargs):
 
 def inactivate():
 
-    transaction.set_autocommit(False)
+    #transaction.set_autocommit(False)
     try:
         while True:
             logger.debug("Inactivate Thread run")
@@ -84,11 +84,14 @@ def inactivate():
             except DatabaseError, e:
                 logger.warning("Executor(s) was locked with select_for_update")
                 transaction.rollback()
-            transaction.commit()
+            #transaction.commit()
             time.sleep(10)
     except Exception, e:
         logger.exception(e)
-        transaction.rollback()
+        #transaction.rollback()
+
+    #finally:
+    #    transaction.set_autocommit(True)
 
 
 def update_status(parent_name, thread_count, threads):
