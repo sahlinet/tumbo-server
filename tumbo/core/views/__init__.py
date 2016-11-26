@@ -291,7 +291,7 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
 		try:
 			returned = json.loads(data['returned'])
 			data['returned'] = returned
-		except: 	
+		except:
 			pass
                 transaction.tout = json.dumps(data)
                 transaction.status = FINISHED
@@ -305,8 +305,8 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
 
         # response
         response = self._handle_response(request, data, exec_model)
-        if response and data:
-            if not request.GET.get('async', False) and data.has_key('returned') and "action" in data['returned'] and data['returned']['action'] == "RESTART":
+        if response and data.get('returned', None):
+            if not request.GET.get('async', False) and "action" in data['returned'] and data['returned']['action'] == "RESTART":
                 logger.info("Restarting base %s" % base_model.name)
                 base_model.stop()
                 base_model.start()

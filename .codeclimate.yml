@@ -1,0 +1,30 @@
+---
+exclude_paths:
+    - ".git/"
+    - "**.gif"
+    - "**.html"
+    - "**.json"
+    - "**.png"
+    - "**.svg"
+    - "**.xml"
+    - "**.yaml"
+    - "**.yml"
+    - "**/bower_components/"
+    - "**/boot**css"
+    - "**/boot**js"
+    - "**/codemirror/"
+    - "**/grid/"
+engines:
+    radon:
+        enabled: true
+    pep8:
+        enabled: true
+    eslint:
+        enabled: true
+    csslint:
+        enabled: true
+ratings:
+    paths:
+      - "**.py"
+      - "**.js"
+      - "**.css"

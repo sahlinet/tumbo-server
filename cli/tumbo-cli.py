@@ -1,14 +1,12 @@
-#!/home/philipsahli/virtualenvs/tumbo/bin/python
+#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 """Tumbo
 
 Usage:
   tumbo-cli.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage]
-  tumbo-cli.py server dev test
-  tumbo-cli.py server docker build
   tumbo-cli.py server docker run [--stop-after=<seconds>] [--ngrok-hostname=host] [--ngrok-authtoken=token]
   tumbo-cli.py server docker stop
-  tumbo-cli.py server docker test
+  tumbo-cli.py server docker build
   tumbo-cli.py server docker pull
   tumbo-cli.py server docker url
   tumbo-cli.py server docker logs
@@ -26,15 +24,18 @@ Usage:
   tumbo-cli.py project <base-name> destroy [--env=<env>]
   tumbo-cli.py project <base-name> delete [--env=<env>]
   tumbo-cli.py project <base-name> create [--env=<env>]
-  tumbo-cli.py project <base-name> transport <env> [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> execute [--async] [--public] [--nocolor] [--env=<env>]
-  tumbo-cli.py project <base-name> function <function-name> show [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> create [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> edit [--env=<env>]
   tumbo-cli.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>] [--nocolor] [--env=<env>]
-  tumbo-cli.py project <base-name> export [filename] [--env=<env>]
-  tumbo-cli.py project <base-name> import <zipfile> [--env=<env>]
 
+  # tumbo-cli.py project <base-name> export [filename] [--env=<env>]
+   tumbo-cli.py project <base-name> import <zipfile> [--env=<env>]
+
+  # tumbo-cli.py server dev test
+  # tumbo-cli.py server docker test
+  # tumbo-cli.py project <base-name> function <function-name> show [--env=<env>]
+  # tumbo-cli.py project <base-name> transport <env> [--env=<env>]
   # tumbo-cli.py project <name> settings edit
   # tumbo-cli.py project <name> datastore <show>
   # tumbo-cli.py --version
@@ -42,6 +43,7 @@ Usage:
 Options:
   -h --help         Show this screen.
   --version         Show version.
+  --env=env         Use different environment than active.
   --cut=cut         Cut output after n character.
 """
 import sys
@@ -66,7 +68,7 @@ from tabulate import tabulate
 docker_compose = sh.Command("docker-compose")
 python = sh.Command(sys.executable)
 
-coverage_cmd = "/home/philipsahli/virtualenvs/tumbo/bin/coverage run --timid --source=tumbo --parallel-mode "
+coverage_cmd = "coverage run --timid --source=tumbo --parallel-mode "
 
 try:
     import tumbo
@@ -288,6 +290,16 @@ class Env(object):
             table.append([project['name'], state])
         print tabulate(table, headers=["Projectname", "State"])
 
+    def project_create(self, name):
+        status_code, response = self._call_api("/core/api/base/", method="POST", json={"name": name})
+        if status_code == 201:
+            print "Project %s created" % (name)
+        else:
+            print status_code
+
+    def project_stop(self, name):
+        status_code, projects = self._call_api("/core/api/base/%s/" % name, method="POST")
+
     def project_stop(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/stop/" % name, method="POST")
 
@@ -298,7 +310,11 @@ class Env(object):
         status_code, projects = self._call_api("/core/api/base/%s/destroy/" % name, method="POST")
 
     def project_delete(self, name):
-        status_code, projects = self._call_api("/core/base/%s/delete/" % name, method="POST")
+        status_code, projects = self._call_api("/core/api/base/%s/delete/" % name, method="POST")
+        if status_code == 200:
+            print "Project %s deleted" % name
+        else:
+            print "Error: Could not delete Project %s" % name
 
     def project_show(self, name):
         status_code, project = self._call_api("/core/api/base/%s/" % name)
@@ -345,8 +361,6 @@ class Env(object):
                 failed
             ])
         print tabulate(table, headers=["Name", "Public", "Schedule", "Counter success", "Counter failed"])
-
-
 
     def project_transactions(self, name, tid=None):
         data={}
@@ -505,6 +519,13 @@ if __name__ == '__main__':
         if arguments['list']:
             env.projects_list()
         if arguments['<base-name>']:
+
+            if arguments['create'] and not arguments['function']:
+                env.project_create(arguments['<base-name>'])
+
+            if arguments['delete'] and not arguments['function']:
+                env.project_delete(arguments['<base-name>'])
+
             if arguments['stop']:
                 env.project_stop(arguments['<base-name>'])
                 env.project_show(arguments['<base-name>'])
@@ -519,14 +540,11 @@ if __name__ == '__main__':
                 env.project_destroy(arguments['<base-name>'])
                 env.project_show(arguments['<base-name>'])
 
-            if arguments['delete']:
-                env.project_delete(arguments['<base-name>'])
-
             if arguments['start']:
                 env.project_start(arguments['<base-name>'])
                 env.project_show(arguments['<base-name>'])
 
-            if arguments['show']:
+            if arguments['show'] and not arguments['function']:
                 env.project_show(arguments['<base-name>'])
 
             if arguments['open']:
@@ -549,7 +567,6 @@ if __name__ == '__main__':
                 print env.project_transactions(arguments['<base-name>'], tid)
 
     if arguments['server']:
-        #print arguments
         if arguments['dev']:
             if arguments['run']:
 
@@ -633,7 +650,7 @@ if __name__ == '__main__':
                 except:
                     print "adminuser already exists?"
 
-                cmd = "%s import_base --username=admin --file %s/example_bases/generics.zip  --name=generics --settings=tumbo.dev" % (manage_py, tumbo_path)
+                cmd = "%s import_base --username=admin --file %s/examples/generics.zip  --name=generics --settings=tumbo.dev" % (manage_py, tumbo_path)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
                 generics_import = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)

@@ -308,10 +308,9 @@
 
           $scope.save = function(apy) {
               Apy1.update({
-                  'name': window.active_base,
-                  'id': apy.id
+                  'base_name': window.active_base,
+                  'name': apy.name
               }, apy).$promise.then(function(data) {
-                  console.log("saved");
                   $scope.alerts.push({
                       type: 'success',
                       msg: "Exec '" + apy.name +
@@ -350,9 +349,10 @@
 
           $scope.delete = function(apy) {
               //Apy1.update({'baseId': window.active_base_id, 'id': apy.id}, apy);
+              console.info(apy);
               Apy1.delete({
-                  'name': window.active_base,
-                  'id': apy.id
+                  'base_name': window.active_base,
+                  'name': apy.name
               }, function(data) {
                   var indx = $scope.apys.indexOf(apy);
                   $scope.apys.splice(indx, 1);
@@ -362,8 +362,8 @@
 
           $scope.clone = function(apy) {
               Apy1.clone({
-                  'name': window.active_base,
-                  'id': apy.id
+                  'base_name': window.active_base,
+                  'name': apy.name
               }, apy, function(data) {
                   $scope.apys.push(data);
               });

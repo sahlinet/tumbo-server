@@ -2,14 +2,15 @@
 import zipfile
 import requests
 from threading import Thread
-from rest_framework.renderers import JSONRenderer, JSONPRenderer
+from rest_framework.renderers import JSONRenderer
+from rest_framework_jsonp.renderers import JSONPRenderer
 from rest_framework import permissions, viewsets, views
 from rest_framework import status
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.conf import settings
 from django.db import transaction
 from django.core.management import call_command
@@ -17,7 +18,7 @@ from django.core.management import call_command
 from rest_framework import renderers
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication, BasicAuthentication
 from rest_framework.response import Response
-from rest_framework.decorators import link
+#from rest_framework.decorators import link
 from rest_framework.exceptions import APIException
 
 from api_authentication import CustomSessionAuthentication
@@ -60,8 +61,9 @@ class SettingViewSet(viewsets.ModelViewSet):
         name = self.kwargs['name']
         return Setting.objects.filter(base__user=self.request.user, base__name=name)
 
-    def pre_save(self, obj):
-        obj.base = Base.objects.get(name=self.kwargs['name'])
+    def perform_create(self, serializer):
+        base_obj = Base.objects.get(name=self.kwargs['name'], user=self.request.user)
+        serializer.save(base=base_obj)
 
 
 class TransportEndpointViewSet(viewsets.ModelViewSet):
@@ -71,7 +73,6 @@ class TransportEndpointViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return TransportEndpoint.objects.filter(user=self.request.user)
-
     def pre_save(self, obj):
         obj.user = self.request.user
 
@@ -97,15 +98,17 @@ class ApyViewSet(viewsets.ModelViewSet):
     renderer_classes = [JSONRenderer, JSONPRenderer]
     authentication_classes = (TokenAuthentication, SessionAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
+    queryset = Apy.objects.all()
 
     def get_queryset(self):
         name = self.kwargs['base_name']
         get_object_or_404(Base, user=self.request.user, name=name)
         return Apy.objects.filter(base__user=self.request.user, base__name=name)
 
-    def pre_save(self, obj):
-        obj.base = Base.objects.get(name=self.kwargs['base_name'], user=self.request.user)
-        result, warnings, errors = check_code(obj.module, obj.name)
+    def perform_update(self, serializer):
+        # TODO: verify that not a foreign function can be updated
+        #obj.base = Base.objects.get(name=self.kwargs['base_name'], user=self.request.user)
+        result, warnings, errors = check_code(serializer.initial_data['module'], serializer.initial_data['name'])
         warnings_prep = []
         errors_prep = []
         for warning in warnings:
@@ -132,17 +135,17 @@ class ApyViewSet(viewsets.ModelViewSet):
             }
             raise APIException(response_data)
 
-    def clone(self, request, base_name, pk):
+    def clone(self, request, base_name, name):
         base = get_object_or_404(Base, name=base_name,
                         user=User.objects.get(username=request.user.username))
-        clone_count = base.apys.filter(name__startswith="%s_clone" % pk).count()
+        clone_count = base.apys.filter(name__startswith="%s_clone" % name).count()
         created = False
         while not created:
             cloned_exec, created = Apy.objects.get_or_create(base=base,
-                                name="%s_clone_%s" % (pk, str(clone_count+1)))
+                                name="%s_clone_%s" % (name, str(clone_count+1)))
             clone_count += 1
 
-        cloned_exec.module = base.apys.get(id=pk).module
+        cloned_exec.module = base.apys.get(name=name).module
         cloned_exec.save()
 
         self.object = cloned_exec
@@ -250,6 +253,10 @@ class BaseViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication, SessionAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
     lookup_field = 'name'
+    queryset = Base.objects.all()
+
+    def pre_save(self, obj):
+        obj.user = self.request.user
 
     def get_queryset(self):
         return Base.objects.all()._clone().filter(user=self.request.user)
@@ -290,7 +297,7 @@ class BaseViewSet(viewsets.ModelViewSet):
 
     def recreate(self, request, name):
         transaction.set_autocommit(False)
-        logger.info("recreate%s: " % name)
+        logger.info("recreate: %s" % name)
         base = self.get_queryset().get(name=name)
         base.stop()
         base.destroy()
@@ -298,6 +305,18 @@ class BaseViewSet(viewsets.ModelViewSet):
         transaction.commit()
         return self.retrieve(request, name=name)
 
+    def delete(self, request, name):
+        transaction.set_autocommit(False)
+        logger.info("delete: %s" % name)
+        try:
+            base = self.get_queryset().get(name=name)
+        except Base.DoesNotExist:
+            raise Http404
+        base.stop()
+        base.destroy()
+        base.delete()
+        transaction.commit()
+        return HttpResponse()
 
     def transport(self, request, name):
         base = self.get_queryset().get(name=name)
@@ -332,7 +351,7 @@ class BaseViewSet(viewsets.ModelViewSet):
             logger.error("%s failed with returncode %s" % (s, r.status_code))
             raise Exception("%s failed" % s)
 
-    @link()
+    #@link()
     def apy(self, request, name):
         queryset = Apy.objects.filter(base__name=name)
         serializer = ApySerializer(queryset,

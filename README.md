@@ -6,6 +6,8 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/sahlinet/tumbo-server/badge.svg)](https://coveralls.io/github/sahlinet/tumbo-server)
 
+[![Code Climate](https://codeclimate.com/github/sahlinet/tumbo-server/badges/gpa.svg)](https://codeclimate.com/github/sahlinet/tumbo-server)
+
 <script type='text/javascript' src='https://www.openhub.net/p/tumbo-server/widgets/project_thin_badge?format=js'></script>
 
 [![PyPI version](https://badge.fury.io/py/tumbo-server.svg)](https://badge.fury.io/py/tumbo-server)

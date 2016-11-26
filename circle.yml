@@ -38,7 +38,7 @@ test:
     #
     - python setup.py sdist --formats=gztar
     #
-    - bash create_package.sh
+    - bash bin/create_package.sh
     - python cli/tumbo-cli.py server docker pull
     - python cli/tumbo-cli.py server docker build
 
@@ -49,7 +49,7 @@ test:
     - docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test aaa --settings=tumbo.dev"
     - docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test ui --settings=tumbo.dev"
     #
-    - sh -x build-worker.sh
+    - sh -x bin/build-worker.sh
     #
     - python cli/tumbo-cli.py server docker run:
         background: true
@@ -81,7 +81,7 @@ deployment:
       - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_TAG
       - docker push philipsahli/tumbo-server:$CIRCLE_TAG
       - docker push philipsahli/tumbo-worker:$CIRCLE_TAG
-      - bash create_package.sh
+      - bash bin/create_package.sh
       - pip install twine==1.8.1
       - twine upload -r pypi -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz
       - >
