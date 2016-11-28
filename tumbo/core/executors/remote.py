@@ -14,7 +14,7 @@ from django.conf import settings
 
 from core.queue import connect_to_queuemanager, CommunicationThread
 from core.queue import connect_to_queue
-from core.utils import load_setting, read_jwt
+from core.utils import load_setting, read_jwt, check_code
 from core.plugins import PluginRegistry
 from core import responses
 
@@ -239,11 +239,16 @@ class ExecutorServerThread(CommunicationThread):
                 if props.app_id == "configuration":
                     fields = json.loads(body)[0]['fields']
                     try:
+                        ok, warnings, errors = check_code(fields['module'], fields['name'])
                         exec fields['module'] in globals(), locals()
-                        self.functions.update({
-                            fields['name']: func,
-                            })
-                        logger.info("Configuration '%s' received in %s" % (fields['name'], self.name))
+                        if ok:
+                            self.functions.update({
+                                fields['name']: func,
+                                })
+                            logger.info("Configuration '%s' received in %s" % (fields['name'], self.name))
+                        else:
+                            logger.error("Configuration '%s' failed in %s" % (fields['name'], self.name))
+                            logger.error(warnings, errors)
                     except Exception, e:
                         traceback.print_exc()
                 elif props.app_id == "fconfiguration":

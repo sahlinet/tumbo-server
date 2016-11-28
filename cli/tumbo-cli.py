@@ -458,6 +458,8 @@ class Env(object):
         nocolor = arguments.get('--nocolor', False)
         respone = pprint.pformat(response, indent=4)
         nocolor = arguments.get('--nocolor', False)
+        if type(response) is dict:
+            response = json.dumps(response)
         print format(response, nocolor=nocolor)
 
 

@@ -12,18 +12,20 @@ from django.db import IntegrityError
 from django.db.models.signals import post_save, post_delete
 from django.contrib.auth import get_user_model
 
+from rest_framework.test import APIRequestFactory, APIRequestFactory, force_authenticate, APIClient
+
 from core.models import AuthProfile
 from core.models import Base, Apy, Executor, synchronize_to_storage_on_delete, synchronize_to_storage, initialize_on_storage, Transaction, Setting, ready_to_sync
 from core.utils import check_code
 from core.views import ResponseUnavailableViewMixing
+from core.api_views import ApyViewSet
 
 from pyflakes.messages import UnusedImport, Message
+
 User = get_user_model()
 
 
 class BaseTestCase(TransactionTestCase):
-
-    #logging.disable(logging.INFO)
 
     @patch("core.models.distribute")
     def setUp(self, distribute_mock):
@@ -106,9 +108,22 @@ class ApiTestCase(BaseTestCase):
         self.assertEqual(200, response.status_code)
         assert json.loads(response.content)
 
+    def _api(self, url, view, user, params):
+        factory = APIRequestFactory()
+        request = factory.get(url)
+        force_authenticate(request, user=user)
+        response = view(request, **{"base_name": self.base1.name})
+        response.render()
+        return response
+
     def test_get_all_apys_for_base(self):
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.get("/core/api/base/%s/apy/" % self.base1.name)
+        user = User.objects.get(username='user1')
+        view = ApyViewSet.as_view({'get': 'list'})
+        url = reverse('apy-list', kwargs={'base_name': self.base1.name})
+        params = {"base_name": self.base1.name}
+
+        response = self._api(url, view, user, params)
+
         self.assertEqual(200, response.status_code)
         assert json.loads(response.content)
 

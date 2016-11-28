@@ -40,8 +40,9 @@ class ApySerializer(serializers.ModelSerializer):
         model = Apy
         fields = ('name', 'module', 'counter', 'description', 'public', 'schedule', 'everyone')
 
-    def save(self, obj, **kwargs):
-        obj.save_and_sync(**kwargs)
+    def save(self, *args, **kwargs):
+        obj = super(ApySerializer, self).save(*args, **kwargs)
+        obj.sync(**kwargs)
 
 
 class PublicApySerializer(serializers.ModelSerializer):
