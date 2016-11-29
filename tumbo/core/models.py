@@ -293,7 +293,6 @@ class Base(models.Model):
 
     def save_and_sync(self, **kwargs):
         ready_to_sync.send(self.__class__, instance=self)
-        #self.save(**kwargs)
 
     #def save(self, **kwargs):
     #    logger.debug("create executor for base %s" % self)
@@ -338,7 +337,7 @@ class Apy(models.Model):
     def get_exec_url(self):
         return reverse("userland-apy-public-exec", args=[self.base.user.username, self.base.name, self.name]) + "?json="
 
-    def save_and_sync(self, **kwargs):
+    def sync(self, **kwargs):
         ready_to_sync.send(self.__class__, instance=self)
 
     def __str__(self):

@@ -12,7 +12,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.http import Http404, HttpResponse
 from django.conf import settings
-from django.db import transaction
 from django.core.management import call_command
 
 from rest_framework import renderers
@@ -73,8 +72,10 @@ class TransportEndpointViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return TransportEndpoint.objects.filter(user=self.request.user)
+
     def pre_save(self, obj):
         obj.user = self.request.user
+
 
 class TransactionViewSet(viewsets.ModelViewSet):
     model = Transaction
@@ -92,6 +93,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
             return queryset.filter(rid=rid)
         return queryset.order_by("modified")[10:]
 
+
 class ApyViewSet(viewsets.ModelViewSet):
     model = Apy
     serializer_class = ApySerializer
@@ -100,15 +102,19 @@ class ApyViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     queryset = Apy.objects.all()
 
-    def get_queryset(self):
+    def get_queryset(self, *args, **kwargs):
         name = self.kwargs['base_name']
         get_object_or_404(Base, user=self.request.user, name=name)
         return Apy.objects.filter(base__user=self.request.user, base__name=name)
 
+    def perform_create(self, serializer):
+        base_obj = Base.objects.get(name=self.kwargs['base_name'], user=self.request.user)
+        serializer.save(base=base_obj)
+
     def perform_update(self, serializer):
         # TODO: verify that not a foreign function can be updated
         #obj.base = Base.objects.get(name=self.kwargs['base_name'], user=self.request.user)
-        result, warnings, errors = check_code(serializer.initial_data['module'], serializer.initial_data['name'])
+        result, warnings, errors = check_code(serializer.initial_data['module'], serializer.instance.name)
         warnings_prep = []
         errors_prep = []
         for warning in warnings:
@@ -134,6 +140,8 @@ class ApyViewSet(viewsets.ModelViewSet):
                 'errors': errors_prep
             }
             raise APIException(response_data)
+
+        serializer.save()
 
     def clone(self, request, base_name, name):
         base = get_object_or_404(Base, name=base_name,
@@ -255,58 +263,47 @@ class BaseViewSet(viewsets.ModelViewSet):
     lookup_field = 'name'
     queryset = Base.objects.all()
 
-    def pre_save(self, obj):
-        obj.user = self.request.user
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def get_queryset(self):
         return Base.objects.all()._clone().filter(user=self.request.user)
 
     def start(self, request, name):
-        transaction.set_autocommit(False)
         logger.info("starting %s" % name)
         base = self.get_queryset().select_for_update(nowait=True).get(name=name)
         base.start()
-        transaction.commit()
         return self.retrieve(request, name=name)
 
     def stop(self, request, name):
-        transaction.set_autocommit(False)
         base = self.get_queryset().select_for_update(nowait=True).get(name=name)
         logger.info("stopping %s" % base.name)
         base.stop()
-        transaction.commit()
         return self.retrieve(request, name=name)
 
     def restart(self, request, name):
-        transaction.set_autocommit(False)
         logger.info("restarting %s" % name)
         base = self.get_queryset().get(name=name)
         base.stop()
         base.start()
-        transaction.commit()
         return self.retrieve(request, name=name)
 
     def destroy(self, request, name):
-        transaction.set_autocommit(False)
         logger.info("destroying %s: " % name)
         base = self.get_queryset().get(name=name)
         base.stop()
         base.destroy()
-        transaction.commit()
         return self.retrieve(request, name=name)
 
     def recreate(self, request, name):
-        transaction.set_autocommit(False)
         logger.info("recreate: %s" % name)
         base = self.get_queryset().get(name=name)
         base.stop()
         base.destroy()
         base.start()
-        transaction.commit()
         return self.retrieve(request, name=name)
 
     def delete(self, request, name):
-        transaction.set_autocommit(False)
         logger.info("delete: %s" % name)
         try:
             base = self.get_queryset().get(name=name)
@@ -315,7 +312,6 @@ class BaseViewSet(viewsets.ModelViewSet):
         base.stop()
         base.destroy()
         base.delete()
-        transaction.commit()
         return HttpResponse()
 
     def transport(self, request, name):
