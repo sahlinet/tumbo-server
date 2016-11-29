@@ -101,7 +101,7 @@ def confirm(prompt=None, resp=False):
     True
 
     """
-    
+
     if prompt is None:
         prompt = 'Confirm'
 
@@ -109,7 +109,7 @@ def confirm(prompt=None, resp=False):
         prompt = '%s [%s]|%s: ' % (prompt, 'y', 'n')
     else:
         prompt = '%s [%s]|%s: ' % (prompt, 'n', 'y')
-        
+
     while True:
         ans = raw_input(prompt)
         if not ans:
