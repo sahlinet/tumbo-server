@@ -12,7 +12,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.http import Http404, HttpResponse
 from django.conf import settings
-from django.db import transaction
 from django.core.management import call_command
 
 from rest_framework import renderers
@@ -271,51 +270,40 @@ class BaseViewSet(viewsets.ModelViewSet):
         return Base.objects.all()._clone().filter(user=self.request.user)
 
     def start(self, request, name):
-        #transaction.set_autocommit(False)
         logger.info("starting %s" % name)
         base = self.get_queryset().select_for_update(nowait=True).get(name=name)
         base.start()
-        #transaction.commit()
         return self.retrieve(request, name=name)
 
     def stop(self, request, name):
-        transaction.set_autocommit(False)
         base = self.get_queryset().select_for_update(nowait=True).get(name=name)
         logger.info("stopping %s" % base.name)
         base.stop()
-        transaction.commit()
         return self.retrieve(request, name=name)
 
     def restart(self, request, name):
-        transaction.set_autocommit(False)
         logger.info("restarting %s" % name)
         base = self.get_queryset().get(name=name)
         base.stop()
         base.start()
-        transaction.commit()
         return self.retrieve(request, name=name)
 
     def destroy(self, request, name):
-        transaction.set_autocommit(False)
         logger.info("destroying %s: " % name)
         base = self.get_queryset().get(name=name)
         base.stop()
         base.destroy()
-        transaction.commit()
         return self.retrieve(request, name=name)
 
     def recreate(self, request, name):
-        transaction.set_autocommit(False)
         logger.info("recreate: %s" % name)
         base = self.get_queryset().get(name=name)
         base.stop()
         base.destroy()
         base.start()
-        transaction.commit()
         return self.retrieve(request, name=name)
 
     def delete(self, request, name):
-        transaction.set_autocommit(False)
         logger.info("delete: %s" % name)
         try:
             base = self.get_queryset().get(name=name)
@@ -324,7 +312,6 @@ class BaseViewSet(viewsets.ModelViewSet):
         base.stop()
         base.destroy()
         base.delete()
-        transaction.commit()
         return HttpResponse()
 
     def transport(self, request, name):
