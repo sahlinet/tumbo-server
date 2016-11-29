@@ -13,7 +13,7 @@
 See [https://tumbo.io](https://tumbo.io)
 See [https://sahli.net/page/tumbo-io](https://sahli.net/page/tumbo-io)
 
-Current version: 0.3.0
+Current version: 0.4.0
 
 Tumbo is a Server Platform for simplifying common development and deployment tasks. It conduce to go live quickly with an application - with less deployment- and configuration requirements. The Tumbo Stack is based on Linux, Django and Docker.
 
@@ -29,7 +29,7 @@ Tumbo is a Server Platform for simplifying common development and deployment tas
 
 For starters it is fine use use the package from pip.
 
-    pip install tumbo-server==0.3.0
+    pip install tumbo-server==0.4.0
     tumbo-cli.py server dev run
 
 ## Run Tumbo
