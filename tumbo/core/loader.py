@@ -33,7 +33,7 @@ class FastappLoader(Loader):
                 return f, template_name
             except Exception, e:
                 pass
-        raise TemplateDoesNotExist()
+        raise TemplateDoesNotExist("Template '%s' not found" % template_name)
 
 
     load_template_source.is_usable = True

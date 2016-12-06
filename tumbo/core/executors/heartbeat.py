@@ -25,7 +25,6 @@ from core import __VERSION__
 from core.utils import load_setting
 #from core.utils import profileit
 
-from redis_metrics import set_metric
 import psutil
 
 logger = logging.getLogger(__name__)
@@ -43,6 +42,7 @@ def log_mem(**kwargs):
 
     p = psutil.Process(os.getpid())
 
+    from redis_metrics import set_metric
     try:
         while True:
             m = p.memory_info()
@@ -61,38 +61,31 @@ def log_mem(**kwargs):
 
 def inactivate():
 
-    #transaction.set_autocommit(False)
     try:
         while True:
             logger.debug("Inactivate Thread run")
 
             time.sleep(0.1)
             now = datetime.now().replace(tzinfo=pytz.UTC)
-            for instance in Instance.objects.filter(last_beat__lte=now-timedelta(minutes=1), is_alive=True):
-                logger.info("inactive instance '%s' detected, mark stopped" % instance)
-                instance.mark_down()
-                instance.save()
+            with transaction.atomic():
+                for instance in Instance.objects.filter(last_beat__lte=now-timedelta(minutes=1), is_alive=True):
+                    logger.info("inactive instance '%s' detected, mark stopped" % instance)
+                    instance.mark_down()
+                    instance.save()
 
-            # start if is_started and not running
-            try:
-                for base in Base.objects.select_for_update(nowait=True).filter(executor__started=True):
-                #for executor in Executor.objects.select_for_update(nowait=True).filter(started=True):
-                    if not base.executor.is_running():
-                        # log start with last beat datetime
-                        logger.error("Start worker for not running base: %s" % base.name)
-                        base.executor.start()
-            except DatabaseError, e:
-                logger.warning("Executor(s) was locked with select_for_update")
-                transaction.rollback()
-            #transaction.commit()
+                # start if is_started and not running
+                try:
+                    for base in Base.objects.select_for_update(nowait=True).filter(executor__started=True):
+                    #for executor in Executor.objects.select_for_update(nowait=True).filter(started=True):
+                        if not base.executor.is_running():
+                            # log start with last beat datetime
+                            logger.error("Start worker for not running base: %s" % base.name)
+                            base.executor.start()
+                except DatabaseError, e:
+                    logger.exception("Executor(s) was locked with select_for_update")
             time.sleep(10)
     except Exception, e:
         logger.exception(e)
-        #transaction.rollback()
-
-    #finally:
-    #    transaction.set_autocommit(True)
-
 
 def update_status(parent_name, thread_count, threads):
     try:

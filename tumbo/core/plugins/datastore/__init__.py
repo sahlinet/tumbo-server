@@ -105,7 +105,7 @@ class DataStore(object):
                     logger.info("Update password anyway for user '%s'" % self.schema)
                     self._execute("ALTER USER %s WITH PASSWORD '%s'" % (self.schema, self.password))
                 else:
-                    logger.error("Could not create user '%s'." % self.schema)
+                    logger.exception("Could not create user '%s'." % self.schema)
 
             # Schema
             try:
@@ -116,7 +116,7 @@ class DataStore(object):
                 if "already exists" in repr(e):
                     logger.info("Could not create schema '%s', already exists." % self.schema)
                 else:
-                    logger.error("Could not create schema '%s'." % self.schema)
+                    logger.exception("Could not create schema '%s'." % self.schema)
 
             # Permissions
             self._execute("GRANT USAGE ON SCHEMA %s to %s;" % (self.schema, self.schema))

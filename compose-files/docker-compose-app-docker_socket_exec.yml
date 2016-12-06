@@ -33,12 +33,13 @@ app:
    - RABBITMQ_ADMIN_USER=admin
    - TUMBO_DOCKER_MEM_LIMIT="128m"
    - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.4.0
-   - DEBUG=False
+   - DEBUG=True
    - ALLOWED_HOSTS=*
    - DIGITALOCEAN_CONFIG
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
+   - ../tumbo:/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo
 cleaner:
   build: ..
   #image: philipsahli/tumbo-server:v0.4.0
@@ -80,6 +81,7 @@ cleaner:
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
+   - ../tumbo:/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo
 lb:
   image: tutum/haproxy
   links:
@@ -127,6 +129,7 @@ heartbeat:
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
+   - ../tumbo:/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo
 async:
   build: ..
   #image: philipsahli/tumbo-server:v0.2.4
@@ -162,12 +165,13 @@ async:
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
    - TUMBO_DOCKER_MEM_LIMIT="128m"
-   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.2.4
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.4.0
    - DEBUG=True
    - DIGITALOCEAN_CONFIG
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
+   - ../tumbo:/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo
 logger:
   build: ..
   #image: philipsahli/tumbo-server:v0.2.4
@@ -209,6 +213,7 @@ logger:
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
+   - ../tumbo:/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo
 scheduler:
   build: ..
   #image: philipsahli/tumbo-server:v0.2.4
@@ -250,3 +255,4 @@ scheduler:
    - DIGITALOCEAN_ZONE
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock
+   - ../tumbo:/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo

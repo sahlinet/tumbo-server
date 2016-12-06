@@ -75,7 +75,7 @@ class ResponseUnavailableViewMixing():
     def verify(self, request, base_model):
         if not base_model.state:
             response = HttpResponse()
-            if "html" in request.META['HTTP_ACCEPT']:
+            if "html" is request.META.get('HTTP_ACCEPT', None):
                 response.content_type = "text/html"
                 response.content = "Content cannot be delivered"
             response.status_code = 503
@@ -206,14 +206,14 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
                 response_status_code = 502
 
             # send counter to client
-            cdata = {
-                'counter':
-                    {
-                    'executed': str(Apy.objects.get(id=exec_model.id).counter.executed),
-                    'failed': str(Apy.objects.get(id=exec_model.id).counter.failed)
-                    },
-                'apy_id': exec_model.id
-            }
+            # cdata = {
+            #    'counter':
+            #        {
+            #        'executed': str(Apy.objects.get(id=exec_model.id).counter.executed),
+            #        'failed': str(Apy.objects.get(id=exec_model.id).counter.failed)
+            #        },
+            #    'apy_id': exec_model.id
+            # }
 
             if request.GET.has_key('callback'):
                 data = '%s(%s);' % (request.REQUEST['callback'], json.dumps(data))

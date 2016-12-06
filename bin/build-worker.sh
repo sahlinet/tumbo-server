@@ -9,3 +9,4 @@ mv Dockerfile-worker Dockerfile
 sed -i s/cachebust_]*/cachebust_"$DATE"/g Dockerfile
 docker build -t philipsahli/tumbo-worker:develop .
 cd ..
+rm -rf build

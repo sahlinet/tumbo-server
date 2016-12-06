@@ -223,7 +223,6 @@ class Env(object):
             try:
                 self.config_data = json.load(config_file)
             except ValueError:
-                pass
                 self.config_data = {}
             self.config_data['env'] = self.envId
             self.config_data['username'] = self.user
@@ -296,9 +295,6 @@ class Env(object):
             print "Project %s created" % (name)
         else:
             print status_code
-
-    def project_stop(self, name):
-        status_code, projects = self._call_api("/core/api/base/%s/" % name, method="POST")
 
     def project_stop(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/stop/" % name, method="POST")
@@ -649,7 +645,8 @@ if __name__ == '__main__':
                     cmd = "%s  create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev" % manage_py
                     adminuser = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/null", _bg=True)
                     adminuser.wait()
-                except:
+                except Exception, e:
+                    print e
                     print "adminuser already exists?"
 
                 cmd = "%s import_base --username=admin --file %s/examples/generics.zip  --name=generics --settings=tumbo.dev" % (manage_py, tumbo_path)
@@ -683,7 +680,7 @@ if __name__ == '__main__':
                 except (KeyboardInterrupt, sh.ErrorReturnCode_1, Exception), e:
                     stop()
 
-            if arguments['test']:
+            if 'test' in arguments:
                 print "Testing example on Docker"
 
                 r = requests.post("http://localhost:8000/core/api-token-auth/", data={'username': "admin", 'password': "admin"})

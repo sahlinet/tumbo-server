@@ -31,6 +31,8 @@ class DockerExecutor(BaseExecutor):
         docker_kwargs['tls'].assert_hostname = False
 
         self.api = Client(**docker_kwargs)
+        self.service_ports = None
+        self.port_bindings = None
 
         super(DockerExecutor, self).__init__(*args, **kwargs)
 
@@ -225,7 +227,7 @@ class DockerSocketExecutor(DockerExecutor):
             else:
                 out = self.api.pull(repository=DOCKER_IMAGE)
             logger.info(out)
-        except APIError, e:
+        except errors.APIError, e:
             logger.warn("Not able to pull image")
             logger.warn(e)
 
@@ -267,6 +269,6 @@ class RemoteDockerExecutor(DockerExecutor):
             else:
                 out = self.api.pull(repository=DOCKER_IMAGE)
             logger.info(out)
-        except APIError, e:
+        except errors.APIError, e:
             logger.warn("Not able to pull image")
             logger.warn(e)

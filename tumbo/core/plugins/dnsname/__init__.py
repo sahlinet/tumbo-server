@@ -16,6 +16,8 @@ class DigitaloceanDns():
 	def __init__(self, token, domain):
 		self.URL = "https://api.digitalocean.com/v2/domains/%s/records" % domain
 		self.headers = {'Authorization': "Bearer %s" % token}
+		self.data = None
+
 	def update(self, hostname, ip, type="A"):
 		self.data = {
 				'type': type,

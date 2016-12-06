@@ -600,9 +600,9 @@ class Executor(models.Model):
             kwargs['service_ports'] = [self.port]
 
         try:
-            logger.info("START Start with implementation")
+            logger.info("START Start with implementation %s" % self.implementation)
             self.pid = self.implementation.start(self.pid, **kwargs)
-            logger.info("END Start with implementation")
+            logger.info("END Start with implementation %s" % self.implementation)
         except Exception, e:
             raise e
 
@@ -623,8 +623,11 @@ class Executor(models.Model):
 
         self.implementation.stop(self.pid)
 
+        pid = str(self.pid)
+
         if not self.implementation.state(self.pid):
             self.started = False
+            self.pid = None
 
             # Threads
             try:
@@ -635,7 +638,7 @@ class Executor(models.Model):
                 pass
 
             self.save()
-        logger.info("Stopped worker with PID %s" % self.pid)
+        logger.info("Stopped worker with PID %s" % pid)
 
     def restart(self):
         self.stop()

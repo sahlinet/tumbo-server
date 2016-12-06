@@ -13,11 +13,16 @@ User = get_user_model()
 
 class CasLoginTestCase(BaseTestCase):
 
+    def __init__(self, *args, **kwargs):
+        self.userland_home = None
+        self.userland_ticketlogin = None
+        BaseTestCase.__init__(self, *args, **kwargs)
+
     """
     https://wiki.jasig.org/display/CAS/Proxy+CAS+Walkthrough
     """
     def _setup(self):
-        self.userland_home=reverse('userland-static', args=['user1', self.base1.name, "index.html"])
+        self.userland_home = reverse('userland-static', args=['user1', self.base1.name, "index.html"])
 
         # Step 0: Try to log into the service, redirects to CAS Login with the service as parameter
         self.userland_ticketlogin=reverse('userland-cas-ticketlogin', args=['ticket', 'service'])

@@ -1,3 +1,9 @@
+  function add_message(data) {
+      $("div#messages").prepend("<p class='" + data.class + "'>" + data.datetime +
+          " : " + data.source + " : " + data.message + "</p>");
+      $("div#messages p").slice(7).remove();
+  }
+
   function add_client_message(message) {
       data = {};
       data.message = message;
@@ -9,11 +15,6 @@
       add_message(data);
   }
 
-  function add_message(data) {
-      $("div#messages").prepend("<p class='" + data.class + "'>" + data.datetime +
-          " : " + data.source + " : " + data.message + "</p>");
-      $("div#messages p").slice(7).remove();
-  }
 
 
   window.app = angular.module('execApp', ['ngGrid', 'base64', 'ngResource',
