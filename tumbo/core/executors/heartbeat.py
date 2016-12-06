@@ -216,6 +216,7 @@ class HeartbeatThread(CommunicationThread):
 
             slug = vhost.replace("/", "")+"-rss"
             # logger.info("Sent metric for slug %s" % slug)
+            from redis_metrics import set_metric
             set_metric(slug, int(process.rss)/1024, expire=86400)
 
             #logger.info(data['ready_for_init'], data['in_sync'])
