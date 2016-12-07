@@ -635,7 +635,7 @@ class Executor(models.Model):
                 for thread in process.threads.all():
                     thread.delete()
             except Exception:
-                pass
+                logger.exception()
 
             self.save()
         logger.info("Stopped worker with PID %s" % pid)
