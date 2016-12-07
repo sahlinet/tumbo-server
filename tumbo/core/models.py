@@ -625,19 +625,15 @@ class Executor(models.Model):
 
         pid = str(self.pid)
 
-        if not self.implementation.state(self.pid):
-            self.started = False
-            self.pid = None
+        # Threads
+        try:
+            process = Process.objects.get(name=self.vhost)
+            for thread in process.threads.all():
+                thread.delete()
+        except Exception:
+            logger.exception()
 
-            # Threads
-            try:
-                process = Process.objects.get(name=self.vhost)
-                for thread in process.threads.all():
-                    thread.delete()
-            except Exception:
-                logger.exception()
-
-            self.save()
+        self.save()
         logger.info("Stopped worker with PID %s" % pid)
 
     def restart(self):
