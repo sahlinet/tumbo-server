@@ -237,7 +237,8 @@ class RancherApiExecutor(BaseExecutor):
             container = self._get_container(id)
         except ContainerNotFound:
             return False
-        logger.debug("Worker is in state: %s (%s)" % (container['state'], container['transitioningMessage']))
+        logger.debug("Worker is in state: %s (transitioningMessage=%s)" % (container['state'], container['transitioningMessage']))
+        logger.debug("state(%s) returns: %s" % (id, str(container['state'] == "active")))
         return (container['state'] == "active")
 
     def addresses(self, id, port=None):
