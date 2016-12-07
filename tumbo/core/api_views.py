@@ -294,7 +294,7 @@ class BaseViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, name):
         with transaction.atomic():
-            logger.info("destroying %s: " % name)
+            logger.info("destroying %s" % name)
             base = self.get_queryset().get(name=name)
             base.stop()
             base.destroy()
@@ -302,7 +302,7 @@ class BaseViewSet(viewsets.ModelViewSet):
 
     def recreate(self, request, name):
         with transaction.atomic():
-            logger.info("recreate%s: " % name)
+            logger.info("recreate %s" % name)
             base = self.get_queryset().get(name=name)
             base.stop()
             base.destroy()
