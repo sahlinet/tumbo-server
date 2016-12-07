@@ -162,6 +162,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'core.executors.worker_engines.rancher': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
         'core.queue': {
             'handlers': ['console'],
             'level': 'INFO',
