@@ -286,6 +286,8 @@ class Env(object):
         table = []
         for project in projects:
             state = "Running" if project['state'] else "Stopped"
+            if len(project['executors']) > 0:
+                state = state + " (%s) " % str(project['executors'][0]['pid'])
             table.append([project['name'], state])
         print tabulate(table, headers=["Projectname", "State"])
 
@@ -298,12 +300,16 @@ class Env(object):
 
     def project_stop(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/stop/" % name, method="POST")
+        if status_code == 200:
+            print "Project %s stopped" % name
 
     def project_start(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/start/" % name, method="POST")
 
     def project_destroy(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/destroy/" % name, method="POST")
+        if status_code == 200:
+            print "Project executor destroyed"
 
     def project_delete(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/delete/" % name, method="POST")
@@ -434,8 +440,8 @@ class Env(object):
             status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
         else:
             status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json=&async=" % (project_name, function_name))
+            print "Started with id '%s'" % response['rid']
         state_url = response.get('url', None)
-        print "Started with id '%s'" % response['rid']
         if not state_url and response['status'] == "OK":
             pass
         else:
@@ -527,17 +533,14 @@ if __name__ == '__main__':
 
             if arguments['stop']:
                 env.project_stop(arguments['<base-name>'])
-                env.project_show(arguments['<base-name>'])
 
             if arguments['restart']:
                 env.project_stop(arguments['<base-name>'])
                 time.sleep(2)
                 env.project_start(arguments['<base-name>'])
-                env.project_show(arguments['<base-name>'])
 
             if arguments['destroy']:
                 env.project_destroy(arguments['<base-name>'])
-                env.project_show(arguments['<base-name>'])
 
             if arguments['start']:
                 env.project_start(arguments['<base-name>'])
@@ -575,7 +578,6 @@ if __name__ == '__main__':
                 def stop():
                     try:
                         os.killpg(app.pid, 2)
-                        print background_pids
                         for pid in background_pids:
                             os.killpg(pid, signal.SIGTERM)
                         if arguments['--coverage']:
