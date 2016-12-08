@@ -193,7 +193,7 @@ class Env(object):
         return r.status_code, response
 
     def _gettoken(self):
-        url = self.url + "/core/api-token-auth/"
+        url = self.url + "/core/api/api-token-auth/"
         r = requests.post(url, data={'username': self.user, 'password': self.password})
 
         if r.status_code != 200:
@@ -685,7 +685,7 @@ if __name__ == '__main__':
             if 'test' in arguments:
                 print "Testing example on Docker"
 
-                r = requests.post("http://localhost:8000/core/api-token-auth/", data={'username': "admin", 'password': "admin"})
+                r = requests.post("http://localhost:8000/core/api/api-token-auth/", data={'username': "admin", 'password': "admin"})
                 token = r.json()['token']
                 print token
                 r = requests.post("http://localhost:8000/core/api/base/87/start/", headers={
