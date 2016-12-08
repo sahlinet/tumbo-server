@@ -145,7 +145,7 @@ class DockerExecutor(BaseExecutor):
             service = self.api.inspect_container(id)
         except errors.APIError, e:
             if e.response.status_code == 404:
-                logger.debug("Container not found (%s)" % id)
+                logger.warn("Container not found (%s)" % id)
                 raise ContainerNotFound()
             logger.exception(e)
             raise e
@@ -175,7 +175,7 @@ class DockerExecutor(BaseExecutor):
             login_email = load_setting("DOCKER_LOGIN_EMAIL", False)
             login_host = load_setting("DOCKER_LOGIN_HOST", False)
         except ImproperlyConfigured, e:
-            logger.debug(e.msg)
+            logger.exception("Cannot log into the repository %s" % login_host)
 
         if login_user:
             self.api.login(
@@ -222,14 +222,14 @@ class DockerSocketExecutor(DockerExecutor):
         super(DockerSocketExecutor, self)._pre_start()
 
         try:
+            logger.info("Pulling image %s" % DOCKER_IMAGE)
             if ":" in DOCKER_IMAGE:
                 out = self.api.pull(repository=DOCKER_IMAGE.split(":")[0], tag=DOCKER_IMAGE.split(":")[1])
             else:
                 out = self.api.pull(repository=DOCKER_IMAGE)
             logger.info(out)
         except errors.APIError, e:
-            logger.warn("Not able to pull image")
-            logger.warn(e)
+            logger.exception("Not able to pull image %s" % DOCKER_IMAGE)
 
 class RemoteDockerExecutor(DockerExecutor):
 

@@ -34,7 +34,7 @@ class RancherApiExecutor(BaseExecutor):
         else:
             url = full_url
         if data or force_post:
-            logger.info("POST to %s" % url)
+            logger.debug("POST to %s" % url)
             r = requests.post(url, json=data, auth=self.auth)
         else:
             logger.debug("GET to %s" % url)
@@ -212,7 +212,7 @@ class RancherApiExecutor(BaseExecutor):
             time.sleep(2)
 
             if self.state(id):
-                logger.info("Started")
+                logger.info("Container started (%s)" % id)
                 return id
 
         logger.error("Timed out waiting for state 'active'")
@@ -237,7 +237,7 @@ class RancherApiExecutor(BaseExecutor):
             container = self._get_container(id)
         except ContainerNotFound:
             return False
-        logger.debug("Worker is in state: %s (transitioningMessage=%s)" % (container['state'], container['transitioningMessage']))
+        logger.info("Worker is in state: %s (transitioningMessage=%s)" % (container['state'], container['transitioningMessage']))
         logger.debug("state(%s) returns: %s" % (id, str(container['state'] == "active")))
         return (container['state'] == "active")
 
