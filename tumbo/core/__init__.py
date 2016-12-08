@@ -1,4 +1,4 @@
-__VERSION__ = "0.4.1"
+__VERSION__ = "0.4.2"
 
 from django.core.exceptions import ImproperlyConfigured
 
