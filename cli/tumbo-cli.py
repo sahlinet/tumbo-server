@@ -490,7 +490,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.0")
+    arguments = docopt(__doc__, version="0.4.1")
     if arguments['--ngrok-hostname'] and arguments['docker']:
         try:
             ngrok = sh.Command("ngrok")
