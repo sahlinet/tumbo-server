@@ -258,7 +258,7 @@ class RemoteDockerExecutor(DockerExecutor):
 
         self._login_repository()
 
-        super(DockerExecutor, self).__init__(*args, **kwargs)
+        super(RemoteDockerExecutor, self).__init__(*args, **kwargs)
 
     def _pre_start(self):
         super(RemoteDockerExecutor, self)._pre_start()

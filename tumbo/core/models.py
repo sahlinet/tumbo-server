@@ -478,10 +478,6 @@ class Process(models.Model):
     class Meta:
         db_table = "fastapp_process"
 
-    def up(self):
-        pass
-        #   logger.info("Heartbeat is up")
-
     def is_up(self):
         now = datetime.utcnow().replace(tzinfo = pytz.utc)
         delta = now - self.running

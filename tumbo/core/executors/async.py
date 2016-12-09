@@ -17,10 +17,10 @@ class AsyncResponseThread(CommunicationThread):
             data = json.loads(body)
 
             try:
-            	returned = json.loads(data['returned'])
+                returned = json.loads(data['returned'])
                 data['returned'] = returned
-            except:
-            	pass
+            except Exception, e:
+                logger.exception("Could not load data['returned']")
 
             logger.info("Async response received for rid '%s'" % data['rid'])
             logger.info(data)

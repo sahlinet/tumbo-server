@@ -124,7 +124,6 @@ def update_status(parent_name, thread_count, threads):
 
             # process functionality
             if thread_count == alive_thread_count:
-                process.up()
                 process.save()
                 logger.debug("Process '%s' is healthy." % parent_name)
             else:
