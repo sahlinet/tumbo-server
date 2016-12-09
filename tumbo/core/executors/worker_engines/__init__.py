@@ -58,7 +58,7 @@ class BaseExecutor(object):
         return start_command
 
     def destroy(self, id):
-        logger.info("Executor does not support 'destroy'")
+        logger.debug("Executor does not support 'destroy'")
 
     def _pre_start(self):
         success, failed = call_plugin_func(self.executor.base, "on_start_base")

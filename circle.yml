@@ -62,8 +62,6 @@ test:
     - curl --retry 10 --retry-delay 5 -v $(python cli/tumbo-cli.py server docker url)
     - pkill python
     #
-    - coveralls
-    #
 deployment:
   master:
     branch: master

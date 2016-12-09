@@ -27,3 +27,4 @@ class Command(BaseCommand):
             greenlets.append(g)
         gevent.wait(greenlets)
         transaction.commit()
+        transaction.set_autocommit(True)

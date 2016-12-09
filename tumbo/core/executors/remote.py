@@ -221,7 +221,7 @@ class ExecutorServerThread(CommunicationThread):
         self.settings = {}
         self.pluginconfig = {}
 
-        return super(ExecutorServerThread, self).__init__(*args, **kwargs)
+        super(ExecutorServerThread, self).__init__(*args, **kwargs)
 
     @property
     def state(self):

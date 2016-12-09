@@ -31,10 +31,9 @@ class FastappLoader(Loader):
                 base_model = Base.objects.get(name=base)
                 f, template_name = self.get_file(template_name, short_name, base_model)
                 return f, template_name
-            except Exception, e:
-                pass
-        raise TemplateDoesNotExist()
-
+            except Exception:
+                logger.info("Could not load template %s" % template_name, exc_info=True)
+        raise TemplateDoesNotExist("Template '%s' not found" % template_name)
 
     load_template_source.is_usable = True
 

@@ -79,7 +79,7 @@ def start_scheduler():
                 update_job(apy, scheduler)
             except Exception:
                 if not apy.schedule:
-                   logger.warn("Problem with schedule config for %s: %s" % (apy.name, apy.schedule))
+                    logger.exception("Problem with schedule config for %s: %s" % (apy.name, apy.schedule))
         logger.debug("END rescheduling call_apy")
         db.reset_queries()
         time.sleep(120)

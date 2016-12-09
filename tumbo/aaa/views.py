@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import render
 from django.shortcuts import redirect
 
@@ -17,6 +19,8 @@ from ui.views import context
 from ui.decorators import render_to
 from ui.views import context
 
+logger = logging.getLogger(__name__)
+
 def dummy(request):
     raise Exception("Dummy")
 
@@ -27,6 +31,7 @@ def logout(request):
 
 def logout_userland(request, username, base):
     """Logs out user"""
+    logger.info("logout_userland for %s/%s" % (username, base))
     auth_logout(request)
     return redirect(reverse("cas-logout")+"?next="+request.GET.get("next", None))
 

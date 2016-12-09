@@ -162,6 +162,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'core.executors.worker_engines': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'core.queue': {
             'handlers': ['console'],
             'level': 'INFO',

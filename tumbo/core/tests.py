@@ -12,7 +12,7 @@ from django.db import IntegrityError
 from django.db.models.signals import post_save, post_delete
 from django.contrib.auth import get_user_model
 
-from rest_framework.test import APIRequestFactory, APIRequestFactory, force_authenticate, APIClient
+from rest_framework.test import APIRequestFactory, APIRequestFactory, force_authenticate
 
 from core.models import AuthProfile
 from core.models import Base, Apy, Executor, synchronize_to_storage_on_delete, synchronize_to_storage, initialize_on_storage, Transaction, Setting, ready_to_sync
@@ -89,6 +89,18 @@ class BaseObjectTestCase(BaseTestCase):
         #
         self.assertRaises(IntegrityError, Base.objects.create, name=self.base1.name, user=self.user1)
 
+
+# class BaseRunTestCase(BaseTestCase):
+#
+#    def test_start_base(self):
+#        """Spawns a process but does not really sync or work."""
+#        self.assertIsNone(self.base1.executor.pid)
+#        self.base1.start()
+#        self.base1.refresh_from_db()
+#        self.assertTrue(self.base1.executor.pid)
+#        self.base1.stop()
+#        self.base1.refresh_from_db()
+#        self.assertIsNone(self.base1.executor.pid)
 
 class ApiTestCase(BaseTestCase):
 

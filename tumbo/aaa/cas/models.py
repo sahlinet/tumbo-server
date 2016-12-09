@@ -73,6 +73,7 @@ class TicketManager(models.Manager):
         logger.debug("Validated %s %s" % (t.user.username, ticket))
         return t
 
+
 class Ticket(models.Model):
     ticket = models.CharField(_('ticket'), primary_key=True, max_length=255, unique=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name=_('user'))

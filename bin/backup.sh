@@ -1,3 +1,4 @@
+#!/bin/bash
 #docker-compose -p tumbobackup -f docker-compose-backup.yml up
 DUMPFILE="psql_dump_tumbo_`date '+%Y-%m-%d_%H-%M-%S'`.dump"
 echo $DUMPFILE

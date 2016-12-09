@@ -1,3 +1,4 @@
+#!/bin/bash
 #docker-compose -p tumbobackup -f docker-compose-backup.yml up
 DUMPFILE=$1
 echo $DUMPFILE

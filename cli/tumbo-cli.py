@@ -223,7 +223,6 @@ class Env(object):
             try:
                 self.config_data = json.load(config_file)
             except ValueError:
-                pass
                 self.config_data = {}
             self.config_data['env'] = self.envId
             self.config_data['username'] = self.user
@@ -287,6 +286,8 @@ class Env(object):
         table = []
         for project in projects:
             state = "Running" if project['state'] else "Stopped"
+            if len(project['executors']) > 0:
+                state = state + " (%s) " % str(project['executors'][0]['pid'])
             table.append([project['name'], state])
         print tabulate(table, headers=["Projectname", "State"])
 
@@ -298,16 +299,17 @@ class Env(object):
             print status_code
 
     def project_stop(self, name):
-        status_code, projects = self._call_api("/core/api/base/%s/" % name, method="POST")
-
-    def project_stop(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/stop/" % name, method="POST")
+        if status_code == 200:
+            print "Project %s stopped" % name
 
     def project_start(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/start/" % name, method="POST")
 
     def project_destroy(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/destroy/" % name, method="POST")
+        if status_code == 200:
+            print "Project executor destroyed"
 
     def project_delete(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/delete/" % name, method="POST")
@@ -438,8 +440,8 @@ class Env(object):
             status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
         else:
             status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json=&async=" % (project_name, function_name))
+            print "Started with id '%s'" % response['rid']
         state_url = response.get('url', None)
-        print "Started with id '%s'" % response['rid']
         if not state_url and response['status'] == "OK":
             pass
         else:
@@ -488,7 +490,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.3.0")
+    arguments = docopt(__doc__, version="0.4.0")
     if arguments['--ngrok-hostname'] and arguments['docker']:
         try:
             ngrok = sh.Command("ngrok")
@@ -531,17 +533,14 @@ if __name__ == '__main__':
 
             if arguments['stop']:
                 env.project_stop(arguments['<base-name>'])
-                env.project_show(arguments['<base-name>'])
 
             if arguments['restart']:
                 env.project_stop(arguments['<base-name>'])
                 time.sleep(2)
                 env.project_start(arguments['<base-name>'])
-                env.project_show(arguments['<base-name>'])
 
             if arguments['destroy']:
                 env.project_destroy(arguments['<base-name>'])
-                env.project_show(arguments['<base-name>'])
 
             if arguments['start']:
                 env.project_start(arguments['<base-name>'])
@@ -579,7 +578,6 @@ if __name__ == '__main__':
                 def stop():
                     try:
                         os.killpg(app.pid, 2)
-                        print background_pids
                         for pid in background_pids:
                             os.killpg(pid, signal.SIGTERM)
                         if arguments['--coverage']:
@@ -649,7 +647,8 @@ if __name__ == '__main__':
                     cmd = "%s  create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev" % manage_py
                     adminuser = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/null", _bg=True)
                     adminuser.wait()
-                except:
+                except Exception, e:
+                    print e
                     print "adminuser already exists?"
 
                 cmd = "%s import_base --username=admin --file %s/examples/generics.zip  --name=generics --settings=tumbo.dev" % (manage_py, tumbo_path)
@@ -683,7 +682,7 @@ if __name__ == '__main__':
                 except (KeyboardInterrupt, sh.ErrorReturnCode_1, Exception), e:
                     stop()
 
-            if arguments['test']:
+            if 'test' in arguments:
                 print "Testing example on Docker"
 
                 r = requests.post("http://localhost:8000/core/api-token-auth/", data={'username': "admin", 'password': "admin"})

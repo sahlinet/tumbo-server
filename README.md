@@ -8,12 +8,11 @@
 
 <script type='text/javascript' src='https://www.openhub.net/p/tumbo-server/widgets/project_thin_badge?format=js'></script>
 
-[![PyPI version](https://badge.fury.io/py/tumbo-server.svg)](https://badge.fury.io/py/tumbo-server)
 
 See [https://tumbo.io](https://tumbo.io)
 See [https://sahli.net/page/tumbo-io](https://sahli.net/page/tumbo-io)
 
-Current version: 0.3.0
+Current version: [![PyPI version](https://badge.fury.io/py/tumbo-server.svg)](https://badge.fury.io/py/tumbo-server)
 
 Tumbo is a Server Platform for simplifying common development and deployment tasks. It conduce to go live quickly with an application - with less deployment- and configuration requirements. The Tumbo Stack is based on Linux, Django and Docker.
 
@@ -27,9 +26,9 @@ Tumbo is a Server Platform for simplifying common development and deployment tas
 
 ## Install Tumbo and start stack
 
-For starters it is fine use use the package from pip.
+For a quick start it is fine to use the package from pip.
 
-    pip install tumbo-server==0.3.0
+    pip install tumbo-server==0.4.0
     tumbo-cli.py server dev run
 
 ## Run Tumbo
@@ -58,20 +57,24 @@ Dropbox is used for storing users data, beside on server-side database.
 
 ### Opbeat
 
+Use Opbeat for performance and exception monitoring.
+
     OPBEAT_ORGANIZATION_ID
     OPBEAT_APP_ID
     OPBEAT_SECRET_TOKEN
 
 ### Social Auth
 
-[python-social-auth](https://github.com/omab/python-social-auth) is used to enable login with social accounts.
+[python-social-auth](https://github.com/omab/python-social-auth) is used to enable login into Projects with Social accounts.
 
 psa is loaded, when `TUMBO_SOCIAL_AUTH` is set to `true`.
+
 
 #### Github OAuth2
 
     SOCIAL_AUTH_GITHUB_KEY
     SOCIAL_AUTH_GITHUB_SECRET
+
 
 #### Other
 
@@ -117,13 +120,21 @@ Used in development mode to load functions and static files from Dropbox App:
 
 ### Transaction cleanup
 
-    TUMBO_CLEANUP_OLDER_THAN_N_HOURS
+Every 
+
     TUMBO_CLEANUP_INTERVAL_MINUTES
+
+a job runs and deletes transaction data older than
+
+    TUMBO_CLEANUP_OLDER_THAN_N_HOURS
+
 
 ## Testing
 
 ### Run
 
-    coverage run --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
-    coverage run --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
-    coverage run --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
+    coverage run --append --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
+    coverage run --append --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
+    coverage run --append --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
+
+See also the configuration in circle.yml.

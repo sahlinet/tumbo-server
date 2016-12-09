@@ -478,10 +478,6 @@ class Process(models.Model):
     class Meta:
         db_table = "fastapp_process"
 
-    def up(self):
-        pass
-        #   logger.info("Heartbeat is up")
-
     def is_up(self):
         now = datetime.utcnow().replace(tzinfo = pytz.utc)
         delta = now - self.running
@@ -600,9 +596,9 @@ class Executor(models.Model):
             kwargs['service_ports'] = [self.port]
 
         try:
-            logger.info("START Start with implementation")
+            logger.info("START Start with implementation %s" % self.implementation)
             self.pid = self.implementation.start(self.pid, **kwargs)
-            logger.info("END Start with implementation")
+            logger.info("END Start with implementation %s" % self.implementation)
         except Exception, e:
             raise e
 
@@ -623,19 +619,18 @@ class Executor(models.Model):
 
         self.implementation.stop(self.pid)
 
-        if not self.implementation.state(self.pid):
-            self.started = False
+        pid = str(self.pid)
 
-            # Threads
-            try:
-                process = Process.objects.get(name=self.vhost)
-                for thread in process.threads.all():
-                    thread.delete()
-            except Exception:
-                pass
+        # Threads
+        try:
+            process = Process.objects.get(name=self.vhost)
+            for thread in process.threads.all():
+                thread.delete()
+        except Exception:
+            logger.exception()
 
-            self.save()
-        logger.info("Stopped worker with PID %s" % self.pid)
+        self.save()
+        logger.info("Stopped worker with PID %s" % pid)
 
     def restart(self):
         self.stop()
@@ -801,7 +796,7 @@ def synchronize_to_storage_on_delete(sender, *args, **kwargs):
         logger.exception("error in synchronize_to_storage_on_delete")
     except Base.DoesNotExist:
         # if post_delete is triggered from base.delete()
-        pass
+        logger.debug("post_delete signal triggered by base.delete(), can be ignored")
     except Exception, e:
         logger.error("error in synchronize_to_storage_on_delete")
         logger.exception(e)

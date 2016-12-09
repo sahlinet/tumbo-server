@@ -45,9 +45,7 @@ def cas_login(function):
         ticket = request.GET.get("ticket", None)
 
         if ticket:
-            """ 
-            if the service is called with a ticket, verify the ticket and redirect to the service
-            """ 
+            # if the service is called with a ticket, verify the ticket and redirect to the service
             cas_ticketverify=reverse('cas-ticketverify')
             cas_ticketverify+="?ticket=%s&service=%s" % (ticket, service_full)
             host = urlparse(request.build_absolute_uri()).netloc

@@ -10,8 +10,9 @@ from rest_framework import status
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
-from django.http import Http404, HttpResponse
+from django.http import Http404
 from django.conf import settings
+from django.db import transaction
 from django.core.management import call_command
 
 from rest_framework import renderers
@@ -270,37 +271,42 @@ class BaseViewSet(viewsets.ModelViewSet):
         return Base.objects.all()._clone().filter(user=self.request.user)
 
     def start(self, request, name):
-        logger.info("starting %s" % name)
-        base = self.get_queryset().select_for_update(nowait=True).get(name=name)
-        base.start()
+        with transaction.atomic():
+            logger.info("starting %s" % name)
+            base = self.get_queryset().select_for_update(nowait=True).get(name=name)
+            base.start()
         return self.retrieve(request, name=name)
 
     def stop(self, request, name):
-        base = self.get_queryset().select_for_update(nowait=True).get(name=name)
-        logger.info("stopping %s" % base.name)
-        base.stop()
+        with transaction.atomic():
+            base = self.get_queryset().select_for_update(nowait=True).get(name=name)
+            logger.info("stopping %s" % base.name)
+            base.stop()
         return self.retrieve(request, name=name)
 
     def restart(self, request, name):
-        logger.info("restarting %s" % name)
-        base = self.get_queryset().get(name=name)
-        base.stop()
-        base.start()
+        with transaction.atomic():
+            logger.info("restarting %s" % name)
+            base = self.get_queryset().get(name=name)
+            base.stop()
+            base.start()
         return self.retrieve(request, name=name)
 
     def destroy(self, request, name):
-        logger.info("destroying %s: " % name)
-        base = self.get_queryset().get(name=name)
-        base.stop()
-        base.destroy()
+        with transaction.atomic():
+            logger.info("destroying %s" % name)
+            base = self.get_queryset().get(name=name)
+            base.stop()
+            base.destroy()
         return self.retrieve(request, name=name)
 
     def recreate(self, request, name):
-        logger.info("recreate: %s" % name)
-        base = self.get_queryset().get(name=name)
-        base.stop()
-        base.destroy()
-        base.start()
+        with transaction.atomic():
+            logger.info("recreate %s" % name)
+            base = self.get_queryset().get(name=name)
+            base.stop()
+            base.destroy()
+            base.start()
         return self.retrieve(request, name=name)
 
     def delete(self, request, name):

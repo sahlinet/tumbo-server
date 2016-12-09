@@ -1,3 +1,4 @@
+#!/bin/bash
 find . -name templates|cut -c3- | awk '{print "recursive-include "$0" *"}' > MANIFEST.in
 find . -name static|cut -c3- | awk '{print "recursive-include "$0" *"}' >> MANIFEST.in
 find . -name compose-files|cut -c3- | awk '{print "recursive-include "$0" *"}' >> MANIFEST.in

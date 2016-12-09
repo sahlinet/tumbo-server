@@ -144,7 +144,7 @@ baseServices.factory('Apy1', ['$resource', '$cookies', function($resource,
         get: {
             method: 'GET',
             params: {
-                name: 'base_name',
+                base_name: 'base_name',
                 name: 'name'
             },
             isArray: false,

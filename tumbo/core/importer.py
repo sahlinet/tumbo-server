@@ -53,8 +53,8 @@ def import_base(zf, user_obj, name, override_public, override_private):
     # Dropbox connection
     try:
         dropbox_connection = Connection(base.auth_token)
-    except Exception:
-        pass
+    except Exception, e:
+        logger.exception("Error on Connectin to Dropbx")
 
     # app.config
     print zf.open("app.config")
@@ -85,6 +85,6 @@ def import_base(zf, user_obj, name, override_public, override_private):
 
         if "static" in filename:
             file = "/%s/%s" % (base.name, filename)
-            dropbox_connection.put_file(filename, content)
+            dropbox_connection.put_file(file, content)
 
     return base
