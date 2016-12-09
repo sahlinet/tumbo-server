@@ -1,4 +1,4 @@
-FROM philipsahli/centos-v2:latest
+FROM philipsahli/centos:latest
 
 RUN yum install -y postgresql-devel python-virtualenv libevent-devel gcc libffi-devel openssl-devel wget tar sudo
 
