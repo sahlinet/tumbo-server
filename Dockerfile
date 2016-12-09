@@ -28,7 +28,8 @@ RUN $PIP install --upgrade setuptools==20.3.1
 
 # nginx
 RUN yum-config-manager --save --setopt=epel.skip_if_unavailable=true
-RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm && yum -y install nginx && yum install -y epel-release && yum install -y moreutils pwgen
+RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && yum -y install -y epel-release && yum install -y moreutils pwgen
+RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm && yum -y install nginx 
 
 
 ADD dist $CODE_DIR/dist
