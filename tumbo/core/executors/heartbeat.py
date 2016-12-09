@@ -235,17 +235,8 @@ class HeartbeatThread(CommunicationThread):
                     else:
                         thread_obj.health = Thread.STOPPED
                     thread_obj.save()
-                    if thread['count_settings'] != len(base_obj.setting.all()):
-                        pass
-                        #logger.debug("%s is incomplete" % thread['name'])
-                        #print("%s is incomplete" % thread['name'])
-                    else:
-                        pass
-                        #logger.debug("%s is complete" % thread['name'])
-                        #print("%s is complete" % thread['name'])
                 except Exception, e:
-                    #logger.exception(e)
-                    pass
+                    logger.exception("Error on Thread monitoring")
 
             if not data['in_sync']:
                 instances = list(Apy.objects.filter(base__name=base))

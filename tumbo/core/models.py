@@ -800,7 +800,7 @@ def synchronize_to_storage_on_delete(sender, *args, **kwargs):
         logger.exception("error in synchronize_to_storage_on_delete")
     except Base.DoesNotExist:
         # if post_delete is triggered from base.delete()
-        pass
+        logger.debug("post_delete signal triggered by base.delete(), can be ignored")
     except Exception, e:
         logger.error("error in synchronize_to_storage_on_delete")
         logger.exception(e)
