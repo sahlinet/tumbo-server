@@ -64,8 +64,6 @@ urlpatterns = patterns('',
     # static (userland)
     url(r'(?P<base>[\w-]+)/static/(?P<name>.+)$', \
                                             login_or_sharedkey(DjendStaticView.as_view())),
-    # api-authtoken
-    url(r'^api-token-auth/', 'rest_framework.authtoken.views.obtain_auth_token'),
 
     # home
     url(r'^dashboard/$', DjendView.as_view(template_name="fastapp/base_list.html"), name="console"),

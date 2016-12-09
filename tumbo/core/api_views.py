@@ -249,8 +249,8 @@ class BaseLogViewSet(viewsets.ViewSet):
         )
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
 
-    def log(self, request, pk):
-        base = Base.objects.get(pk=pk)
+    def log(self, request, name):
+        base = Base.objects.get(name=name)
         logs = base.executor.implementation.log(base.executor.pid)
         return Response(logs)
 
@@ -369,10 +369,12 @@ class ZipFileRenderer(renderers.BaseRenderer):
         return data
 
 
+# TODO: the serializer_class is only set to satisfy swagger. We should implement a Serializer, 
 class BaseExportViewSet(viewsets.ModelViewSet):
     model = Base
     permission_classes = (permissions.IsAuthenticated,)
     renderer_classes = [ZipFileRenderer]
+    serializer_class = BaseSerializer
 
     def get_queryset(self):
         return Base.objects.all()._clone().filter(user=self.request.user)
@@ -392,6 +394,7 @@ class BaseImportViewSet(viewsets.ModelViewSet):
     model = Base
     authentication_classes = (TokenAuthentication, SessionAuthentication, )
     permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = BaseSerializer
 
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
