@@ -29,7 +29,7 @@ RUN $PIP install --upgrade setuptools==20.3.1
 # nginx
 RUN yum install -y yum-utils
 RUN yum-config-manager --save --setopt=epel.skip_if_unavailable=true
-RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && yum -y install -y epel-release && yum install -y moreutils pwgen
+RUN yum install -y moreutils pwgen
 RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm && yum -y install nginx 
 
 
@@ -58,7 +58,7 @@ RUN mkdir /static && chown tumbo:tumbo /static && chmod 755 /startup_app.sh
 
 # Not removing libffi-devel because ends in an error (install-info: No such file or directory for /usr/share/info/libffi.info.gz)
 #RUN yum remove -y postgresql-devel libevent-devel gcc libffi-devel openssl-devel wget tar
-RUN yum remove -y postgresql-devel libevent-devel gcc openssl-devel wget tar && yum clean all
+RUN yum remove -y postgresql-devel libevent-devel gcc openssl-devel wget && yum clean all
 
 EXPOSE 80
 USER tumbo
