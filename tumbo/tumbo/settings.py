@@ -149,12 +149,7 @@ LOGGING = {
         'core': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': True,
-        },
-        'core.utils': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'core.executors.remote': {
             #'handlers': ['console'],
@@ -190,7 +185,7 @@ LOGGING = {
         'core.views': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': False,
+            'propagate': True,
         },
         'core.executors.heartbeat': {
             'handlers': ['console'],

@@ -66,6 +66,7 @@ from docopt import docopt
 from tabulate import tabulate
 
 docker_compose = sh.Command("docker-compose")
+bash = sh.Command("bash")
 python = sh.Command(sys.executable)
 
 coverage_cmd = "coverage run --timid --source=tumbo --parallel-mode "
@@ -710,10 +711,14 @@ if __name__ == '__main__':
             if arguments['build']:
                 print "Build docker images"
 
+                cmd = "bash bin/create_package.sh"
+                create_package = bash(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                create_package.wait()
+
                 cmd = "-p tumboserver -f %s build --pull" % compose_file
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
-
                 build.wait()
+
             if arguments['stop']:
                 print "Stop docker containers"
 

@@ -775,6 +775,7 @@ class StaticFile(models.Model):
     storage = models.CharField(max_length=2, choices=STORAGE)
     rev = models.CharField(max_length=32, blank=True, null=True)
     updated = models.DateTimeField(auto_now=True)
+    accessed = models.DateTimeField(null=True)
 
     def __str__(self):
         return "%s://%s" % (self.get_storage_display(), self.name)

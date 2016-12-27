@@ -26,8 +26,8 @@ class AuthProfileAdmin(admin.ModelAdmin):
     pass
 
 class StaticFileAdmin(admin.ModelAdmin):
-    list_display = ('name', 'base', 'storage', 'rev', 'updated')
-    list_filter = ('name', 'base', 'storage', 'rev', 'updated')
+    list_display = ('name', 'base', 'storage', 'rev', 'updated', 'accessed')
+    list_filter = ('base', 'storage')
 
 class ProcessAdmin(admin.ModelAdmin):
     list_display = ('name', 'rss', 'version', 'running')

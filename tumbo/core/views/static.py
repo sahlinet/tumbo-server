@@ -61,11 +61,16 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
         cache_key = "%s-%s-%s" % (base_obj.user.username, base_obj.name, static_path)
         cache_obj = cache.get(cache_key)
 
+        now = datetime.now()
+
         file = None
         if cache_obj:
             file = cache_obj.get('f', None)
+            is_404 = cache_obj.get('404', None)
+            logger.info(cache_obj)
 
-        if not file:
+        import pdb; pdb.set_trace()
+        if not file or not is_404:
             try:
                 logger.debug("%s: not in cache" % static_path)
 
@@ -83,6 +88,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
 
                         if created or obj.rev != os.stat(filepath).st_mtime:
                             obj.rev = os.stat(filepath).st_mtime
+                            obj.accessed = now
                             obj.save()
                     except IOError, e:
                         logger.debug(e)
@@ -98,9 +104,14 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                             obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="FS")
                             if created or obj.rev != os.stat(filepath).st_mtime:
                                 obj.rev = os.stat(filepath).st_mtime
+                                obj.accessed = now
                                 obj.save()
                         except IOError, e:
                             logger.debug(e)
+                            #import pdb; pdb.set_trace()
+                            cache.set(cache_key, {
+                                    '404': True
+                                }, int(settings.TUMBO_STATIC_CACHE_SECONDS))
                             return HttpResponseNotFound(static_path + " not found")
                 else:
                     # try to load from installed module in worker
@@ -129,6 +140,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                         obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="MO")
                         if obj.rev != data['LM'] or created:
                             obj.rev = data['LM']
+                            obj.accessed = now
                             obj.save()
                     # get from dropbox
                     elif data['status'] == "NOT_FOUND":
@@ -148,9 +160,10 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                             last_modified = datetime.strptime(metadata['modified'], dropbox_frmt)
                             logger.info("%s: file loaded from dropbox (lm: %s)" % (dropbox_path, last_modified))
 
-                            obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="MO")
+                            obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="DR")
                             if created or obj.rev != metadata['modified']:
                                 obj.rev = metadata['modified']
+                                obj.accessed = now
                                 obj.save()
                         except Exception, e:
                             logger.debug("File '%s'not found on dropbox" % dropbox_path)
@@ -164,11 +177,18 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                                'lm': totimestamp(last_modified)
                                }, int(settings.TUMBO_STATIC_CACHE_SECONDS))
             except (ErrorResponse, IOError), e:
-                logger.exception(e)
+                # Cache 404
+                cache.set(cache_key, {
+                                    '404': True
+                               }, int(settings.TUMBO_STATIC_CACHE_SECONDS))
+
                 logger.debug("%s: not found" % static_path)
                 logger.info("%s: 404" % file)
                 return HttpResponseNotFound("Not Found: "+static_path)
         else:
+            if is_404:
+                logger.info("Cached 404 response for '%s'" % static_path)
+                return HttpResponseNotFound("Not Found: "+static_path)
             logger.debug("%s: found in cache" % static_path)
             logger.debug("%s: last_modified in cache" % cache_obj['lm'])
             try:
