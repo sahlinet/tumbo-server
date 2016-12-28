@@ -185,7 +185,7 @@ LOGGING = {
         'core.views': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
         'core.executors.heartbeat': {
             'handlers': ['console'],
