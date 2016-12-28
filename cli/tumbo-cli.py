@@ -141,8 +141,8 @@ class EnvironmentList(object):
             if ".json" in file:
                 envId = file.replace(".json", "")
                 env = Env.load(envId)
-                table.append([envId, env.config_data['url'], env.active_str])
-        print tabulate(table, headers=['ID', 'URL', 'active'])
+                table.append([envId, env.config_data['url'], env.active_str, env.config_data['username']])
+        print tabulate(table, headers=['ID', 'URL', 'active', 'User'])
 
     @staticmethod
     def get_active(env=None):
