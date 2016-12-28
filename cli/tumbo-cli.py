@@ -711,7 +711,7 @@ if __name__ == '__main__':
             if arguments['build']:
                 print "Build docker images"
 
-                cmd = "bash bin/create_package.sh"
+                cmd = "bin/create_package.sh"
                 create_package = bash(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 create_package.wait()
 
