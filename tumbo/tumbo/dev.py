@@ -7,9 +7,9 @@ CACHES = {
 }
 
 if os.environ.get('CI', False):
-    REDIS_URL = "redis://:asdf123asdf123567sdf1238908898989@127.0.0.1:6379/1"
-else:
     REDIS_URL = "redis://127.0.0.1:6379/1"
+else:
+    REDIS_URL = "redis://:asdf123asdf123567sdf1238908898989@127.0.0.1:6379/1"
 
 CACHES = {
    "default": {
