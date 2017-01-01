@@ -290,7 +290,7 @@ REDIS_METRICS = {
 TEMPLATE_LOADERS = (
      'django.template.loaders.filesystem.Loader',
      'django.template.loaders.app_directories.Loader',
-     'core.loader.RemoteWorkerLoader',
+     'core.loader.FastappLoader',
 )
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
