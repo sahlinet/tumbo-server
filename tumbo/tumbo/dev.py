@@ -47,7 +47,7 @@ STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 STATIC_ROOT = "/static/"
 
-DEBUG = True
+DEBUG = False
 # TODO: get from var
 #WORKER_RABBITMQ_HOST = "192.168.99.1"
 WORKER_RABBITMQ_HOST = "localhost"
@@ -79,8 +79,8 @@ TUMBO_SCHEDULE_JOBSTORE = "sqlite:////tmp/jobstore.db"
 
 REDIS_METRICS['PASSWORD'] = os.environ.get('CACHE_ENV_REDIS_PASS', None)
 
-TEMPLATE_LOADERS += (
-     'core.loader.DevLocalRepositoryPathLoader',
-)
+#TEMPLATE_LOADERS += (
+#     'core.loader.DevLocalRepositoryPathLoader',
+#)
 
 SOCIAL_AUTH_USER_GROUP = "users"

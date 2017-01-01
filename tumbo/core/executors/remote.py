@@ -22,6 +22,7 @@ from core import responses
 logger = logging.getLogger(__name__)
 
 RESPONSE_TIMEOUT = 30
+STATIC_RESPONSE_TIMEOUT = 5
 CONFIGURATION_QUEUE = "configuration"
 CONFIGURATION_EVENT = CONFIGURATION_QUEUE
 FOREIGN_CONFIGURATION_QUEUE = "fconfiguration"
@@ -545,7 +546,8 @@ def get_static(path, vhost, username, password, async=False):
         def call(self, n):
             if self.callback_queue != "/static_callback":
                 async = False
-                self.connection.add_timeout(RESPONSE_TIMEOUT, self.on_timeout)
+                self.connection.add_timeout(3, self.on_timeout)
+                #self.connection.add_timeout(RESPONSE_TIMEOUT, self.on_timeout)
             self.response = None
             self.corr_id = str(uuid.uuid4())
             expire = 10000

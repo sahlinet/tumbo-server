@@ -22,6 +22,7 @@ from core.models import Base, StaticFile
 from core.executors.remote import get_static
 from core.plugins.datastore import PsqlDataStore
 from core.views import ResponseUnavailableViewMixing
+from core.staticfiles import StaticfileFactory, NotFound, StorageStaticFile
 
 
 User = get_user_model()
@@ -35,7 +36,8 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
         if type(t) == str:
             t = Template(t)
         else:
-            t = Template(t.read())
+            #t = Template(t.read())
+            t = Template(t)
         c = RequestContext(request, kwargs, processors=None)
         if request.user.is_anonymous():
             c['user'] = None
@@ -47,152 +49,33 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
         return t.render(c)
 
     def get(self, request, **kwargs):
-        static_path = "%s/%s/%s" % (kwargs['base'], "static", kwargs['name'])
+
+        username = kwargs['username']
+        project = kwargs['base']
+        name = kwargs['name']
+
+        static_path = "%s/%s/%s" % (project, "static", name)
         logger.debug("%s GET" % static_path)
 
-        base_obj = Base.objects.get(name=kwargs['base'])
+        # verify that base exists for user
+        base_obj = Base.objects.get(user__username=kwargs['username'], name=kwargs['base'])
+
+        #response = self.verify(request, base_obj)
+        #if response:
+        #    return response
 
         last_modified = None
 
-        response = self.verify(request, base_obj)
-        if response:
-            return response
-
-        cache_key = "%s-%s-%s" % (base_obj.user.username, base_obj.name, static_path)
-        cache_obj = cache.get(cache_key)
-
-        now = datetime.now()
-
-        file = None
-        is_404 = None
-
-        if cache_obj:
-            file = cache_obj.get('f', None)
-            is_404 = cache_obj.get('404', None)
-            logger.info((cache_obj, is_404))
-        else:
-            logger.debug("%s: not in cache" % static_path)
-
-        if not file and not is_404:
-            try:
-
-                REPOSITORIES_PATH = getattr(settings, "TUMBO_REPOSITORIES_PATH", None)
-                if "runserver" in sys.argv and REPOSITORIES_PATH:
-                    # for debugging with local runserver not loading from repository or dropbox directory
-                    # but from local filesystem
-                    try:
-                        filepath = os.path.join(REPOSITORIES_PATH, static_path)
-                        file = open(filepath, 'r')
-                        size = os.path.getsize(filepath)
-                        logger.info("%s: load from local filesystem (repositories) (%s) (%s)" % (static_path, filepath, size))
-                        last_modified = datetime.fromtimestamp(os.stat(filepath).st_mtime)
-                        obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="FS")
-
-                        if created or obj.rev != os.stat(filepath).st_mtime:
-                            obj.rev = os.stat(filepath).st_mtime
-                            obj.accessed = now
-                            obj.save()
-                    except IOError, e:
-                        logger.debug(e)
-                    if not file:
-                        try:
-                            DEV_STORAGE_DROPBOX_PATH = getattr(settings, "TUMBO_DEV_STORAGE_DROPBOX_PATH")
-                            filepath = os.path.join(DEV_STORAGE_DROPBOX_PATH, static_path)
-                            file = open(filepath, 'r')
-                            size = os.path.getsize(filepath)
-                            logger.debug("%s: load from local filesystem (dropbox app) (%s) (%s)" % (static_path, filepath, size))
-                            last_modified = datetime.fromtimestamp(os.stat(filepath).st_mtime)
-
-                            obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="FS")
-                            if created or obj.rev != os.stat(filepath).st_mtime:
-                                obj.rev = os.stat(filepath).st_mtime
-                                obj.accessed = now
-                                obj.save()
-                        except IOError, e:
-                            logger.debug(e)
-                            return HttpResponseNotFound(static_path + " not found")
-                else:
-                    # try to load from installed module in worker
-                    logger.info("%s: load from module in worker" % static_path)
-                    response_data = get_static(
-                        json.dumps({"base_name": base_obj.name, "path": static_path}),
-                        generate_vhost_configuration(
-                            base_obj.user.username,
-                            base_obj.name
-                            ),
-                        base_obj.name,
-                        base_obj.executor.password
-                        )
-                    data = json.loads(response_data)
-
-                    if data['status'] == "ERROR":
-                        logger.error("%s: ERROR response from worker" % static_path)
-                        raise Exception(response_data)
-                    elif data['status'] == "TIMEOUT":
-                        return HttpResponseServerError("Timeout")
-                    elif data['status'] == "OK":
-                        file = base64.b64decode(data['file'])
-                        last_modified = datetime.fromtimestamp(data['LM'])
-                        logger.info("%s: file received from worker with timestamp: %s" % (static_path, str(last_modified)))
-
-                        obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="MO")
-                        if obj.rev != data['LM'] or created:
-                            obj.rev = data['LM']
-                            obj.accessed = now
-                            obj.save()
-                    # get from dropbox
-                    elif data['status'] == "NOT_FOUND":
-                        logger.info(data)
-                        logger.info("%s: file not found on worker, try to load from dropbox" % static_path)
-                        # get file from dropbox
-                        auth_token = base_obj.user.authprofile.dropbox_access_token
-                        client = dropbox.client.DropboxClient(auth_token)
-                        try:
-                            # TODO: read file only when necessary
-                            dropbox_path = os.path.join(base_obj.user.username, static_path)
-                            file, metadata = client.get_file_and_metadata(dropbox_path)
-                            file = file.read()
-
-                            # "modified": "Tue, 19 Jul 2011 21:55:38 +0000",
-                            dropbox_frmt = "%a, %d %b %Y %H:%M:%S +0000"
-                            last_modified = datetime.strptime(metadata['modified'], dropbox_frmt)
-                            logger.info("%s: file loaded from dropbox (lm: %s)" % (dropbox_path, last_modified))
-
-                            obj, created = StaticFile.objects.get_or_create(base=base_obj, name=static_path, storage="DR")
-                            if created or obj.rev != metadata['modified']:
-                                obj.rev = metadata['modified']
-                                obj.accessed = now
-                                obj.save()
-                        except Exception, e:
-                            logger.debug("File '%s'not found on dropbox" % dropbox_path)
-                            raise e
-                    if 'content="no-cache"' in file:
-                        logger.debug("Not caching because no-cache present in HTML")
-                    else:
-                        logger.info("Caching %s" % cache_key)
-                        cache.set(cache_key, {
-                               'f': file,
-                               'lm': totimestamp(last_modified)
-                               }, int(settings.TUMBO_STATIC_CACHE_SECONDS))
-            except (ErrorResponse, IOError), e:
-                # Cache 404
-                cache.set(cache_key, {
-                                    '404': True
-                               }, int(settings.TUMBO_STATIC_CACHE_SECONDS))
-
-                logger.info("%s: not found, 404 cached" % static_path)
-                return HttpResponseNotFound("Not Found: "+static_path)
-        else:
-            if is_404:
-                logger.info("%s: Cached 404 response" % static_path)
-                return HttpResponseNotFound("Not Found: "+static_path)
-            else:
-                logger.debug("%s: last_modified in cache" % cache_obj['lm'])
-            try:
-                last_modified = fromtimestamp(cache_obj['lm'])
-            except Exception, e:
-                logger.exception(e)
-                last_modified = None
+        try:
+            file_fact = StaticfileFactory(username, project, name)
+            file_obj = file_fact.lookup()
+            file = file_obj.content
+        except NotFound, e:
+            logger.error(e)
+            return HttpResponseNotFound("Not found: %s" % static_path)
+        except Exception, e:
+            logger.error(e)
+            raise e
 
         # default
         mimetype = "text/plain"
@@ -230,7 +113,6 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             mimetype = "application/x-shockwave-flash"
         else:
             logger.warning("%s: suffix not recognized" % static_path)
-            logger.info("%s: 500" % file)
             return HttpResponseServerError("Staticfile suffix not recognized")
         logger.info("%s: with '%s'" % (static_path, mimetype))
 
