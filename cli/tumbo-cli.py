@@ -645,7 +645,7 @@ if __name__ == '__main__':
                 migrate.wait()
 
                 try:
-                    cmd = "%s  create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev" % manage_py
+                    cmd = "%s create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev" % manage_py
                     adminuser = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/null", _bg=True)
                     adminuser.wait()
                 except Exception, e:
