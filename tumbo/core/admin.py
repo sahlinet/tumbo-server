@@ -5,13 +5,13 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class BaseAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'name', 'user')
 
 class InstanceAdmin(admin.ModelAdmin):
     pass
 
 class ApyAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'public', 'schedule', 'rev')
+    list_display = ('id', 'name', 'base', 'public', 'schedule', 'rev')
 
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('rid', 'apy_name', 'base_name', 'status', 'created', 'modified')
