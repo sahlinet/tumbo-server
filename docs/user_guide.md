@@ -25,9 +25,33 @@ Place static files in a folder `static` on the Dropbox base directory. When a st
 accessed, the file is read from your Dropbox and then cached on Tumbo for {{ TUMBO_STATIC_CACHE_SECONDS }} seconds.
 
 {% verbatim %}
-Static files can be accessed over `https://HOST/userland/USERNAME/EXAMPLE_BASE/static/FILE`.
+Static files can be accessed over `https://HOST/userland/USERNAME/PROJECT_NAME/static/FILE`.
 The URL until the word *static* is available as variable in HTML files as {{ TUMBO_STATIC_URL }}.
 {% endverbatim %}
+
+Files are loaded from following locations (first match is served):
+
+
+### Dropbox App Directory
+
+{% verbatim %}
+After connecting your Dropbox Account with Tumbo you find a directory {{ TUMBO_DROPBOX_APP_NAME }}. When creating a project a directory is created. Place in it a directory static with files.
+{% endverbatim %}
+
+### Python Module installed in Worker
+
+Create a Python Module with a directory static in it and install the module in your worker:
+
+
+    def func(self, r=""):
+        import os, sys
+        module = "-e " + self.settings.GIT_URL
+        pip = os.path.join(os.path.dirname(sys.executable), "pip")
+            r=os.popen("%s install --upgrade %s" % (pip, module)).read()
+        return r
+
+
+###
 
 * * *
 
