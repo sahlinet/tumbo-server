@@ -38,7 +38,7 @@ ADD examples $CODE_DIR/examples
 #ADD worker $CODE_DIR/worker
 RUN ls -al $CODE_DIR
 RUN $PIP install --upgrade pip
-RUN cd $CODE_DIR/dist && $PIP install tumbo-server --find-links=.
+RUN cd $CODE_DIR/dist && $PIP install tumbo-server-*.tar.gz
 # workaround because setup.py installs django-rest-framework as egg and django migrate fails with "Not a directory" when looking up for migrations instructions
 #RUN $PIP uninstall -y djangorestframework && $PIP install djangorestframework==2.4.3
 
