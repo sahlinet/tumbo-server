@@ -70,6 +70,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             file_fact = StaticfileFactory(username, project, name)
             file_obj = file_fact.lookup()
             file = file_obj.content
+            last_modified = file_obj.last_modified
         except NotFound, e:
             logger.error(e)
             return HttpResponseNotFound("Not found: %s" % static_path)
@@ -129,11 +130,14 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                 file.seek(0)
             except AttributeError:
                 pass
+            if last_modified:
+                if type(last_modified) is float:
+                    last_modified = datetime.utcfromtimestamp(last_modified)
             if_modified_since = request.META.get('HTTP_IF_MODIFIED_SINCE', None)
             if last_modified and if_modified_since:
                 if_modified_since_dt = datetime.strptime(if_modified_since, frmt)
                 last_modified = last_modified.replace(microsecond=0)
-                logger.debug("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" % (static_path, last_modified, if_modified_since_dt))
+                logger.info("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" % (static_path, last_modified, if_modified_since_dt))
                 if (last_modified <= if_modified_since_dt):
                     logger.info("%s: 304" % static_path)
                     return HttpResponseNotModified()
@@ -144,7 +148,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             if static_path.endswith("png") or static_path.endswith("css") or static_path.endswith("js") \
                     or static_path.endswith("woff"):
                 response['Cache-Control'] = "max-age=120"
-            logger.info("%s: 200" % static_path)
+            logger.info("%s: 200 (last_modified: %s)" % (static_path, last_modified))
         return response
 
 
