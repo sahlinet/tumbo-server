@@ -31,7 +31,7 @@ class NotFound(BaseException):
 class LoadMixin(object):
 
     def _cache_not_found(self):
-        logger.info("cache.set not_found for %s (%s)" % (self.static_name, self.cache_key+self.__class__.__name__))
+        logger.debug("cache.set not_found for %s (%s)" % (self.static_name, self.cache_key+self.__class__.__name__))
         cache.set(self.cache_key + self.__class__.__name__, True, int(settings.TUMBO_STATIC_CACHE_SECONDS))
 
     def _is_cached_not_found(self):
@@ -42,30 +42,23 @@ class LoadMixin(object):
         Implements the logic for loading files from storages. If previously a not_found was cached, raise NotFound Exception.
         Otherwise call _load of the storage implementation. _load is called for every storage, thus not_found is cached only for this particular implementation.
         """
-        #if self._is_cached_not_found():
-        #    logger.info("raise NotFound from Cache")
-        #    raise NotFound(self.static_path)
-        #logger.info("NotFound is not cached, perceed with implementations load()")
-
         r = None
 
         try:
-            logger.info("_load in %s" % self.__class__.__name__)
+            logger.debug("_load in %s" % self.__class__.__name__)
             if self._is_cached_not_found():
-                logger.info("cached not_found exists, not loading again in the next %s seconds" % settings.TUMBO_STATIC_CACHE_SECONDS)
+                logger.debug("cached not_found exists, not loading again in the next %s seconds" % settings.TUMBO_STATIC_CACHE_SECONDS)
                 r = None
             else:
                 r = self._load()
         except NotFound, e:
             self._cache_not_found()
-            #raise e
         except Exception, e:
             logger.error(e)
-            #raise e
+            raise e
 
-        logger.info("Returned: %s" % r)
+        logger.debug("Returned: %s" % r)
         return r
-
 
 
 class StaticfileFactory(LoadMixin):
@@ -92,7 +85,7 @@ class StaticfileFactory(LoadMixin):
         file = None
 
         if self.cache_obj:
-            logger.info("Return cached version of %s" % self.static_path)
+            logger.debug("Return cached version of %s" % self.static_path)
             file = self.cache_obj.get('f', None)
             last_modified = self.cache_obj.get('lm', None)
             return StorageStaticFile(username=self.username,
@@ -112,14 +105,14 @@ class StaticfileFactory(LoadMixin):
             for storage in storages:
                 file_obj = storage(self.username, self.project_name, self.static_name).load()
                 if file_obj:
-                    logger.info("Staticfile %s found in storage %s" % (self.static_name, storage.__class__.__name__))
+                    logger.info("Staticfile %s found in storage %s" % (file_obj, storage.__name__))
                     break
 
             if file_obj is not None:
                 if 'content="no-cache"' in file_obj.content:
                     logger.debug("Not caching because no-cache present in HTML")
                 else:
-                    logger.info("Caching %s (%s)" % (self.cache_key, file_obj.last_modified))
+                    logger.debug("Caching %s (%s)" % (self.cache_key, file_obj.last_modified))
                     cache.set(self.cache_key, {
                            'f': file_obj.content,
                            'lm': totimestamp(file_obj.last_modified)
@@ -169,7 +162,7 @@ class DevRepoStaticfile(StaticfileFactory):
                 filepath = os.path.join(REPOSITORIES_PATH, self.static_path)
                 file = open(filepath, 'r').read()
                 size = os.path.getsize(filepath)
-                logger.info("%s: load from local filesystem (repositories) (%s) (%s)" % (self.static_path, filepath, size))
+                logger.debug("%s: load from local filesystem (repositories) (%s) (%s)" % (self.static_path, filepath, size))
                 last_modified = datetime.fromtimestamp(os.stat(filepath).st_mtime)
                 obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="FS")
 
@@ -184,7 +177,6 @@ class DevRepoStaticfile(StaticfileFactory):
                       last_modified=last_modified,
                       storage=self.__class__.__name__,
                       cached=True)
-                logger.info(file_obj)
                 return file_obj
 
             except IOError, e:
@@ -196,7 +188,9 @@ class DevStorageDropboxStaticfile(StaticfileFactory):
 
     def _load(self):
 
-        DEV_STORAGE_DROPBOX_PATH = getattr(settings, "TUMBO_DEV_STORAGE_DROPBOX_PATH")
+        DEV_STORAGE_DROPBOX_PATH = getattr(settings, "TUMBO_DEV_STORAGE_DROPBOX_PATH", None)
+        if not DEV_STORAGE_DROPBOXPATH:
+            raise NotFound()
         filepath = os.path.join(DEV_STORAGE_DROPBOX_PATH, self.static_path)
         try:
             file = open(filepath, 'r')
@@ -219,7 +213,7 @@ class DevStorageDropboxStaticfile(StaticfileFactory):
             return file_obj
 
         except IOError, e:
-            logger.debug(e)
+            logger.error(e)
             raise NotFound()
 
 
@@ -230,7 +224,7 @@ class WorkerModuleStaticfile(StaticfileFactory):
             if not self.base_obj.state:
                 raise Exception("Skipping because worker is not running")
             # try to load from installed module in worker
-            logger.info("%s: load from module in worker" % self.static_path)
+            logger.debug("%s: load from module in worker" % self.static_path)
             response_data = get_static(
                 json.dumps({"base_name": self.base_obj.name, "path": self.static_path}),
                 generate_vhost_configuration(
@@ -251,7 +245,7 @@ class WorkerModuleStaticfile(StaticfileFactory):
             elif data['status'] == "OK":
                 file = base64.b64decode(data['file'])
                 last_modified = datetime.fromtimestamp(data['LM'])
-                logger.info("%s: file received from worker with timestamp: %s" % (self.static_path, str(last_modified)))
+                logger.debug("%s: file received from worker with timestamp: %s" % (self.static_path, str(last_modified)))
 
                 obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="MO")
                 if obj.rev != data['LM'] or created:
@@ -269,7 +263,7 @@ class WorkerModuleStaticfile(StaticfileFactory):
                 return file_obj
 
         except Exception, e:
-            logger.info(e)
+            logger.error(e)
             raise NotFound()
 
 
@@ -279,7 +273,7 @@ class DropboxStaticfile(StaticfileFactory):
 
         try:
 
-            logger.info("%s: try to load from dropbox" % self.static_path)
+            logger.debug("%s: try to load from dropbox" % self.static_path)
             # get file from dropbox
             auth_token = self.base_obj.user.authprofile.dropbox_access_token
             client = dropbox.client.DropboxClient(auth_token)
@@ -291,7 +285,7 @@ class DropboxStaticfile(StaticfileFactory):
             # "modified": "Tue, 19 Jul 2011 21:55:38 +0000",
             dropbox_frmt = "%a, %d %b %Y %H:%M:%S +0000"
             last_modified = datetime.strptime(metadata['modified'], dropbox_frmt)
-            logger.info("%s: file loaded from dropbox (lm: %s)" % (dropbox_path, last_modified))
+            logger.debug("%s: file loaded from dropbox (lm: %s)" % (dropbox_path, last_modified))
 
             obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="DR")
             if created or obj.rev != metadata['modified']:
@@ -308,5 +302,5 @@ class DropboxStaticfile(StaticfileFactory):
             return file_obj
 
         except Exception, e:
-            logger.warn(e)
+            logger.error(e)
             raise NotFound()
