@@ -115,7 +115,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
         else:
             logger.warning("%s: suffix not recognized" % static_path)
             return HttpResponseServerError("Staticfile suffix not recognized")
-        logger.info("%s: with '%s'" % (static_path, mimetype))
+        logger.debug("%s: with '%s'" % (static_path, mimetype))
 
         return self._handle_cache(static_path, request, mimetype, last_modified, file)
 
@@ -137,9 +137,9 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             if last_modified and if_modified_since:
                 if_modified_since_dt = datetime.strptime(if_modified_since, frmt)
                 last_modified = last_modified.replace(microsecond=0)
-                logger.info("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" % (static_path, last_modified, if_modified_since_dt))
+                logger.debug("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" % (static_path, last_modified, if_modified_since_dt))
                 if (last_modified <= if_modified_since_dt):
-                    logger.info("%s: 304" % static_path)
+                    logger.info("%s: 304 (last_modified): %s" % (static_path, last_modified))
                     return HttpResponseNotModified()
             response = HttpResponse(file, content_type=mimetype)
             if last_modified:

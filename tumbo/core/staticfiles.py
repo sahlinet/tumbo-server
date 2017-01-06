@@ -189,7 +189,7 @@ class DevStorageDropboxStaticfile(StaticfileFactory):
     def _load(self):
 
         DEV_STORAGE_DROPBOX_PATH = getattr(settings, "TUMBO_DEV_STORAGE_DROPBOX_PATH", None)
-        if not DEV_STORAGE_DROPBOXPATH:
+        if not DEV_STORAGE_DROPBOX_PATH:
             raise NotFound()
         filepath = os.path.join(DEV_STORAGE_DROPBOX_PATH, self.static_path)
         try:
