@@ -1,11 +1,21 @@
 FROM philipsahli/centos:latest
 
-RUN yum install -y postgresql-devel python-virtualenv libevent-devel gcc libffi-devel openssl-devel wget tar sudo
+RUN yum install -y postgresql-devel python-virtualenv libevent-devel gcc libffi-devel openssl-devel wget tar sudo sqlite-devel make
+
+# Add Custom Python Installation
+RUN curl -O https://www.python.org/ftp/python/2.7.12/Python-2.7.12.tgz && tar -zxvf Python-* && cd Python-* && ./configure --prefix=/usr/local --enable-unicode=ucs4 && make && make install
+
+RUN /usr/local/bin/python -V
+
+RUN wget --no-check-certificate https://pypi.python.org/packages/source/s/setuptools/setuptools-1.4.2.tar.gz && tar -xvf setuptools-1.4.2.tar.gz && cd setuptools-1.4.2 && /usr/local/bin/python2.7 setup.py install && cd .. && rm -rf setuptools*
+RUN curl https://bootstrap.pypa.io/get-pip.py | /usr/local/bin/python2.7 -
+
+RUN /usr/local/bin/pip install virtualenv
 
 RUN echo "tumbo ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 RUN sed -i -e 's/Defaults    requiretty.*/ #Defaults    requiretty/g' /etc/sudoers
 
-ENV PIP /home/tumbo/.virtualenvs/tumbo/bin/pip
+ENV PIP /usr/local/bin/pip
 ENV CODE_DIR /home/tumbo/code
 ENV HOME /home/tumbo
 
@@ -14,7 +24,7 @@ RUN useradd -m -d $HOME -s /bin/bash tumbo
 WORKDIR $HOME
 RUN mkdir $CODE_DIR && chown tumbo:tumbo code && mkdir $HOME/.virtualenvs && mkdir $HOME/.python-eggs && chown tumbo:tumbo $HOME/.python-eggs
 
-RUN virtualenv --no-site-packages $HOME/.virtualenvs/tumbo
+RUN virtualenv -p /usr/local/bin/python --no-site-packages $HOME/.virtualenvs/tumbo
 
 RUN rpm -iUvh http://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm && yum -y install postgresql93
 
@@ -24,7 +34,7 @@ RUN $PIP install newrelic j2cli
 # suds-jurko in django-plans need setuptools >=1.4
 #RUN wget --no-check-certificate https://pypi.python.org/packages/source/s/setuptools/setuptools-1.4.2.tar.gz && tar -xvf setuptools-1.4.2.tar.gz
 #RUN /home/tumbo/.virtualenvs/tumbo/bin/python setuptools-1.4.2/setup.py install
-RUN $PIP install --upgrade setuptools==20.3.1
+#RUN $PIP install --upgrade setuptools==20.3.1
 
 # nginx
 RUN yum install -y yum-utils
@@ -57,8 +67,9 @@ ADD bin/startup_app.sh /startup_app.sh
 RUN mkdir /static && chown tumbo:tumbo /static && chmod 755 /startup_app.sh
 
 # Not removing libffi-devel because ends in an error (install-info: No such file or directory for /usr/share/info/libffi.info.gz)
-#RUN yum remove -y postgresql-devel libevent-devel gcc libffi-devel openssl-devel wget tar
-RUN yum remove -y postgresql-devel libevent-devel gcc openssl-devel wget && yum clean all
+RUN yum remove -y postgresql-devel libevent-devel gcc openssl-devel wget make && yum clean all
+
+#ENV PATH "/usr/local/bin:$PATH"
 
 EXPOSE 80
 USER tumbo
