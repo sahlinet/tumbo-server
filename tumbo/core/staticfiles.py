@@ -147,7 +147,7 @@ class StorageStaticFile(object):
         logger.info("StorageStaticFile '%s'" % self)
 
     def __str__(self):
-        return "%s/%s:%s:%s" % (self.storage, self.username, self.project, self.name)
+        return "%s:%s:%s" % (self.username, self.project, self.name)
 
 
 class DevRepoStaticfile(StaticfileFactory):
@@ -166,6 +166,12 @@ class DevRepoStaticfile(StaticfileFactory):
                 last_modified = datetime.fromtimestamp(os.stat(filepath).st_mtime)
                 obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="FS")
 
+#                try:
+#                    obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="FS")
+#                except:
+#                    StaticFile.objects.filter(base=self.base_obj, name=self.static_path, storage="FS").delete()
+#                    obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="FS")
+                logger.info("StaticFile Obj: " + str(obj) + " " + str(created))
                 if created or obj.rev != os.stat(filepath).st_mtime:
                     obj.rev = os.stat(filepath).st_mtime
                     obj.accessed = self.now
