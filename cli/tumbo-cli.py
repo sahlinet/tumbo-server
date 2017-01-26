@@ -729,7 +729,10 @@ if __name__ == '__main__':
                 create_package = bash(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 create_package.wait()
 
-                cmd = "-p tumboserver -f %s build --pull" % compose_file
+                OPTS = ""
+                if os.environ.get("CI", False):
+                    OPTS += "--no-cache"
+                cmd = "-p tumboserver -f %s build --pull %s" % (compose_file, OPTS)
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 build.wait()
 
