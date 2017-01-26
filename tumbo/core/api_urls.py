@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, url, include
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
+from rest_framework_swagger.views import get_swagger_view
 
 from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, CoreApyExecutionViewSet, ApyViewSetByName
 
@@ -50,7 +51,7 @@ urlpatterns = patterns('',
     url(r'^api-token-auth/', 'rest_framework.authtoken.views.obtain_auth_token'),
 
     # api-docs
-    url(r'^api-docs/', include('rest_framework_swagger.urls')),
+    url(r'^api-docs', get_swagger_view(title='Tumbo API'))
 )
 
 from rest_framework.urlpatterns import format_suffix_patterns
