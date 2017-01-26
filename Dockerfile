@@ -14,7 +14,8 @@ RUN /usr/local/bin/pip install virtualenv
 
 RUN echo "tumbo ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers && sed -i -e 's/Defaults    requiretty.*/ #Defaults    requiretty/g' /etc/sudoers
 
-ENV PIP /usr/local/bin/pip
+#ENV PIP /usr/local/bin/pip
+ENV PIP /home/tumbo/.virtualenvs/tumbo/bin/pip
 ENV CODE_DIR /home/tumbo/code
 ENV HOME /home/tumbo
 
@@ -24,6 +25,7 @@ WORKDIR $HOME
 RUN mkdir $CODE_DIR && chown tumbo:tumbo code && mkdir $HOME/.virtualenvs && mkdir $HOME/.python-eggs && chown tumbo:tumbo $HOME/.python-eggs
 
 RUN virtualenv -p /usr/local/bin/python --no-site-packages $HOME/.virtualenvs/tumbo
+
 
 RUN rpm -iUvh http://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm && yum -y install postgresql93
 
