@@ -65,7 +65,6 @@ from pygments.formatters import Terminal256Formatter
 from docopt import docopt
 from tabulate import tabulate
 
-docker_compose = sh.Command("docker-compose")
 bash = sh.Command("bash")
 python = sh.Command(sys.executable)
 
@@ -110,7 +109,7 @@ def confirm(prompt=None, resp=False):
         prompt = '%s [%s]|%s: ' % (prompt, 'y', 'n')
     else:
         prompt = '%s [%s]|%s: ' % (prompt, 'n', 'y')
-        
+
     while True:
         ans = raw_input(prompt)
         if not ans:
@@ -172,7 +171,7 @@ class Env(object):
             self.active_str = ""
             self.active = False
 
-    def _call_api(self, url, method="GET", params=None, json=None):
+    def _call_api(self, url, method="GET", params=None, json=None, exit_on_error=True):
         try:
             r = requests.request(method, self.config_data['url']+url,
                                  #allow_redirects=False,
@@ -183,7 +182,8 @@ class Env(object):
                                  json=json
                                  )
             response = r.json() if 'Content-Type' in r.headers and "json" in r.headers['Content-Type'] else r.text
-            r.raise_for_status()
+            if exit_on_error:
+                r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             print "Error (%s)" % e.message
             print response
@@ -306,6 +306,8 @@ class Env(object):
 
     def project_start(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/start/" % name, method="POST")
+        if status_code == 200:
+            print "Project %s started" % name
 
     def project_destroy(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/destroy/" % name, method="POST")
@@ -370,6 +372,7 @@ class Env(object):
         if tid:
             data['rid'] = tid
         status_code, transactions = self._call_api("/core/api/base/%s/transactions/" % name, method="GET", params=data)
+        print status_code, transactions
 
         logs_only = arguments.get('--logs', False)
         cut = arguments.get('--cut', None)
@@ -415,24 +418,29 @@ class Env(object):
         if status_code == 201:
             print "Function %s/%s created" % (project_name, function_name)
 
-    def edit_function(self, project_name, function_name):
+    def edit_function(self, project_name, function_name, path=None):
         status_code, response = self._call_api("/core/api/base/%s/apy/%s" % (project_name, function_name), method="GET")
-        file, path = tempfile.mkstemp()
-        f = open(path, "w")
-        f.write(response['module'])
-        f.close()
+        if not path:
+            file, path = tempfile.mkstemp()
+            f = open(path, "w")
+            f.write(response['module'])
+            f.close()
         from subprocess import call
-        print path
         call(["/usr/bin/vim", path])
 
         if confirm():
 
             f = open(path, "r")
-            status_code, response = self._call_api("/core/api/base/%s/apy/%s/" % (project_name, function_name), method="PATCH", json={'module': f.read()})
+            status_code, response = self._call_api("/core/api/base/%s/apy/%s/" % (project_name, function_name), method="PATCH", json={'module': f.read()}, exit_on_error=False)
+            print status_code
             if status_code == 200:
                 print "Saved"
-            #if status_code == 201:
-            #    print "Function %s/%s created" % (project_name, function_name)
+            elif status_code == 500:
+                print "Function %s/%s not saved:" % (project_name, function_name)
+                print response
+                env.edit_function(project_name, function_name, path)
+                time.sleep(5)
+                call(["/usr/bin/vim", path])
             #status_code, response = self._call_api("/core/api/base/%s/apy/" % (project_name), method="POST", json={"name": function_name})
 
 
@@ -485,7 +493,10 @@ def tolocaltime(dt):
     import tzlocal  # $ pip install tzlocal
 
     local_timezone = tzlocal.get_localzone() # get pytz tzinfo
-    utc_time = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S.%fZ")
+    try:
+        utc_time = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S.%fZ")
+    except:
+        return dt
     local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_timezone)
     return local_time
 
@@ -610,7 +621,7 @@ if __name__ == '__main__':
                     cmd_args = "-u rabbitmq /usr/sbin/rabbitmq-server"
                     sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
 
-                print "Starting development server"
+                print "Starting Development Server"
                 env = {}
                 env.update(os.environ)
                 env.update({'PYTHONPATH': "fastapp", 'CACHE_ENV_REDIS_PASS': "asdf123asdf123567sdf1238908898989",
@@ -659,7 +670,8 @@ if __name__ == '__main__':
 
                 background_pids = []
 
-                for mode in ["cleanup", "heartbeat", "async", "log", "scheduler"]:
+                #for mode in ["cleanup", "heartbeat", "async", "log", "scheduler"]:
+                for mode in ["all", ]:
                     cmd = "%s heartbeat --mode=%s --settings=tumbo.dev" % (manage_py, mode)
                     if arguments['--coverage']:
                         cmd = coverage_cmd + cmd
@@ -702,6 +714,8 @@ if __name__ == '__main__':
                 print r.json()
 
         if arguments['docker']:
+
+            docker_compose = sh.Command("docker-compose")
             if arguments['pull']:
                 print "Docker images pull ..."
                 cmd = "-p tumboserver -f %s pull" % compose_file_base
