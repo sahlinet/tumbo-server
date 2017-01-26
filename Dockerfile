@@ -34,11 +34,12 @@ RUN $PIP install newrelic j2cli
 RUN yum install -y yum-utils && yum-config-manager --save --setopt=epel.skip_if_unavailable=true && yum install -y moreutils pwgen
 RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm && yum -y install nginx
 
+RUN echo cachebust_1470943960
+
 ADD dist $CODE_DIR/dist
 ADD examples $CODE_DIR/examples
 RUN $PIP install --upgrade pip && cd $CODE_DIR/dist && $PIP install tumbo-server-*.tar.gz
 
-RUN echo cachebust_1470943960
 # WORKAROUND
 RUN $PIP install -e git+https://github.com/rpalacios/django-sequence-field.git@f1bdc48c897e6cd95a3182f8253665609a87a895#egg=django_sequence_field-master
 RUN $PIP install -e git+https://github.com/docker/docker-py.git@aa19d7b6609c6676e8258f6b900dea2eda1dbe95#egg=docker_py-master
