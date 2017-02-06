@@ -731,7 +731,7 @@ if __name__ == '__main__':
 
                 OPTS = ""
                 if os.environ.get("CI", False):
-                    echo "Building images with --no-cache option"
+                    print "Building images with --no-cache option"
                     OPTS += "--no-cache"
                 cmd = "-p tumboserver -f %s build --pull %s" % (compose_file, OPTS)
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
