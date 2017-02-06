@@ -38,8 +38,8 @@ test:
     #
     - sudo chmod 777 /run/docker.sock
     #
-    - bash bin/create_package.sh
-    - python cli/tumbo-cli.py server docker pull
+    - bash bin/create_package.sh > /dev/null
+    - python cli/tumbo-cli.py server docker pull > /dev/null
     - python cli/tumbo-cli.py server docker build
 
     # Tests
