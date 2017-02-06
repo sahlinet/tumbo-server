@@ -14,7 +14,6 @@ RUN /usr/local/bin/pip install virtualenv
 
 RUN echo "tumbo ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers && sed -i -e 's/Defaults    requiretty.*/ #Defaults    requiretty/g' /etc/sudoers
 
-#ENV PIP /usr/local/bin/pip
 ENV PIP /home/tumbo/.virtualenvs/tumbo/bin/pip
 ENV CODE_DIR /home/tumbo/code
 ENV HOME /home/tumbo
