@@ -15,9 +15,6 @@ done
 
 chown -R tumbo:tumbo /static
 
-#export PYTHON_EGG_CACHE="/home/tumbo/.python-eggs"
-#cd /home/tumbo/code/tumbo
-
 MANAGE_PY="/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py"
 
 if [ "$MODE" == "web" ]; then
@@ -27,7 +24,7 @@ if [ "$MODE" == "web" ]; then
     /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY collectstatic --noinput --settings=tumbo.container
     echo "Run collectstatic done"
     echo "Run migrate start"
-    /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY migrate --noinput --settings=tumbo.container
+    /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY migrate -v3 --noinput --settings=tumbo.container
     echo "Run migrate end"
 
     LOCKFILE=$HOME/init
@@ -42,14 +39,18 @@ if [ "$MODE" == "web" ]; then
     fi
 
     # NGinx
+    echo "Generating configuration file for Nginx"
     /home/tumbo/.virtualenvs/tumbo/bin/j2 /etc/nginx/conf.d/tumbo.conf | sudo sponge /etc/nginx/conf.d/tumbo.conf
+    echo "Starting Nginx"
     sudo /usr/sbin/nginx -g "daemon off;" &
 
     # Django
     if [ "$DEBUG" == "True" ]; then
         RELOAD="--reload"
     fi
+    echo "Starting Gunicorn processes"
     cd /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo && /home/tumbo/.virtualenvs/tumbo/bin/gunicorn tumbo.wsgi:application localhost:8000 $RELOAD --max-requests=600 --workers=2 --env DJANGO_SETTINGS_MODULE=tumbo.container
+
 elif [ "$MODE" == "background" ]; then
 
     if [ "$ARG" != "" ]; then
