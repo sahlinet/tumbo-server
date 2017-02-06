@@ -151,6 +151,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'core.loader': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
         'core.executors.remote': {
             #'handlers': ['console'],
             'handlers': [],
@@ -202,7 +207,6 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
-
         'tornado': {
             'handlers': ['console'],
             'level': 'DEBUG',
@@ -257,6 +261,7 @@ TUMBO_LOG_LISTENER_THREADCOUNT = 5
 TUMBO_CLEANUP_INTERVAL_MINUTES = 60
 TUMBO_CLEANUP_OLDER_THAN_N_HOURS = 48
 TUMBO_STATIC_CACHE_SECONDS = 60
+TUMBO_STATIC_404_CACHE_SECONDS = 5
 
 TUMBO_DOCKER_IMAGE = "philipsahli/tumbo-worker:develop"
 
