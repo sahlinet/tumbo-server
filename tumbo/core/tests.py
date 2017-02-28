@@ -342,12 +342,12 @@ class AppConfigGenerationTestCase(BaseTestCase):
         #self.assertTrue("setting1_key" in self.base1.config)
 
 
-class StaticfileTestCae(BaseTestCase):
-
-    @patch("core.staticfiles..metadata")
-    @patch("core.utils.Connection.get_file")
-    def test_dev_repo_found(self, mock_get_file, mock_metadata):
-        mock_get_file.return_value = StringIO.StringIO("asdf")
+#class StaticfileTestCae(BaseTestCase):
+#
+#    @patch("core.staticfiles..metadata")
+#    @patch("core.utils.Connection.get_file")
+#    def test_dev_repo_found(self, mock_get_file, mock_metadata):
+#        mock_get_file.return_value = StringIO.StringIO("asdf")
 
 
 class ImportTestCase(BaseTestCase):
