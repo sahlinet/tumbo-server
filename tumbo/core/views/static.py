@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class DjendStaticView(ResponseUnavailableViewMixing, View):
 
     def _render_html(self, request, t, **kwargs):
-        if type(t) == str:
+        if isinstance(t, str):
             t = Template(t)
         else:
             #t = Template(t.read())
@@ -131,7 +131,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             except AttributeError:
                 pass
             if last_modified:
-                if type(last_modified) is float:
+                if isinstance(last_modified, float):
                     last_modified = datetime.utcfromtimestamp(last_modified)
             if_modified_since = request.META.get('HTTP_IF_MODIFIED_SINCE', None)
             if last_modified and if_modified_since:

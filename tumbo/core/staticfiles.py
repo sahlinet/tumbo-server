@@ -168,7 +168,7 @@ class DevRepoStaticfile(StaticfileFactory):
 
                 try:
                     obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="FS")
-                except:
+                except Exception:
                     StaticFile.objects.filter(base=self.base_obj, name=self.static_path, storage="FS").delete()
                     obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="FS")
                 logger.info("StaticFile Obj: " + str(obj) + " " + str(created))

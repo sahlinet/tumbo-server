@@ -69,24 +69,24 @@ WSGI_APPLICATION = 'tumbo.wsgi.application'
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 if os.environ.get('CI', None):
-	DATABASES = {
-	    'default': {
-		'ENGINE': 'django.db.backends.sqlite3',
-		'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
-	    }
-	}
+    DATABASES = {
+        'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
+        }
+    }
 
 else:
-	DATABASES = {
-	    'default': {
-		'ENGINE': 'django.db.backends.postgresql_psycopg2',
-		'NAME': "tumbodev",
-		'HOST': "localhost",
-		'PORT': 16432,
-		'USER': "tumbodev",
-		'PASSWORD': "tumbodev123"
-	    }
-	}
+    DATABASES = {
+        'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': "tumbodev",
+        'HOST': "localhost",
+        'PORT': 16432,
+        'USER': "tumbodev",
+        'PASSWORD': "tumbodev123"
+        }
+    }
 
 # If tumbo is run from an egg, use db in $HOME/.tumbo
 if "site-packages" in BASE_DIR:

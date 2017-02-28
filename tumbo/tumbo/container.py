@@ -11,7 +11,6 @@ def get_var(var_name, fail=True):
         val = os.environ[var_name]
         if val.startswith("$"):
             val = os.environ[val.strip("$").strip("{").strip("}")]
-	print var_name, val
         return val
     except KeyError, e:
         if not fail:

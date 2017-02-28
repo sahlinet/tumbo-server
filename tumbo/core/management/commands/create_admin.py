@@ -46,7 +46,7 @@ class Command(BaseCommand):
             u.set_password(password)
             u.is_superuser = True
             u.is_staff = True
-        except:
+        except Exception:
             u = User.objects.get(username="admin")
             u.set_password(password)
         u.save()
