@@ -5,19 +5,16 @@ import logging
 import json
 import dropbox
 
-from dropbox.rest import ErrorResponse
-
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.cache import cache
 
-from core.utils import totimestamp, fromtimestamp
+from core.utils import totimestamp
 from core.queue import generate_vhost_configuration
 from core.models import Base, StaticFile
 from core.executors.remote import get_static
-from core.plugins.datastore import PsqlDataStore
 
 
 User = get_user_model()
@@ -99,7 +96,6 @@ class StaticfileFactory(LoadMixin):
         else:
             logger.debug("%s: not in cache" % self.static_path)
 
-            REPOSITORIES_PATH = getattr(settings, "TUMBO_REPOSITORIES_PATH", None)
             storages = [ DevRepoStaticfile, DevStorageDropboxStaticfile, WorkerModuleStaticfile, DropboxStaticfile ]
             file_obj = None
             for storage in storages:

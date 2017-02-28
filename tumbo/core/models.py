@@ -683,7 +683,7 @@ def initialize_on_storage(sender, *args, **kwargs):
     logger.info(kwargs)
     try:
         connection.create_folder("%s/%s" % (instance.user.username, instance.name))
-    except Exception, e:
+    except Exception:
         pass
         #if "already exists" in e['body']['error']:
         #    pass
@@ -709,7 +709,7 @@ def synchronize_to_storage(sender, *args, **kwargs):
         instance.save()
 
         # update app.config for saving description
-        result = connection.put_file("%s/%s/app.config" % (instance.base.user.username, 
+        result = connection.put_file("%s/%s/app.config" % (instance.base.user.username,
                                      instance.base.name),
                                      instance.base.config)
     except Exception, e:

@@ -1,11 +1,4 @@
-import os
-import sys
-import base64
 import logging
-import json
-import dropbox
-
-from dropbox.rest import ErrorResponse
 
 from datetime import datetime
 
@@ -17,12 +10,10 @@ from django.core.cache import cache
 from django.template import Template, RequestContext
 
 from core.utils import totimestamp, fromtimestamp
-from core.queue import generate_vhost_configuration
-from core.models import Base, StaticFile
-from core.executors.remote import get_static
+from core.models import Base
 from core.plugins.datastore import PsqlDataStore
 from core.views import ResponseUnavailableViewMixing
-from core.staticfiles import StaticfileFactory, NotFound, StorageStaticFile
+from core.staticfiles import StaticfileFactory, NotFound
 
 
 User = get_user_model()
@@ -164,7 +155,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             logger.debug("Setup datastore for context done")
             logger.debug("Datastore-Size: %s" % data['datastore'].count())
             data['is_authenticated'] = request.user.is_authenticated()
-        except KeyError, e:
+        except KeyError:
             logger.error("Setup datastore for context failed")
         updated = request.GET.copy()
         query_params = {}

@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url, include
+from django.conf.urls import patterns, url
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
 from rest_framework_swagger.views import get_swagger_view
