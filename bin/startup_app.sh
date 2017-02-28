@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 echo "#**************************************************"
 env
@@ -49,7 +49,7 @@ if [ "$MODE" == "web" ]; then
         RELOAD="--reload"
     fi
     echo "Starting Gunicorn processes"
-    cd /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo && /home/tumbo/.virtualenvs/tumbo/bin/gunicorn tumbo.wsgi:application localhost:8000 $RELOAD --max-requests=600 --workers=2 --env DJANGO_SETTINGS_MODULE=tumbo.container
+    cd /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo && /home/tumbo/.virtualenvs/tumbo/bin/gunicorn --bind=localhost:8000 $RELOAD --max-requests=600 --workers=2 --env DJANGO_SETTINGS_MODULE=tumbo.container tumbo.wsgi:application
 
 elif [ "$MODE" == "background" ]; then
 

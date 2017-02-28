@@ -33,16 +33,20 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         threads = []
         threads_static = []
-        
+
         username = options['username']
         password = options['password']
         email = options['email']
 
-        
+
         from django.contrib.auth.models import User
 
-        u = User(username=username)
-        u.set_password(password)
-        u.is_superuser = True
-        u.is_staff = True
+        try:
+            u = User(username=username)
+            u.set_password(password)
+            u.is_superuser = True
+            u.is_staff = True
+        except:
+            u = User.objects.get(username="admin")
+            u.set_password(password)
         u.save()

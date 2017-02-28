@@ -70,8 +70,12 @@ WSGI_APPLICATION = 'tumbo.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': "tumbodev",
+        'HOST': "localhost",
+        'PORT': 16432,
+        'USER': "tumbodev",
+        'PASSWORD': "tumbodev123"
     }
 }
 
