@@ -6,10 +6,9 @@ from django.contrib.auth import get_user_model
 from django.views.generic import View
 from django.http import HttpResponseNotFound, HttpResponse, HttpResponseServerError, HttpResponseNotModified
 from django.conf import settings
-from django.core.cache import cache
 from django.template import Template, RequestContext
 
-from core.utils import totimestamp, fromtimestamp
+from core.utils import totimestamp
 from core.models import Base
 from core.plugins.datastore import PsqlDataStore
 from core.views import ResponseUnavailableViewMixing
@@ -129,7 +128,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                 if_modified_since_dt = datetime.strptime(if_modified_since, frmt)
                 last_modified = last_modified.replace(microsecond=0)
                 logger.debug("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" % (static_path, last_modified, if_modified_since_dt))
-                if (last_modified <= if_modified_since_dt):
+                if last_modified <= if_modified_since_dt:
                     logger.info("%s: 304 (last_modified): %s" % (static_path, last_modified))
                     return HttpResponseNotModified()
             response = HttpResponse(rfile, content_type=mimetype)

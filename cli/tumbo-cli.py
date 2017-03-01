@@ -467,9 +467,7 @@ class Env(object):
         print "HTTP Status Code: %s" % status_code
         sys.stdout.write("Response: ")
         nocolor = arguments.get('--nocolor', False)
-        respone = pprint.pformat(response, indent=4)
-        nocolor = arguments.get('--nocolor', False)
-        if type(response) is dict:
+        if isinstance(response, dict):
             response = json.dumps(response)
         print custom_format(response, nocolor=nocolor)
 
@@ -495,7 +493,7 @@ def tolocaltime(dt):
     local_timezone = tzlocal.get_localzone() # get pytz tzinfo
     try:
         utc_time = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S.%fZ")
-    except:
+    except Exception:
         return dt
     local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_timezone)
     return local_time

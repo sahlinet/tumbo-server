@@ -53,7 +53,7 @@ def import_base(zf, user_obj, name, override_public, override_private):
     # Dropbox connection
     try:
         dropbox_connection = Connection(base.auth_token)
-    except Exception, e:
+    except Exception:
         logger.exception("Error on Connectin to Dropbx")
 
     # app.config

@@ -93,7 +93,7 @@
           }
 
           $scope.is_related = function(apy) {
-                if ($scope.base.foreign_ays != undefined) {
+                if ($scope.base.foreign_ays !== undefined) {
                     return !($scope.base.foreign_apys.indexOf(apy.url) == -1);
                 };
           }
