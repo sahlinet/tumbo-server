@@ -94,14 +94,14 @@ def confirm(prompt=None, resp=False):
     Create Directory? [y]|n: 
     True
     >>> confirm(prompt='Create Directory?', resp=False)
-    Create Directory? [n]|y: 
+    Create Directory? [n]|y: n
     False
     >>> confirm(prompt='Create Directory?', resp=False)
     Create Directory? [n]|y: y
     True
 
     """
-    
+
     if prompt is None:
         prompt = 'Confirm'
 
@@ -115,14 +115,14 @@ def confirm(prompt=None, resp=False):
         if not ans:
             return resp
         if ans not in ['y', 'Y', 'n', 'N']:
-            print('please enter y or n.')
+            print 'please enter y or n.'
             continue
         if ans == 'y' or ans == 'Y':
             return True
         if ans == 'n' or ans == 'N':
             return False
 
-def format(s, l=None, nocolor=False):
+def custom_format(s, l=None, nocolor=False):
     if l:
         s = s[:int(l)]
     if nocolor:
@@ -135,10 +135,10 @@ class EnvironmentList(object):
         path = "%s/.tumbo" % os.path.expanduser("~")
         table = []
         if not os.path.exists(path):
-            os.mkdir(path) 
-        for file in os.listdir(path):
-            if ".json" in file:
-                envId = file.replace(".json", "")
+            os.mkdir(path)
+        for ffile in os.listdir(path):
+            if ".json" in ffile:
+                envId = ffile.replace(".json", "")
                 env = Env.load(envId)
                 table.append([envId, env.config_data['url'], env.active_str, env.config_data['username']])
         print tabulate(table, headers=['ID', 'URL', 'active', 'User'])
@@ -383,9 +383,9 @@ class Env(object):
             table = []
             if not logs_only:
                 tin = pprint.pformat(transaction['tin'], indent=8)
-                tin = format(tin, cut, nocolor)
+                tin = custom_format(tin, cut, nocolor)
                 tout = pprint.pformat(transaction['tout'], indent=8)
-                tout = format(tout, cut, nocolor)
+                tout = custom_format(tout, cut, nocolor)
                 table.append([
                     "In", transaction['created'], tin[:5000]
                 ])
@@ -405,11 +405,11 @@ class Env(object):
                 else:
                             level_s = "UNKNOWN"
                 table.append([
-                    "Log (%s)" % level_s, created, format(log['msg'], cut, nocolor)
+                    "Log (%s)" % level_s, created, custom_format(log['msg'], cut, nocolor)
                 ])
             if not logs_only:
                 table.append([
-                    "Out", tolocaltime(transaction['modified']), format(tout, cut, nocolor)
+                    "Out", tolocaltime(transaction['modified']), custom_format(tout, cut, nocolor)
                 ])
             print tabulate(table, headers=[rid, "Date", "Type"], tablefmt="simple")
 
@@ -421,7 +421,7 @@ class Env(object):
     def edit_function(self, project_name, function_name, path=None):
         status_code, response = self._call_api("/core/api/base/%s/apy/%s" % (project_name, function_name), method="GET")
         if not path:
-            file, path = tempfile.mkstemp()
+            tfile, path = tempfile.mkstemp()
             f = open(path, "w")
             f.write(response['module'])
             f.close()
@@ -471,7 +471,7 @@ class Env(object):
         nocolor = arguments.get('--nocolor', False)
         if type(response) is dict:
             response = json.dumps(response)
-        print format(response, nocolor=nocolor)
+        print custom_format(response, nocolor=nocolor)
 
 
 def do_ngrok():
@@ -643,13 +643,13 @@ if __name__ == '__main__':
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
 
-                cmd = "%s migrate --settings=tumbo.dev" % manage_py
+                cmd = "%s migrate --noinput --settings=tumbo.dev" % manage_py
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
 
-                cmd = "%s  migrate aaa --settings=tumbo.dev" % manage_py
+                cmd = "%s  migrate aaa --noinput --settings=tumbo.dev" % manage_py
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
@@ -733,7 +733,8 @@ if __name__ == '__main__':
                 if os.environ.get("CI", False):
                     print "Building images with --no-cache option"
                     OPTS += "--no-cache"
-                cmd = "-p tumboserver -f %s build --pull %s" % (compose_file, OPTS)
+                #cmd = "-p tumboserver -f %s build --pull %s" % (compose_file, OPTS)
+                cmd = "-p tumboserver -f %s build %s" % (compose_file, OPTS)
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 build.wait()
 
