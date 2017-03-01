@@ -94,7 +94,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
         elif static_path.lower().endswith('.html'):
             mimetype = "text/html"
             context_data = self._setup_context(request, base_obj)
-            rendered_file = self._render_html(request, file, **context_data)
+            file = self._render_html(request, file, **context_data)
             context_data['datastore'] = None
             context_data = None
         elif static_path.lower().endswith('.map'):
@@ -108,7 +108,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             return HttpResponseServerError("Staticfile suffix not recognized")
         logger.debug("%s: with '%s'" % (static_path, mimetype))
 
-        return self._handle_cache(static_path, request, mimetype, last_modified, rendered_file)
+        return self._handle_cache(static_path, request, mimetype, last_modified, file)
 
     def _handle_cache(self, static_path, request, mimetype, last_modified, rfile):
         if 'content="no-cache"' in rfile:
