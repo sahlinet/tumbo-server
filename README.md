@@ -137,4 +137,4 @@ a job runs and deletes transaction data older than
     coverage run --append --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
     coverage run --append --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
 
-See also the configuration in circle.yml.
+See also the configuration in `circle.yml` for a better understanding.
