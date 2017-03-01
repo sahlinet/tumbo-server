@@ -94,7 +94,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
         elif static_path.lower().endswith('.html'):
             mimetype = "text/html"
             context_data = self._setup_context(request, base_obj)
-            file = self._render_html(request, file, **context_data)
+            rendered_file = self._render_html(request, file, **context_data)
             context_data['datastore'] = None
             context_data = None
         elif static_path.lower().endswith('.map'):
@@ -108,17 +108,17 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             return HttpResponseServerError("Staticfile suffix not recognized")
         logger.debug("%s: with '%s'" % (static_path, mimetype))
 
-        return self._handle_cache(static_path, request, mimetype, last_modified, file)
+        return self._handle_cache(static_path, request, mimetype, last_modified, rendered_file)
 
-    def _handle_cache(self, static_path, request, mimetype, last_modified, file):
-        if 'content="no-cache"' in file:
+    def _handle_cache(self, static_path, request, mimetype, last_modified, rfile):
+        if 'content="no-cache"' in rfile:
             logger.debug("Not caching because no-cache present in HTML")
-            response = HttpResponse(file, content_type=mimetype)
+            response = HttpResponse(rfile, content_type=mimetype)
         else:
             # handle browser caching
             frmt = "%d %b %Y %H:%M:%S"
             try:
-                file.seek(0)
+                rfile.seek(0)
             except AttributeError:
                 pass
             if last_modified:
@@ -132,7 +132,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
                 if (last_modified <= if_modified_since_dt):
                     logger.info("%s: 304 (last_modified): %s" % (static_path, last_modified))
                     return HttpResponseNotModified()
-            response = HttpResponse(file, content_type=mimetype)
+            response = HttpResponse(rfile, content_type=mimetype)
             if last_modified:
                 response['Cache-Control'] = "public"
                 response['Last-Modified'] = last_modified.strftime(frmt)
