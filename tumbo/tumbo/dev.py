@@ -50,7 +50,7 @@ STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 STATIC_ROOT = "/static/"
 
-DEBUG = False
+DEBUG = True
 # TODO: get from var
 #WORKER_RABBITMQ_HOST = "192.168.99.1"
 WORKER_RABBITMQ_HOST = "localhost"

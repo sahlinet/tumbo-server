@@ -1,11 +1,4 @@
-import os
-import sys
-import base64
 import logging
-import json
-import dropbox
-
-from dropbox.rest import ErrorResponse
 
 from datetime import datetime
 
@@ -13,16 +6,13 @@ from django.contrib.auth import get_user_model
 from django.views.generic import View
 from django.http import HttpResponseNotFound, HttpResponse, HttpResponseServerError, HttpResponseNotModified
 from django.conf import settings
-from django.core.cache import cache
 from django.template import Template, RequestContext
 
-from core.utils import totimestamp, fromtimestamp
-from core.queue import generate_vhost_configuration
-from core.models import Base, StaticFile
-from core.executors.remote import get_static
+from core.utils import totimestamp
+from core.models import Base
 from core.plugins.datastore import PsqlDataStore
 from core.views import ResponseUnavailableViewMixing
-from core.staticfiles import StaticfileFactory, NotFound, StorageStaticFile
+from core.staticfiles import StaticfileFactory, NotFound
 
 
 User = get_user_model()
@@ -33,7 +23,7 @@ logger = logging.getLogger(__name__)
 class DjendStaticView(ResponseUnavailableViewMixing, View):
 
     def _render_html(self, request, t, **kwargs):
-        if type(t) == str:
+        if isinstance(t, str):
             t = Template(t)
         else:
             #t = Template(t.read())
@@ -70,6 +60,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             file_fact = StaticfileFactory(username, project, name)
             file_obj = file_fact.lookup()
             file = file_obj.content
+            last_modified = file_obj.last_modified
         except NotFound, e:
             logger.error(e)
             return HttpResponseNotFound("Not found: %s" % static_path)
@@ -114,37 +105,40 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
         else:
             logger.warning("%s: suffix not recognized" % static_path)
             return HttpResponseServerError("Staticfile suffix not recognized")
-        logger.info("%s: with '%s'" % (static_path, mimetype))
+        logger.debug("%s: with '%s'" % (static_path, mimetype))
 
         return self._handle_cache(static_path, request, mimetype, last_modified, file)
 
-    def _handle_cache(self, static_path, request, mimetype, last_modified, file):
-        if 'content="no-cache"' in file:
+    def _handle_cache(self, static_path, request, mimetype, last_modified, rfile):
+        if 'content="no-cache"' in rfile:
             logger.debug("Not caching because no-cache present in HTML")
-            response = HttpResponse(file, content_type=mimetype)
+            response = HttpResponse(rfile, content_type=mimetype)
         else:
             # handle browser caching
             frmt = "%d %b %Y %H:%M:%S"
             try:
-                file.seek(0)
+                rfile.seek(0)
             except AttributeError:
                 pass
+            if last_modified:
+                if isinstance(last_modified, float):
+                    last_modified = datetime.utcfromtimestamp(last_modified)
             if_modified_since = request.META.get('HTTP_IF_MODIFIED_SINCE', None)
             if last_modified and if_modified_since:
                 if_modified_since_dt = datetime.strptime(if_modified_since, frmt)
                 last_modified = last_modified.replace(microsecond=0)
                 logger.debug("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" % (static_path, last_modified, if_modified_since_dt))
-                if (last_modified <= if_modified_since_dt):
-                    logger.info("%s: 304" % static_path)
+                if last_modified <= if_modified_since_dt:
+                    logger.info("%s: 304 (last_modified): %s" % (static_path, last_modified))
                     return HttpResponseNotModified()
-            response = HttpResponse(file, content_type=mimetype)
+            response = HttpResponse(rfile, content_type=mimetype)
             if last_modified:
                 response['Cache-Control'] = "public"
                 response['Last-Modified'] = last_modified.strftime(frmt)
             if static_path.endswith("png") or static_path.endswith("css") or static_path.endswith("js") \
                     or static_path.endswith("woff"):
                 response['Cache-Control'] = "max-age=120"
-            logger.info("%s: 200" % static_path)
+            logger.info("%s: 200 (last_modified: %s)" % (static_path, last_modified))
         return response
 
 
@@ -160,7 +154,7 @@ class DjendStaticView(ResponseUnavailableViewMixing, View):
             logger.debug("Setup datastore for context done")
             logger.debug("Datastore-Size: %s" % data['datastore'].count())
             data['is_authenticated'] = request.user.is_authenticated()
-        except KeyError, e:
+        except KeyError:
             logger.error("Setup datastore for context failed")
         updated = request.GET.copy()
         query_params = {}

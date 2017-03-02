@@ -5,7 +5,7 @@
   }
 
   function add_client_message(message) {
-      data = {};
+      var data = {};
       data.message = message;
 
       var now = NDateTime.Now();
@@ -17,18 +17,18 @@
 
 
 
-  window.app = angular.module('execApp', ['ngGrid', 'base64', 'ngResource',
-      'baseServices', 'angularFileUpload', 'ngCookies',
-      'ui.bootstrap', 'xeditable'
+  window.app = angular.module("execApp", ["ngGrid", "base64", "ngResource",
+      "baseServices", "angularFileUpload", "ngCookies",
+      "ui.bootstrap", "xeditable"
   ]);
 
 
   window.app.run(function(editableOptions) {
-      editableOptions.theme = 'bs3';
+      editableOptions.theme = "bs3";
   });
 
 
-  window.app.directive('focusMe', function($timeout, $parse) {
+  window.app.directive("focusMe", function($timeout, $parse) {
       return {
           //scope: true,   // optionally create a child scope
           link: function(scope, element, attrs) {
@@ -77,8 +77,6 @@
 
 
           $scope.relate = function(apy) {
-              console.info(apy);
-              console.info($scope.base);
               if ($scope.base.foreign_apys.indexOf(apy.url) == -1) {
                   $scope.base.foreign_apys.push(apy.url);
               } else {
@@ -90,20 +88,20 @@
                   'name': $scope.base.name
               });
 
-          }
+          };
 
           $scope.is_related = function(apy) {
-                if ($scope.base.foreign_ays != undefined) {
+                if ($scope.base.foreign_ays !== undefined) {
                     return !($scope.base.foreign_apys.indexOf(apy.url) == -1);
                 };
-          }
+          };
 
           //if (!angular.isUndefined(window.active_base_id)) {
           if (window.active_base_id.length !== 0) {
               $scope.base = Base.get({
                   'name': window.active_base
               });
-          }
+          };
 
           $scope.creation_running = function() {
               return ($scope.creation_is_running);
@@ -124,19 +122,19 @@
               }).success(function(data, status, headers, config) {
                   $document.find('form#new_base div').append(
                       angular.element(
-                          '<span class="help-block">Base created</span>'
+                          "<span class='help-block'>Base created</span>"
                       ));
-                  $document.find('form#new_base').addClass(
-                      'has-success');
+                  $document.find("form#new_base").addClass(
+                      "has-success");
                   $scope.new_base_name = "";
                   $scope.bases.push(data);
               }).error(function(data, status, headers, config) {
                   // quota exceeded or already existant
-                  $document.find('form#new_base div').append(
+                  $document.find("form#new_base div").append(
                       angular.element(
-                          '<span class="help-block">' +
-                          data + '</span>'));
-                  $document.find('form#new_base').addClass(
+                          "<span class='help-block'>" +
+                          data + "</span>"));
+                  $document.find("form#new_base").addClass(
                       'has-warning');
               });
               $scope.creation_is_running = false;
@@ -226,8 +224,8 @@
                   //.xhr(function(xhr){xhr.upload.addEventListener(...)})
               }
               /* alternative way of uploading, send the file binary with the file's content-type.
-  			   Could be used to upload files to CouchDB, imgur, etc... html5 FileReader is needed.
-  			   It could also be used to monitor the progress of a normal http post/put request with large data*/
+               Could be used to upload files to CouchDB, imgur, etc... html5 FileReader is needed.
+               It could also be used to monitor the progress of a normal http post/put request with large data*/
               // $scope.upload = $upload.http({...})  see 88#issuecomment-31366487 for sample code.
           };
 
@@ -267,29 +265,29 @@
 
               // setup pusher for listening to counter events
               /*
-  			Pusher.subscribe(window.channel, "counter", function(item) {
-  				console.log(item);
-  				$scope.apys.map(function(apy) {
-  					if (apy.id == item['apy_id']) {
-  						apy.counter = item['counter'];
-  					}
-  				});
-  			});
+            Pusher.subscribe(window.channel, "counter", function(item) {
+                console.log(item);
+                $scope.apys.map(function(apy) {
+                    if (apy.id == item['apy_id']) {
+                        apy.counter = item['counter'];
+                    }
+                });
+            });
 
-  			Pusher.subscribe(window.channel, 'pusher:subscription_succeeded',
-  				function(members) {
-  					console.log("subscription_succeeded");
-  					console.log(members);
-  					add_client_message("Subscription succeeded.");
-  				});
+            Pusher.subscribe(window.channel, 'pusher:subscription_succeeded',
+                function(members) {
+                    console.log("subscription_succeeded");
+                    console.log(members);
+                    add_client_message("Subscription succeeded.");
+                });
                   */
           };
 
           /*
-  		Pusher.subscribe(window.channel, 'console_msg', function(data) {
-  			data.source = "Server";
-  			add_message(data);
-  		});
+        Pusher.subscribe(window.channel, 'console_msg', function(data) {
+            data.source = "Server";
+            add_message(data);
+        });
           */
 
           $scope.blur = function(apy, $event) {
@@ -567,11 +565,11 @@
           }];
 
           /*$scope.groups = [];
-  		$scope.loadGroups = function() {
-  		  return $scope.groups.length ? null : $http.get('/groups').success(function(data) {
-  		    $scope.groups = data;
-  		  });
-  		};*/
+        $scope.loadGroups = function() {
+          return $scope.groups.length ? null : $http.get('/groups').success(function(data) {
+            $scope.groups = data;
+          });
+        };*/
 
           $scope.endpoints = TransportEndpoints.query();
 
@@ -588,33 +586,33 @@
           };
 
           /*$scope.showStatus = function(user) {
-  		  var selected = [];
-  		  if(user.status) {
-  		    selected = $filter('filter')($scope.statuses, {value: user.status});
-  		  }
-  		  return selected.length ? selected[0].text : 'Not set';
-  		};*/
+          var selected = [];
+          if(user.status) {
+            selected = $filter('filter')($scope.statuses, {value: user.status});
+          }
+          return selected.length ? selected[0].text : 'Not set';
+        };*/
 
           /*  $scope.checkName = function(data) {
-  		    console.log("user.name.onbeforesave:", data);
-  		    if (data !== 'awesome') {
-  		      return "Username should be `awesome`";
-  		    }
-  		  };*/
+            console.log("user.name.onbeforesave:", data);
+            if (data !== 'awesome') {
+              return "Username should be `awesome`";
+            }
+          };*/
 
           $scope.cancelChanges = function() {
               /*angular.forEach(itemsPendingSave, function(user){
-  			  var index = $scope.users.indexOf(user);
-  			  $scope.removeUser(index);
-  			});
-  			itemsPendingSave = [];
-  			$scope.tableform.$cancel();
-  			*/
+              var index = $scope.users.indexOf(user);
+              $scope.removeUser(index);
+            });
+            itemsPendingSave = [];
+            $scope.tableform.$cancel();
+            */
           };
 
           /*  $scope.removeUser = function(index) {
-  		    $scope.users.splice(index, 1);
-  		  };*/
+            $scope.users.splice(index, 1);
+          };*/
 
           $scope.saveTable = function() {
               //$scope.users already updated
