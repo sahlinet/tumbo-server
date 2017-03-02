@@ -12,8 +12,8 @@ from bunch import Bunch
 
 from django.conf import settings
 
-from core.queue import connect_to_queuemanager, CommunicationThread
-from core.queue import connect_to_queue
+from core.communication import connect_to_queuemanager, CommunicationThread
+from core.communication import connect_to_queue
 from core.utils import load_setting, read_jwt, check_code
 from core.plugins import PluginRegistry
 from core import responses

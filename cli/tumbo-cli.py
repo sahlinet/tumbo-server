@@ -58,6 +58,9 @@ import pprint
 import logging
 import tempfile
 
+from os.path import expanduser
+home = expanduser("~")
+
 from pygments import highlight
 from pygments.lexers import JsonLexer
 from pygments.formatters import Terminal256Formatter
@@ -622,7 +625,7 @@ if __name__ == '__main__':
                 print "Starting Development Server"
                 env = {}
                 env.update(os.environ)
-                env.update({'PYTHONPATH': "fastapp", 'CACHE_ENV_REDIS_PASS': "asdf123asdf123567sdf1238908898989",
+                env.update({'PYTHONPATH': "fastapp", 'CACHE_ENV_REDIS_PASS': os.environ['CACHE_ENV_REDIS_PASS'],
                                    'DROPBOX_CONSUMER_KEY': os.environ['DROPBOX_CONSUMER_KEY'],
                                    'DROPBOX_CONSUMER_SECRET': os.environ['DROPBOX_CONSUMER_SECRET'],
                                    'DROPBOX_REDIRECT_URL': os.environ['DROPBOX_REDIRECT_URL'],
@@ -680,7 +683,7 @@ if __name__ == '__main__':
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
 
-                app = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _tty_in=True, _in=sys.stdin, _bg=True, _cwd="/home/philipsahli/workspace/tumbo-server")
+                app = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _tty_in=True, _in=sys.stdin, _bg=True, _cwd=home+"/workspace/tumbo-server")
 
                 if arguments['--ngrok-hostname'] and arguments['docker']:
                     if not ngrok:

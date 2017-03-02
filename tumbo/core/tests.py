@@ -176,7 +176,7 @@ class BaseExecutorStateTestCase(BaseTestCase):
         self.assertIs(Executor.objects.count(), 1)
 
     def test_generate_vhost_configuration(self):
-        from core.queue import generate_vhost_configuration
+        from core.communication import generate_vhost_configuration
         vhost = generate_vhost_configuration('username', 'base1')
         self.assertEquals(vhost, "/username-base1")
 

@@ -11,7 +11,7 @@ from django.conf import settings
 
 from core.models import Base
 from core.executors.remote import get_static
-from core.queue import generate_vhost_configuration
+from core.communication import generate_vhost_configuration
 from core.staticfiles import NotFound, StaticfileFactory
 
 logger = logging.getLogger(__name__)

@@ -26,7 +26,7 @@ from django.contrib.auth import get_user_model
 from django.core import serializers
 from django.utils import timezone
 
-from core.queue import generate_vhost_configuration, create_vhost
+from core.communication import generate_vhost_configuration, create_vhost
 from core.executors.remote import distribute, CONFIGURATION_EVENT, SETTINGS_EVENT
 from core.utils import Connection
 from core.plugins import call_plugin_func

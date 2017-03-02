@@ -37,7 +37,8 @@ The above step is only needed if you fork the repository and want to push to you
 
 ## Redis
 
-    sudo yum install -y redis
+    sudo yum install -y redis    # CentOS
+    brew install redis    # Mac OS X
 
 ### Security
 
@@ -45,12 +46,17 @@ Set a password in `redis.conf` under the key `requirepass`.
 
     vi /etc/redis.conf
 
+    vi /usr/local/etc/redis.conf
+
 Set the password as environment variable `CACHE_ENV_REDIS_PASS`.
 
 ## Rabbitmq
 
     sudo yum install -y rabbitmq-server
     sudo rabbitmq-plugins enable rabbitmq_management
+
+    brew install rabbitmq
+    /usr/local/Cellar/rabbitmq/3.6.6/sbin/rabbitmq-plugins enable rabbitmq_management
 
 ## Postgresql (for datastore)
 

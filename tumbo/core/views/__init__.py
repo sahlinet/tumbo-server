@@ -30,7 +30,7 @@ from core.api_serializers import BaseSerializer
 from dropbox.rest import ErrorResponse
 
 from core.utils import UnAuthorized, Connection, NoBasesFound, message, create_jwt
-from core.queue import generate_vhost_configuration
+from core.communication import generate_vhost_configuration
 from core.models import AuthProfile, Base, Apy, Setting, Executor, Process, Thread, Transaction, StaticFile
 from core.models import RUNNING, FINISHED
 from core import responses

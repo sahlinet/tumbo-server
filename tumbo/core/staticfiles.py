@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.cache import cache
 
 from core.utils import totimestamp
-from core.queue import generate_vhost_configuration
+from core.communication import generate_vhost_configuration
 from core.models import Base, StaticFile
 from core.executors.remote import get_static
 

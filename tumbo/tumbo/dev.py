@@ -1,5 +1,7 @@
 from settings import *
 
+from os.path import expanduser
+home = expanduser("~")
 
 if os.environ.get('CI', False):
     CACHES = {
@@ -9,7 +11,12 @@ if os.environ.get('CI', False):
     }
 
 else:
-    REDIS_URL = "redis://:asdf123asdf123567sdf1238908898989@127.0.0.1:6379/1"
+    redis_pass = os.environ.get('CACHE_ENV_REDIS_PASS', None)
+    if redis_pass:
+        REDIS_URL = "redis://:%s@127.0.0.1:6379/1" % redis_pass
+    else:
+        REDIS_URL = "redis://127.0.0.1:6379/1"
+    print REDIS_URL
     CACHES = {
        "default": {
             "BACKEND": "django_redis.cache.RedisCache",
@@ -57,8 +64,8 @@ WORKER_RABBITMQ_HOST = "localhost"
 WORKER_RABBITMQ_PORT = "5672"
 ALLOWED_HOSTS = "*"
 
-TUMBO_REPOSITORIES_PATH = "/home/philipsahli/workspace"
-TUMBO_DEV_STORAGE_DROPBOX_PATH = "/home/philipsahli/Dropbox/Apps/tumbo dev/"
+TUMBO_REPOSITORIES_PATH = home + "/workspace"
+TUMBO_DEV_STORAGE_DROPBOX_PATH = home + "/Dropbox/Apps/tumbo dev/"
 
 TUMBO_PLUGINS_CONFIG = {
     'core.plugins.stats': {},
