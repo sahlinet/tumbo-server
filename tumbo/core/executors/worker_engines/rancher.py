@@ -41,7 +41,7 @@ class RancherApiExecutor(BaseExecutor):
             r = requests.get(url, auth=self.auth)
         try:
             json_response = r.json()
-        except:
+        except Exception:
             json_response = None
         logger.debug(r.status_code)
         if r.status_code == 422:

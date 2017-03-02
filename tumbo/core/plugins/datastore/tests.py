@@ -127,7 +127,7 @@ class TestStringMethods(TestCase):
         result = self.datastore.get("function", "setUp", lock=True, nowait=True)
         with self.assertRaises(LockException):
             self.datastore2 = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])
-            result1 = self.datastore2.get("function", "setUp", lock=True, nowait=True)
+            self.datastore2.get("function", "setUp", lock=True, nowait=True)
 
         self.datastore.session.commit()
         self.datastore2 = PsqlDataStore(schema="test", keep=False, **settings.DATABASES['store'])

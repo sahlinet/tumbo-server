@@ -295,8 +295,8 @@ def fromtimestamp(t):
     return datetime.datetime.fromtimestamp(t)
 
 def create_jwt(user, secret):
+    """The above token need to be saved in database, and a one-to-one relation should exist with the username/user_pk."""
     logger.debug("Create JWT with secret %s" % secret)
-    """ the above token need to be saved in database, and a one-to-one relation should exist with the username/user_pk """
     # username = request.POST['username']
     # password = request.POST['password'
 

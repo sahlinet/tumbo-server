@@ -14,7 +14,6 @@ from django.core.urlresolvers import reverse
 from social.backends.utils import load_backends
 
 from core.models import Base
-from ui.views import context
 
 from ui.decorators import render_to
 from ui.views import context

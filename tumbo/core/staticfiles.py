@@ -5,19 +5,16 @@ import logging
 import json
 import dropbox
 
-from dropbox.rest import ErrorResponse
-
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.cache import cache
 
-from core.utils import totimestamp, fromtimestamp
+from core.utils import totimestamp
 from core.queue import generate_vhost_configuration
 from core.models import Base, StaticFile
 from core.executors.remote import get_static
-from core.plugins.datastore import PsqlDataStore
 
 
 User = get_user_model()
@@ -32,7 +29,7 @@ class LoadMixin(object):
 
     def _cache_not_found(self):
         logger.debug("cache.set not_found for %s (%s)" % (self.static_name, self.cache_key+self.__class__.__name__))
-        cache.set(self.cache_key + self.__class__.__name__, True, int(settings.TUMBO_STATIC_CACHE_SECONDS))
+        cache.set(self.cache_key + self.__class__.__name__, True, int(settings.TUMBO_STATIC_404_CACHE_SECONDS))
 
     def _is_cached_not_found(self):
         return cache.get(self.cache_key + self.__class__.__name__, False)
@@ -99,7 +96,6 @@ class StaticfileFactory(LoadMixin):
         else:
             logger.debug("%s: not in cache" % self.static_path)
 
-            REPOSITORIES_PATH = getattr(settings, "TUMBO_REPOSITORIES_PATH", None)
             storages = [ DevRepoStaticfile, DevStorageDropboxStaticfile, WorkerModuleStaticfile, DropboxStaticfile ]
             file_obj = None
             for storage in storages:
@@ -147,7 +143,7 @@ class StorageStaticFile(object):
         logger.info("StorageStaticFile '%s'" % self)
 
     def __str__(self):
-        return "%s/%s:%s:%s" % (self.storage, self.username, self.project, self.name)
+        return "%s:%s:%s" % (self.username, self.project, self.name)
 
 
 class DevRepoStaticfile(StaticfileFactory):
@@ -164,8 +160,14 @@ class DevRepoStaticfile(StaticfileFactory):
                 size = os.path.getsize(filepath)
                 logger.debug("%s: load from local filesystem (repositories) (%s) (%s)" % (self.static_path, filepath, size))
                 last_modified = datetime.fromtimestamp(os.stat(filepath).st_mtime)
-                obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="FS")
+                #obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="FS")
 
+                try:
+                    obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="FS")
+                except Exception:
+                    StaticFile.objects.filter(base=self.base_obj, name=self.static_path, storage="FS").delete()
+                    obj, created = StaticFile.objects.get_or_create(base=self.base_obj, name=self.static_path, storage="FS")
+                logger.info("StaticFile Obj: " + str(obj) + " " + str(created))
                 if created or obj.rev != os.stat(filepath).st_mtime:
                     obj.rev = os.stat(filepath).st_mtime
                     obj.accessed = self.now

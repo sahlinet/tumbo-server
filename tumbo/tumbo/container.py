@@ -1,6 +1,8 @@
 import os
 from settings import *
 
+from django.core.exceptions import ImproperlyConfigured
+
 def get_var(var_name, fail=True):
     """ Get the environment variable or return exception """
     # Taken from twoo scoops book, Thank you guys.
@@ -8,7 +10,7 @@ def get_var(var_name, fail=True):
     try:
         val = os.environ[var_name]
         if val.startswith("$"):
-            val = os.environ[val.strip("$")]
+            val = os.environ[val.strip("$").strip("{").strip("}")]
         return val
     except KeyError, e:
         if not fail:

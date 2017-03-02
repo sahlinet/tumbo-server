@@ -68,14 +68,28 @@ WSGI_APPLICATION = 'tumbo.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+if os.environ.get('CI', None):
+    DATABASES = {
+        'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
+        }
     }
-}
+
+else:
+    DATABASES = {
+        'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': "tumbodev",
+        'HOST': "localhost",
+        'PORT': 16432,
+        'USER': "tumbodev",
+        'PASSWORD': "tumbodev123"
+        }
+    }
 
 # If tumbo is run from an egg, use db in $HOME/.tumbo
+print BASE_DIR
 if "site-packages" in BASE_DIR:
     DATABASES['default']['NAME'] = os.path.join(os.path.expanduser('~'), ".tumbo", "db.sqlite3")
 
@@ -151,6 +165,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'core.loader': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
         'core.executors.remote': {
             #'handlers': ['console'],
             'handlers': [],
@@ -202,7 +221,6 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
-
         'tornado': {
             'handlers': ['console'],
             'level': 'DEBUG',
@@ -257,6 +275,7 @@ TUMBO_LOG_LISTENER_THREADCOUNT = 5
 TUMBO_CLEANUP_INTERVAL_MINUTES = 60
 TUMBO_CLEANUP_OLDER_THAN_N_HOURS = 48
 TUMBO_STATIC_CACHE_SECONDS = 60
+TUMBO_STATIC_404_CACHE_SECONDS = 5
 
 TUMBO_DOCKER_IMAGE = "philipsahli/tumbo-worker:develop"
 
