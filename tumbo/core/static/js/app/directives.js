@@ -1,11 +1,11 @@
-window.app.directive('codemirror', function() {
+window.app.directive("codemirror", function() {
   return {
     restrict: 'A',
     priority: 2,
     scope: {
         'module': '=codemirror'
     },
-    template: '{{module}}',
+    template: "{{module}}",
     link: function(scope, elem, attrs) {
       var myCodeMirror = CodeMirror(function(elt) {
           elem.parent().replaceWith(elt);
