@@ -6,7 +6,7 @@ $(function() {
     // shared
     $("button#share").click(function(event) {
       event.preventDefault();
-      add_client_message('Access the shared base: <a href="'+window.shared_key_link+'">'+ window.shared_key_link+'</a>');
+      add_client_message("Access the shared base: <a href='"+window.shared_key_link+"'>"+ window.shared_key_link+"</a>");
     });
     // delete base
     $("button#delete").click(function(event) {
@@ -18,7 +18,6 @@ $(function() {
 
     // forms
     $("form").submit(function(event) {
-        console.warn(event.currentTarget.method);
         if (event.currentTarget.method == "post") {
             $.post(event.currentTarget.action, $(this).serialize(), function(data){
             });
@@ -30,9 +29,7 @@ $(function() {
 
             });
 
-                     } else {
-            console.error("no method defined on form");
-        }
+       }
         event.preventDefault();
         return false;
 

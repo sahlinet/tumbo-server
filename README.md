@@ -28,7 +28,7 @@ Tumbo is a Server Platform for simplifying common development and deployment tas
 
 For a quick start it is fine to use the package from pip.
 
-    pip install tumbo-server==0.4.2
+    pip install tumbo-server==0.4.3
     tumbo-cli.py server dev run
 
 ## Run Tumbo
@@ -137,4 +137,4 @@ a job runs and deletes transaction data older than
     coverage run --append --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
     coverage run --append --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
 
-See also the configuration in circle.yml.
+See also the configuration in `circle.yml` for a better understanding.

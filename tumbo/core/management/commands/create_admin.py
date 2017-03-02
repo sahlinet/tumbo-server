@@ -1,3 +1,4 @@
+"""This management commands create an user in the database with admin privileges."""
 import logging
 
 from optparse import make_option
@@ -9,6 +10,7 @@ logger = logging.getLogger("core.executors.remote")
 
 
 class Command(BaseCommand):
+    """Command class."""
     args = '<poll_id poll_id ...>'
     help = 'Closes the specified poll for voting'
 
@@ -31,18 +33,21 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        threads = []
-        threads_static = []
-        
+
         username = options['username']
         password = options['password']
         email = options['email']
 
-        
+
         from django.contrib.auth.models import User
 
-        u = User(username=username)
-        u.set_password(password)
-        u.is_superuser = True
-        u.is_staff = True
+        try:
+            u = User(username=username)
+            u.set_password(password)
+            u.is_superuser = True
+            u.is_staff = True
+        except Exception:
+            u = User.objects.get(username="admin")
+            u.set_password(password)
+            u.email(email)
         u.save()

@@ -65,7 +65,6 @@ from pygments.formatters import Terminal256Formatter
 from docopt import docopt
 from tabulate import tabulate
 
-docker_compose = sh.Command("docker-compose")
 bash = sh.Command("bash")
 python = sh.Command(sys.executable)
 
@@ -95,14 +94,14 @@ def confirm(prompt=None, resp=False):
     Create Directory? [y]|n: 
     True
     >>> confirm(prompt='Create Directory?', resp=False)
-    Create Directory? [n]|y: 
+    Create Directory? [n]|y: n
     False
     >>> confirm(prompt='Create Directory?', resp=False)
     Create Directory? [n]|y: y
     True
 
     """
-    
+
     if prompt is None:
         prompt = 'Confirm'
 
@@ -110,20 +109,20 @@ def confirm(prompt=None, resp=False):
         prompt = '%s [%s]|%s: ' % (prompt, 'y', 'n')
     else:
         prompt = '%s [%s]|%s: ' % (prompt, 'n', 'y')
-        
+
     while True:
         ans = raw_input(prompt)
         if not ans:
             return resp
         if ans not in ['y', 'Y', 'n', 'N']:
-            print('please enter y or n.')
+            print 'please enter y or n.'
             continue
         if ans == 'y' or ans == 'Y':
             return True
         if ans == 'n' or ans == 'N':
             return False
 
-def format(s, l=None, nocolor=False):
+def custom_format(s, l=None, nocolor=False):
     if l:
         s = s[:int(l)]
     if nocolor:
@@ -136,10 +135,10 @@ class EnvironmentList(object):
         path = "%s/.tumbo" % os.path.expanduser("~")
         table = []
         if not os.path.exists(path):
-            os.mkdir(path) 
-        for file in os.listdir(path):
-            if ".json" in file:
-                envId = file.replace(".json", "")
+            os.mkdir(path)
+        for ffile in os.listdir(path):
+            if ".json" in ffile:
+                envId = ffile.replace(".json", "")
                 env = Env.load(envId)
                 table.append([envId, env.config_data['url'], env.active_str, env.config_data['username']])
         print tabulate(table, headers=['ID', 'URL', 'active', 'User'])
@@ -172,7 +171,7 @@ class Env(object):
             self.active_str = ""
             self.active = False
 
-    def _call_api(self, url, method="GET", params=None, json=None):
+    def _call_api(self, url, method="GET", params=None, json=None, exit_on_error=True):
         try:
             r = requests.request(method, self.config_data['url']+url,
                                  #allow_redirects=False,
@@ -183,7 +182,8 @@ class Env(object):
                                  json=json
                                  )
             response = r.json() if 'Content-Type' in r.headers and "json" in r.headers['Content-Type'] else r.text
-            r.raise_for_status()
+            if exit_on_error:
+                r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             print "Error (%s)" % e.message
             print response
@@ -306,6 +306,8 @@ class Env(object):
 
     def project_start(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/start/" % name, method="POST")
+        if status_code == 200:
+            print "Project %s started" % name
 
     def project_destroy(self, name):
         status_code, projects = self._call_api("/core/api/base/%s/destroy/" % name, method="POST")
@@ -370,6 +372,7 @@ class Env(object):
         if tid:
             data['rid'] = tid
         status_code, transactions = self._call_api("/core/api/base/%s/transactions/" % name, method="GET", params=data)
+        print status_code, transactions
 
         logs_only = arguments.get('--logs', False)
         cut = arguments.get('--cut', None)
@@ -380,9 +383,9 @@ class Env(object):
             table = []
             if not logs_only:
                 tin = pprint.pformat(transaction['tin'], indent=8)
-                tin = format(tin, cut, nocolor)
+                tin = custom_format(tin, cut, nocolor)
                 tout = pprint.pformat(transaction['tout'], indent=8)
-                tout = format(tout, cut, nocolor)
+                tout = custom_format(tout, cut, nocolor)
                 table.append([
                     "In", transaction['created'], tin[:5000]
                 ])
@@ -402,11 +405,11 @@ class Env(object):
                 else:
                             level_s = "UNKNOWN"
                 table.append([
-                    "Log (%s)" % level_s, created, format(log['msg'], cut, nocolor)
+                    "Log (%s)" % level_s, created, custom_format(log['msg'], cut, nocolor)
                 ])
             if not logs_only:
                 table.append([
-                    "Out", tolocaltime(transaction['modified']), format(tout, cut, nocolor)
+                    "Out", tolocaltime(transaction['modified']), custom_format(tout, cut, nocolor)
                 ])
             print tabulate(table, headers=[rid, "Date", "Type"], tablefmt="simple")
 
@@ -415,24 +418,29 @@ class Env(object):
         if status_code == 201:
             print "Function %s/%s created" % (project_name, function_name)
 
-    def edit_function(self, project_name, function_name):
+    def edit_function(self, project_name, function_name, path=None):
         status_code, response = self._call_api("/core/api/base/%s/apy/%s" % (project_name, function_name), method="GET")
-        file, path = tempfile.mkstemp()
-        f = open(path, "w")
-        f.write(response['module'])
-        f.close()
+        if not path:
+            tfile, path = tempfile.mkstemp()
+            f = open(path, "w")
+            f.write(response['module'])
+            f.close()
         from subprocess import call
-        print path
         call(["/usr/bin/vim", path])
 
         if confirm():
 
             f = open(path, "r")
-            status_code, response = self._call_api("/core/api/base/%s/apy/%s/" % (project_name, function_name), method="PATCH", json={'module': f.read()})
+            status_code, response = self._call_api("/core/api/base/%s/apy/%s/" % (project_name, function_name), method="PATCH", json={'module': f.read()}, exit_on_error=False)
+            print status_code
             if status_code == 200:
                 print "Saved"
-            #if status_code == 201:
-            #    print "Function %s/%s created" % (project_name, function_name)
+            elif status_code == 500:
+                print "Function %s/%s not saved:" % (project_name, function_name)
+                print response
+                env.edit_function(project_name, function_name, path)
+                time.sleep(5)
+                call(["/usr/bin/vim", path])
             #status_code, response = self._call_api("/core/api/base/%s/apy/" % (project_name), method="POST", json={"name": function_name})
 
 
@@ -459,11 +467,9 @@ class Env(object):
         print "HTTP Status Code: %s" % status_code
         sys.stdout.write("Response: ")
         nocolor = arguments.get('--nocolor', False)
-        respone = pprint.pformat(response, indent=4)
-        nocolor = arguments.get('--nocolor', False)
-        if type(response) is dict:
+        if isinstance(response, dict):
             response = json.dumps(response)
-        print format(response, nocolor=nocolor)
+        print custom_format(response, nocolor=nocolor)
 
 
 def do_ngrok():
@@ -485,13 +491,16 @@ def tolocaltime(dt):
     import tzlocal  # $ pip install tzlocal
 
     local_timezone = tzlocal.get_localzone() # get pytz tzinfo
-    utc_time = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S.%fZ")
+    try:
+        utc_time = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S.%fZ")
+    except Exception:
+        return dt
     local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(local_timezone)
     return local_time
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.2")
+    arguments = docopt(__doc__, version="0.4.3")
     if arguments['--ngrok-hostname'] and arguments['docker']:
         try:
             ngrok = sh.Command("ngrok")
@@ -610,7 +619,7 @@ if __name__ == '__main__':
                     cmd_args = "-u rabbitmq /usr/sbin/rabbitmq-server"
                     sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
 
-                print "Starting development server"
+                print "Starting Development Server"
                 env = {}
                 env.update(os.environ)
                 env.update({'PYTHONPATH': "fastapp", 'CACHE_ENV_REDIS_PASS': "asdf123asdf123567sdf1238908898989",
@@ -632,13 +641,13 @@ if __name__ == '__main__':
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
 
-                cmd = "%s migrate --settings=tumbo.dev" % manage_py
+                cmd = "%s migrate --noinput --settings=tumbo.dev" % manage_py
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
                 migrate.wait()
 
-                cmd = "%s  migrate aaa --settings=tumbo.dev" % manage_py
+                cmd = "%s  migrate aaa --noinput --settings=tumbo.dev" % manage_py
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
                 migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
@@ -659,7 +668,8 @@ if __name__ == '__main__':
 
                 background_pids = []
 
-                for mode in ["cleanup", "heartbeat", "async", "log", "scheduler"]:
+                #for mode in ["cleanup", "heartbeat", "async", "log", "scheduler"]:
+                for mode in ["all", ]:
                     cmd = "%s heartbeat --mode=%s --settings=tumbo.dev" % (manage_py, mode)
                     if arguments['--coverage']:
                         cmd = coverage_cmd + cmd
@@ -702,6 +712,8 @@ if __name__ == '__main__':
                 print r.json()
 
         if arguments['docker']:
+
+            docker_compose = sh.Command("docker-compose")
             if arguments['pull']:
                 print "Docker images pull ..."
                 cmd = "-p tumboserver -f %s pull" % compose_file_base
@@ -715,7 +727,12 @@ if __name__ == '__main__':
                 create_package = bash(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 create_package.wait()
 
-                cmd = "-p tumboserver -f %s build --pull" % compose_file
+                OPTS = ""
+                if os.environ.get("CI", False):
+                    print "Building images with --no-cache option"
+                    OPTS += "--no-cache"
+                #cmd = "-p tumboserver -f %s build --pull %s" % (compose_file, OPTS)
+                cmd = "-p tumboserver -f %s build %s" % (compose_file, OPTS)
                 build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
                 build.wait()
 
