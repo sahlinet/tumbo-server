@@ -83,8 +83,8 @@ class RabbitmqHttpApi(RabbitmqAdmin):
         else:
             r = requests.put(url+uri, data=data, headers={'content-type': "application/json"}, auth=(user, password))
         if r.status_code != 204:
-            logger.error(str((r.url, r.status_code, r.content)))
-            raise Exception()
+            logger.error(str((r.url, r.status_code, r.content, data)))
+            raise Exception("%s: %s" % (r.status_code, r.content))
 
     def add_vhost(self, name):
         logger.info("Add vhost %s" % name)
