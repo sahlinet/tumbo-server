@@ -91,7 +91,7 @@ except ImportError:
     manage_py = "tumbo/manage.py"
     compose_files_path = "compose-files"
 
-compose_file = "%s/docker-compose-app-postdev.yml" % compose_files_path
+compose_file = "%s/docker-compose-app-docker_socket_exec.yml" % compose_files_path
 compose_file_base = "%s/docker-compose-base.yml" % compose_files_path
 
 def confirm(prompt=None, resp=False):
