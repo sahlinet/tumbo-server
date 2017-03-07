@@ -8,7 +8,7 @@ from django.conf import settings
 from urllib import quote_plus
 
 from core.plugins import register_plugin, Plugin
-from core.queue import RabbitmqAdmin
+from core.communication import RabbitmqAdmin
 
 logger = logging.getLogger(__name__)
 

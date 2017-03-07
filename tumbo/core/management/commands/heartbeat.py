@@ -8,7 +8,7 @@ from django.conf import settings
 from core.executors.heartbeat import HeartbeatThread, inactivate, log_mem, update_status, HEARTBEAT_QUEUE
 from core.executors.async import AsyncResponseThread
 from core.log import LogReceiverThread
-from core.queue import RabbitmqAdmin
+from core.communication import RabbitmqAdmin
 from core.utils import load_setting
 
 logger = logging.getLogger("core.executors.remote")

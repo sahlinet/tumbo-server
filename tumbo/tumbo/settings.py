@@ -181,7 +181,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'core.queue': {
+        'core.communication': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,

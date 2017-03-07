@@ -1,6 +1,6 @@
 import logging
 import json
-from core.queue import CommunicationThread
+from core.communication import CommunicationThread
 from core.models import Transaction
 
 logger = logging.getLogger(__name__)

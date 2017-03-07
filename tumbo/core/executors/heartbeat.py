@@ -18,7 +18,7 @@ from django.db import DatabaseError, transaction
 
 from core.executors.remote import distribute
 from core.models import Base, Instance, Process, Thread, Apy, Setting
-from core.queue import CommunicationThread
+from core.communication import CommunicationThread
 
 from core.plugins import call_plugin_func
 from core import __VERSION__

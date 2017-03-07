@@ -4,7 +4,7 @@ import json
 import sys
 
 from core.models import Transaction, FINISHED
-from core.queue import CommunicationThread
+from core.communication import CommunicationThread
 
 logger = logging.getLogger(__name__)
 
