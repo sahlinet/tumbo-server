@@ -1,6 +1,6 @@
-FROM philipsahli/centos:latest
+FROM philipsahli/pyas:latest
 
-RUN yum install -y postgresql-devel python-virtualenv libevent-devel gcc libffi-devel openssl-devel sudo
+RUN yum install -y sudo
 
 RUN useradd -m -d /home/tumbo -s /bin/bash tumbo
 

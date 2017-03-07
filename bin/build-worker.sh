@@ -1,7 +1,7 @@
 #!/bin/bash
 DATE=$(date +%s)
 #cd ..
-docker pull philipsahli/centos:latest
+docker pull philipsahli/pyas:latest
 rm -rf build &&  mkdir -p build
 tar -cf - --exclude build . | tar -xf - -C build/
 cd build/
