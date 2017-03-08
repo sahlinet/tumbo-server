@@ -18,6 +18,6 @@ RUN echo "tumbo ALL = NOPASSWD: /usr/bin/yum" >> /etc/sudoers
 ADD worker /home/tumbo/code/app
 ADD tumbo/core /home/tumbo/code/app/core
 
-RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install j2cli sh && /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements.txt
+RUN /home/tumbo/.virtualenvs/tumbo/bin/pip install j2cli sh && /home/tumbo/.virtualenvs/tumbo/bin/pip install -r /home/tumbo/code/app/requirements.txt && yum clean all && yum autoremove -y && rm -rf /root/.cache/pip
 
 CMD ["/bin/bash"]

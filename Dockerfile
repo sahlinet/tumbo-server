@@ -39,7 +39,7 @@ ADD bin/startup_app.sh /startup_app.sh
 RUN mkdir /static && chown tumbo:tumbo /static && chmod 755 /startup_app.sh
 
 # Not removing libffi-devel because ends in an error (install-info: No such file or directory for /usr/share/info/libffi.info.gz)
-RUN yum clean all
+RUN yum autoremove -y && yum clean all && rm $CODE_DIR/dist/tumbo-server*tar.gz && rm -rf /root/.cache/pip
 
 EXPOSE 80
 USER tumbo
