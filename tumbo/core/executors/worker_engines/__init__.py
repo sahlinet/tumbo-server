@@ -43,11 +43,11 @@ class BaseExecutor(object):
         socket.getaddrinfo = getAddrInfoWrapper
 
         import urllib2
-	try:
+        try:
             return urllib2.urlopen("https://icanhazip.com").read().replace("\n", "")
-	except Exception:
+        except Exception:
             logger.exception("Cannot get external public ip address")
-            return None    
+        return None
 
 
     @property
