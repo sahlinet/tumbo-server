@@ -556,7 +556,7 @@ class DjendBaseView(TemplateView, ContextMixin):
 
         # error handling
         except (UnAuthorized, AuthProfile.DoesNotExist), e:
-            return HttpResponseRedirect("/fastapp/dropbox_auth_start")
+            return HttpResponseRedirect("/core/dropbox_auth_start")
         except NoBasesFound, e:
             message(request, logging.WARNING, "No bases found")
 

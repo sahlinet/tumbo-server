@@ -639,7 +639,7 @@ class Executor(models.Model):
             for thread in process.threads.all():
                 thread.delete()
         except Exception:
-            logger.error("Could not stop")
+            logger.exception("Could not stop")
 
         self.save()
         logger.info("Stopped worker with PID %s" % pid)

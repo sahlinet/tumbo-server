@@ -48,7 +48,10 @@ Options:
 """
 import sys
 import os
-import sh
+try:
+    import sh
+except ImportError:
+    import pbs as sh
 import time
 import signal
 import requests
@@ -72,6 +75,14 @@ bash = sh.Command("bash")
 python = sh.Command(sys.executable)
 
 coverage_cmd = "coverage run --timid --source=tumbo --parallel-mode "
+
+# output
+if os.name == "nt":
+    STDOUT="CON"
+    STDERR="CON"
+else:
+    STDOUT="/dev/stdout"
+    STDERR="/dev/stderr"
 
 try:
     import tumbo
@@ -485,7 +496,7 @@ def do_ngrok():
     else:
         port = 8000
     cmd = '-hostname=%s -authtoken=%s localhost:%s' % (ngrok_hostname, ngrok_authtoken, port)
-    ngrok(cmd.split(), _out="/dev/null", _err="/dev/stderr", _bg=True)
+    ngrok(cmd.split(), _out="/dev/null", _err=STDERR, _bg=True)
 
 
 def tolocaltime(dt):
@@ -601,7 +612,10 @@ if __name__ == '__main__':
                         for pid in sh.pgrep('-f', 'python.*worker.*').split():
                             os.killpg(int(pid), 9)
 
-                        sh.pkill("ngrok")
+                        if os.name == "nt":
+			    print "Sorry no pkill command available to kill remaining processes"
+                        else:
+                            sh.pkill("ngrok")
                     except sh.ErrorReturnCode_1:
                         pass
 
@@ -612,15 +626,15 @@ if __name__ == '__main__':
                     print "Starting postgresql"
                     cmd_args = '-u postgres /usr/bin/postgres -D /var/lib/pgsql/data'
                     sudo = sh.Command("sudo")
-                    cmd = sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                    cmd = sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                     print "Starting redis"
                     cmd_args = "-u redis /usr/bin/redis-server /etc/redis.conf"
-                    sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                    sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                     print "Starting rabbitmq"
                     cmd_args = "-u rabbitmq /usr/sbin/rabbitmq-server"
-                    sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                    sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                 print "Starting Development Server"
                 env = {}
@@ -635,30 +649,30 @@ if __name__ == '__main__':
                     env['PROPAGATE_VARIABLES'] = PROPAGATE_VARIABLES
 
                 cmd = "%s syncdb --noinput --settings=tumbo.dev" % manage_py
-                syncdb = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                syncdb = python(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                 syncdb.wait()
 
                 cmd = "%s makemigrations core --settings=tumbo.dev" % manage_py
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                migrate = python(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                 migrate.wait()
 
                 cmd = "%s migrate --noinput --settings=tumbo.dev" % manage_py
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                migrate = python(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                 migrate.wait()
 
                 cmd = "%s  migrate aaa --noinput --settings=tumbo.dev" % manage_py
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                migrate = python(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                 migrate.wait()
 
                 try:
                     cmd = "%s create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev" % manage_py
-                    adminuser = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/null", _bg=True)
+                    adminuser = python(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                     adminuser.wait()
                 except Exception, e:
                     print e
@@ -667,7 +681,7 @@ if __name__ == '__main__':
                 cmd = "%s import_base --username=admin --file %s/examples/generics.zip  --name=generics --settings=tumbo.dev" % (manage_py, tumbo_path)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                generics_import = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                generics_import = python(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
 
                 background_pids = []
 
@@ -676,14 +690,14 @@ if __name__ == '__main__':
                     cmd = "%s heartbeat --mode=%s --settings=tumbo.dev" % (manage_py, mode)
                     if arguments['--coverage']:
                         cmd = coverage_cmd + cmd
-                    background = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                    background = python(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                     background_pids.append(background.pid)
 
                 cmd = "%s runserver 0.0.0.0:8000 --settings=tumbo.dev" % manage_py
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
 
-                app = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _tty_in=True, _in=sys.stdin, _bg=True, _cwd=home+"/workspace/tumbo-server")
+                app = python(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _tty_in=True, _in=sys.stdin, _bg=True, _cwd=home+"/workspace/tumbo-server")
 
                 if arguments['--ngrok-hostname'] and arguments['docker']:
                     if not ngrok:
@@ -720,41 +734,41 @@ if __name__ == '__main__':
             if arguments['pull']:
                 print "Docker images pull ..."
                 cmd = "-p tumboserver -f %s pull" % compose_file_base
-                docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 print "Docker images pull done."
 
             if arguments['build']:
                 print "Build docker images"
 
                 cmd = "bin/create_package.sh"
-                create_package = bash(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                create_package = bash(cmd.split(), _out=STDOUT, _err=STDERR)
                 create_package.wait()
 
                 OPTS = ""
-                if os.environ.get("CI", False):
-                    print "Building images with --no-cache option"
-                    OPTS += "--no-cache"
-                #cmd = "-p tumboserver -f %s build --pull %s" % (compose_file, OPTS)
-                cmd = "-p tumboserver -f %s build %s" % (compose_file, OPTS)
-                build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                #if os.environ.get("CI", False):
+                #    print "Building images with --no-cache option"
+                #    OPTS += "--no-cache"
+
+                cmd = "-p tumboserver -f %s build --pull %s" % (compose_file, OPTS)
+                build = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 build.wait()
 
             if arguments['stop']:
                 print "Stop docker containers"
 
                 cmd = "-p tumboserver -f %s stop" % compose_file
-                build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                build = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 build.wait()
 
                 cmd = "-p tumboserver -f %s stop" % compose_file_base
-                build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                build = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 build.wait()
 
             if arguments['logs']:
                 print "Follow logs of docker containers"
 
                 cmd = "-p tumboserver -f %s logs -f" % compose_file
-                build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                build = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 build.wait()
 
             if arguments['run']:
@@ -764,11 +778,11 @@ if __name__ == '__main__':
 
                 try:
                     cmd = "-p tumboserver -f %s up -d --no-recreate" % compose_file_base
-                    base = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                    base = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                     time.sleep(40)
 
-                    cmd = "-p tumboserver -f %s up" % compose_file
-                    app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True, _env=os.environ)
+                    cmd = "-p tumboserver -f %s up --no-recreate" % compose_file
+                    app = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR, _bg=True, _env=os.environ)
 
                     if arguments['--ngrok-hostname']:
                         time.sleep(10)
@@ -785,13 +799,13 @@ if __name__ == '__main__':
                     print e
                     # stop workers
                     cmd = "-p tumboserver -f %s kill" % compose_file
-                    app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                    app = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
 
                     cmd = "-p tumboserver -f %s rm -f" % compose_file
-                    app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                    app = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
 
                     cmd = "-p tumboserver -f %s kill" % compose_file
-                    base = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                    base = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
 
                     try:
                         sh.pkill("ngrok")
