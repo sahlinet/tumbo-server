@@ -182,9 +182,9 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
             response_status_code = default_status_code
         else:
             if response_class:
-        try:
+                try:
                     response_status_code = json.loads(data['returned']).get('status_code', default_status_code)
-        except:
+                except:
                     response_status_code = data['returned'].get('status_code', default_status_code)
             else:
                 response_status_code = default_status_code
@@ -291,11 +291,11 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
         try:
             returned = json.loads(data['returned'])
             data['returned'] = returned
-        except Exception:
-            logger.exception("returned data could not be loaded")
-                transaction.tout = json.dumps(data)
-                transaction.status = FINISHED
-                transaction.save()
+        except Exception, e:
+            logger.warn("returned data could not be loaded (%s)" % repr(e))
+            transaction.tout = json.dumps(data)
+            transaction.status = FINISHED
+            transaction.save()
 
         # add exec's id to the response dict
         data.update({
