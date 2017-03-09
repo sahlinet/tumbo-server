@@ -51,6 +51,7 @@ class AuthProfile(models.Model):
                                       default=None, null=True)
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_authprofile"
 
     def __unicode__(self):
@@ -74,6 +75,7 @@ class Base(models.Model):
                                default=None)
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_base"
         unique_together = (("name", "user"),)
 
@@ -317,6 +319,7 @@ class Apy(models.Model):
     schedule = models.CharField(max_length=64, null=True, blank=True)
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_apy"
         unique_together = (("name", "base"),)
 
@@ -350,6 +353,7 @@ class Counter(models.Model):
     failed = models.IntegerField(default=0)
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_counter"
 
 RUNNING = "R"
@@ -380,6 +384,7 @@ class Transaction(models.Model):
     async = models.BooleanField(default=False)
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_transaction"
 
     @property
@@ -420,6 +425,7 @@ class LogEntry(models.Model):
     msg = models.TextField()
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_logentry"
 
     def level_verbose(self):
@@ -441,6 +447,7 @@ class Setting(models.Model):
     public = models.BooleanField(default=False, null=False, blank=False)
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_setting"
 
 
@@ -451,6 +458,7 @@ class Instance(models.Model):
     executor = models.ForeignKey("Executor", related_name="instances")
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_instance"
 
 
@@ -466,6 +474,7 @@ class Host(models.Model):
     name = models.CharField(max_length=50)
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_host"
 
 
@@ -476,6 +485,7 @@ class Process(models.Model):
     version = models.CharField(max_length=7, default=0)
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_process"
 
     def is_up(self):
@@ -495,6 +505,7 @@ class Thread(models.Model):
         )
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_thread"
 
     name = models.CharField(max_length=64, null=True)
@@ -535,6 +546,7 @@ class Executor(models.Model):
     )
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_executor"
 
     def __init__(self, *args, **kwargs):
@@ -665,6 +677,7 @@ class TransportEndpoint(models.Model):
     override_settings_pub = models.BooleanField(default=True)
 
     class Meta:
+        app_label = "core"
         db_table = "fastapp_transportendpoint"
 
 ready_to_sync = Signal()
@@ -763,6 +776,9 @@ def base_to_storage_on_delete(sender, *args, **kwargs):
 
 
 class StaticFile(models.Model):
+
+    class Meta:
+        app_label = "core"
 
     STORAGE= (
         ("FS", 'filesystem'),

@@ -182,17 +182,17 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
             response_status_code = default_status_code
         else:
             if response_class:
-		try:
-                	response_status_code = json.loads(data['returned']).get('status_code', default_status_code)
-		except:
-                	response_status_code = data['returned'].get('status_code', default_status_code)
+                try:
+                    response_status_code = json.loads(data['returned']).get('status_code', default_status_code)
+                except:
+                    response_status_code = data['returned'].get('status_code', default_status_code)
             else:
                 response_status_code = default_status_code
 
         # respond with json
         if request.GET.has_key(u'json') or request.GET.has_key('callback'):
             status = data.get("status", False)
-	    # if is json
+        # if is json
             if status == "OK":
                 exec_model.mark_executed()
             else:
@@ -288,14 +288,14 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
                 # execute
                 data = self._execute(request, request_data, base_model, transaction.rid)
 
-		try:
-			returned = json.loads(data['returned'])
-			data['returned'] = returned
-		except Exception:
-			logger.exception("returned data could not be loaded")
-                transaction.tout = json.dumps(data)
-                transaction.status = FINISHED
-                transaction.save()
+        try:
+            returned = json.loads(data['returned'])
+            data['returned'] = returned
+        except Exception, e:
+            logger.warn("returned data could not be loaded (%s)" % repr(e))
+            transaction.tout = json.dumps(data)
+            transaction.status = FINISHED
+            transaction.save()
 
         # add exec's id to the response dict
         data.update({
@@ -856,7 +856,7 @@ def login_or_sharedkey(function):
     return wrapper
 
 def load_json(s):
-    if type(s) is str:	
+    if type(s) is str:  
         r= json.loads(s)
     elif type(s) is dict:
         r = s

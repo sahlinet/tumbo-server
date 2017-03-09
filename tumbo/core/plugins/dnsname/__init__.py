@@ -109,10 +109,15 @@ class DNSNamePlugin(Plugin):
 
 		#k = "%s_executor" % (executor.base)
 
+
 		k = "SERVICE_DNS"
 		v =  self._make_dns_name(executor.base, 0)
 		plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.dnsname']
 		domain = plugin_settings['zone']
+
+                if not domain:
+                    logger.warn("zone for DNSNamePlugin not set")
+                    return context
 		v = v + "." + domain
 		context[k] = v
 
