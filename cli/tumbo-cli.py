@@ -735,6 +735,9 @@ if __name__ == '__main__':
                 print "Docker images pull ..."
                 cmd = "-p tumboserver -f %s pull" % compose_file_base
                 docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
+
+                cmd = "-p tumboserver -f %s pull" % compose_file
+                docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 print "Docker images pull done."
 
             if arguments['build']:
