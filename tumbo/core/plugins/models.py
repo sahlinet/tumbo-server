@@ -14,5 +14,5 @@ class PluginUserConfig(models.Model):
     base = models.ForeignKey("core.Base")
     config = JSONField(default="{}")
 
-    class Meta:
-        app_label = "core"
+    #class Meta:
+    #    app_label = "core"
