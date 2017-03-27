@@ -16,7 +16,6 @@ else:
         REDIS_URL = "redis://:%s@127.0.0.1:6379/1" % redis_pass
     else:
         REDIS_URL = "redis://127.0.0.1:6379/1"
-    print REDIS_URL
     CACHES = {
        "default": {
             "BACKEND": "django_redis.cache.RedisCache",
