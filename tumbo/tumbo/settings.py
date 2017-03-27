@@ -89,7 +89,6 @@ else:
     }
 
 # If tumbo is run from an egg, use db in $HOME/.tumbo
-print BASE_DIR
 if "site-packages" in BASE_DIR:
     DATABASES['default']['NAME'] = os.path.join(os.path.expanduser('~'), ".tumbo", "db.sqlite3")
 
