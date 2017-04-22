@@ -9,6 +9,7 @@ from StringIO import StringIO
 
 from datetime import datetime, timedelta
 
+from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.contrib import messages
@@ -75,9 +76,10 @@ class ResponseUnavailableViewMixing():
     def verify(self, request, base_model):
         if not base_model.state:
             response = HttpResponse()
-            if "html" is request.META.get('HTTP_ACCEPT', None):
-                response.content_type = "text/html"
-                response.content = "Content cannot be delivered"
+            if "html" in request.META.get('HTTP_ACCEPT', None):
+                #response.content_type = "text/html"
+                #response.content = "Function cannot be executed"
+                response = render_to_response('503.html', {})
             response.status_code = 503
             return response
         else:
