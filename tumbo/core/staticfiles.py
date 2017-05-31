@@ -96,7 +96,11 @@ class StaticfileFactory(LoadMixin):
         else:
             logger.debug("%s: not in cache" % self.static_path)
 
-            storages = [ DevRepoStaticfile, DevStorageDropboxStaticfile, WorkerModuleStaticfile, DropboxStaticfile ]
+            storages = [ DevRepoStaticfile, DevStorageDropboxStaticfile, WorkerModuleStaticfile ]
+            if len(getattr(settings, "DROPBOX_CONSUMER_KEY", "")) > 3:
+                    storages.append(DropboxStaticfile)
+            else:
+                logger.debug("DropboxStaticFile not activated")
             file_obj = None
             for storage in storages:
                 file_obj = storage(self.username, self.project_name, self.static_name).load()
