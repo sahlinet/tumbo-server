@@ -46,7 +46,11 @@ TUMBO_SCHEDULE_JOBSTORE = 'postgresql://%s:%s@%s:%s/%s' % (
 try:
     CACHE_TCP_ADDR = os.environ['CACHE_1_PORT_6379_TCP_ADDR']
 except KeyError, e:
-    CACHE_TCP_ADDR = os.environ['CACHE_PORT_6379_TCP_ADDR']
+    if os.environ.get("KUBERNETES_PORT", None):
+        CACHE_TCP_ADDR = "cache"
+    else:
+        CACHE_TCP_ADDR = os.environ['CACHE_PORT_6379_TCP_ADDR']
+
 
 REDIS_URL = "redis://:%s@%s:6379/1" % (os.environ['CACHE_ENV_REDIS_PASS'], CACHE_TCP_ADDR)
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
