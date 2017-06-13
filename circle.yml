@@ -60,6 +60,14 @@ test:
     - pkill python
     #
 deployment:
+  feature:
+    branch: kubernetes
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker tag tumboserver_app philipsahli/tumbo-server:kubernetes
+      - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:kubernetes
+      - docker push philipsahli/tumbo-server:kubernetes
+      - docker push philipsahli/tumbo-worker:kubernetes
   master:
     branch: master
     commands:
