@@ -105,8 +105,13 @@ TUMBO_CORE_RECEIVER_PASSWORD = "h8h9h0h1h2h3"
 WORKER_RABBITMQ_HOST = os.environ.get('WORKER_RABBITMQ_HOST', None)
 WORKER_RABBITMQ_PORT = os.environ.get('WORKER_RABBITMQ_PORT', None)
 
-STORE_DB_HOST = os.environ.get('STORE_DB_HOST', None)
-STORE_DB_PORT = os.environ.get('STORE_DB_PORT', None)
+
+if os.environ.get("KUBERNETES_PORT", None):
+    STORE_DB_HOST = "store"
+    STORE_DB_PORT = 5432
+else:
+    STORE_DB_HOST = os.environ.get('STORE_DB_HOST', None)
+    STORE_DB_PORT = os.environ.get('STORE_DB_PORT', None)
 
 # Direct set, needed at the moment on Rancher
 # TODO: Get them dynamically from API
