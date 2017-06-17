@@ -121,8 +121,8 @@ if WORKER_RABBITMQ_HOST:
 else:
     WORKER_RABBITMQ_HOST = os.environ['QUEUE_PORT_5672_TCP_ADDR']
     WORKER_RABBITMQ_PORT = int(os.environ['QUEUE_PORT_5672_TCP_PORT'])
-    STORE_DB_HOST = os.environ['STORE_PORT_5432_TCP_ADDR']
-    STORE_DB_PORT = int(os.environ['STORE_PORT_5432_TCP_PORT'])
+    STORE_DB_HOST = STORE_DB_HOST
+    STORE_DB_PORT = int(STORE_DB_PORT)
 
 # Client
 TUMBO_WORKER_THREADCOUNT = 30               # How many worker threads are started
