@@ -118,7 +118,7 @@ else:
 
     STORE_DB_NAME = get_var("STORE_ENV_DB_NAME")
     STORE_DB_USER = get_var("STORE_ENV_DB_USER")
-    STORE_DB_PASSWORD = get_var("STORE_ENV_PASSOWRD")
+    STORE_DB_PASSWORD = get_var("STORE_ENV_PASSWORD")
 
 # Direct set, needed at the moment on Rancher
 # TODO: Get them dynamically from API
