@@ -109,9 +109,16 @@ WORKER_RABBITMQ_PORT = os.environ.get('WORKER_RABBITMQ_PORT', None)
 if os.environ.get("KUBERNETES_PORT", None):
     STORE_DB_HOST = "store"
     STORE_DB_PORT = 5432
+    STORE_DB_NAME = "store"
+    STORE_DB_USER = "store"
+    STORE_DB_PASSWORD = "storepw"
 else:
     STORE_DB_HOST = os.environ.get('STORE_DB_HOST', None)
     STORE_DB_PORT = int(os.environ.get('STORE_DB_PORT', 5432))
+
+    STORE_DB_NAME = get_var("STORE_ENV_DB_NAME")
+    STORE_DB_USER = get_var("STORE_ENV_DB_USER")
+    STORE_DB_PASSWORD = get_var("STORE_ENV_PASSOWRD")
 
 # Direct set, needed at the moment on Rancher
 # TODO: Get them dynamically from API
@@ -179,9 +186,9 @@ TUMBO_PLUGINS_CONFIG = {
             'ENGINE': "django.db.backends.postgresql_psycopg2",
             'HOST': STORE_DB_HOST,
             'PORT': STORE_DB_PORT,
-            'NAME': get_var("STORE_ENV_DB_NAME"),
-            'USER': get_var("STORE_ENV_DB_USER"),
-            'PASSWORD': get_var("STORE_ENV_PASSWORD")
+            'NAME': STORE_DB_NAME,
+            'USER': STORE_DB_USER,
+            'PASSWORD': STORE_PASSWORD
         }
 }
 
