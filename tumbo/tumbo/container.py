@@ -188,7 +188,7 @@ TUMBO_PLUGINS_CONFIG = {
             'PORT': STORE_DB_PORT,
             'NAME': STORE_DB_NAME,
             'USER': STORE_DB_USER,
-            'PASSWORD': STORE_PASSWORD
+            'PASSWORD': STORE_DB_PASSWORD
         }
 }
 
