@@ -111,7 +111,7 @@ if os.environ.get("KUBERNETES_PORT", None):
     STORE_DB_PORT = 5432
 else:
     STORE_DB_HOST = os.environ.get('STORE_DB_HOST', None)
-    STORE_DB_PORT = os.environ.get('STORE_DB_PORT', None)
+    STORE_DB_PORT = int(os.environ.get('STORE_DB_PORT', 5432))
 
 # Direct set, needed at the moment on Rancher
 # TODO: Get them dynamically from API
@@ -178,7 +178,7 @@ TUMBO_PLUGINS_CONFIG = {
         'core.plugins.datastore': {
             'ENGINE': "django.db.backends.postgresql_psycopg2",
             'HOST': STORE_DB_HOST,
-            'PORT': int(STORE_DB_PORT),
+            'PORT': STORE_DB_PORT,
             'NAME': get_var("STORE_ENV_DB_NAME"),
             'USER': get_var("STORE_ENV_DB_USER"),
             'PASSWORD': get_var("STORE_ENV_PASSWORD")
