@@ -53,7 +53,7 @@ except KeyError, e:
 
 
 if os.environ.get("KUBERNETES_PORT", None):
-    REDIS_URL = "redis://:%s@%s:6379/1" % (os.environ['REDIS_PASSWORD'], CACHE_TCP_ADDR)
+    REDIS_URL = "redis://:%s@%s:6379/1" % (os.environ['REDIS_PASSWORD'].rstrip(), CACHE_TCP_ADDR)
 else:
     REDIS_URL = "redis://:%s@%s:6379/1" % (os.environ['CACHE_ENV_REDIS_PASS'], CACHE_TCP_ADDR)
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
@@ -207,7 +207,7 @@ if os.environ.get('DIGITALOCEAN_CONFIG', None):
 if os.environ.get("KUBERNETES_PORT", None):
     REDIS_METRICS['HOST'] = CACHE_TCP_ADDR
     REDIS_METRICS['PORT'] = 6379
-    REDIS_METRICS['PASSWORD'] = os.environ['REDIS_PASSWORD']
+    REDIS_METRICS['PASSWORD'] = os.environ['REDIS_PASSWORD'].rstrip()
 else:
     REDIS_METRICS['HOST'] = CACHE_TCP_ADDR
     REDIS_METRICS['PORT'] = int(os.environ['CACHE_PORT_6379_TCP_PORT'])
