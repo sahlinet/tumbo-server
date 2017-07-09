@@ -73,6 +73,7 @@ class RabbitmqHttpApi(RabbitmqAdmin):
 
         host = getattr(settings, "RABBITMQ_HOST", "localhost")
         port = getattr(settings, "RABBITMQ_HTTP_API_PORT", "15672")
+        logger.info("%s@%s:%s" % (user, host, str(port)))
 
         if data:
             data=json.dumps(data)
