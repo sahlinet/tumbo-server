@@ -391,4 +391,4 @@ The token can be grabbed from your profile page.
 
 ### API Docs
 
-<a target="_blank" href="{% url 'django.swagger.base.view' %}#!/api">API Documentation</a>
+<a target="_blank" href="{% url 'api-docs' %}#!/api">API Documentation</a>
