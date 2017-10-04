@@ -294,7 +294,7 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
             returned = json.loads(data['returned'])
             data['returned'] = returned
         except Exception, e:
-            logger.warn("returned data could not be loaded (%s)" % repr(e))
+            logger.debug("returned data could not be loaded as json (%s)" % repr(e))
             transaction.tout = json.dumps(data)
             transaction.status = FINISHED
             transaction.save()
