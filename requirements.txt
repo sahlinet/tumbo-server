@@ -52,3 +52,4 @@ tabulate==0.7.5
 djangorestframework-jsonp==1.0.2
 pysqlite==2.8.3
 PyYAML==3.12
+kubernetes==3.0.0
