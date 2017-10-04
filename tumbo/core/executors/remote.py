@@ -171,7 +171,7 @@ def call_rpc_client(apy, vhost, username, password, async=False):
                                        routing_key=RPC_QUEUE,
                                        properties=properties,
                                        body=str(n))
-            logger.info("Message published to: %s:%s" %
+            logger.debug("Message published to: %s:%s" %
                         (self.vhost, RPC_QUEUE))
             while self.response is None and not self.async:
                 self.connection.process_data_events()
@@ -465,17 +465,17 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
                     plugins = PluginRegistry()
                     for plugin in plugins.all_plugins:
                         try:
-                            logger.info("%s: Attach with settings: %s" % (plugin.name, pluginconfig[plugin.name].keys()))
+                            logger.debug("%s: Attach with settings: %s" % (plugin.name, pluginconfig[plugin.name].keys()))
                             setattr(func, plugin.shortname, plugin.attach_worker(**pluginconfig[plugin.name]))
                             if not hasattr(func, plugin.shortname):
                                 logger.warning("Func is None")
-                            logger.info("%s: Func attached to _do" % plugin.shortname)
+                            logger.debug("%s: Func attached to _do" % plugin.shortname)
                         except Exception, e:
                             logger.exception("%s: Not able to attach, pluginconfig is: %s" % (plugin, pluginconfig))
 
                 # execution
                 returned = func(func)
-                logger.info("Returned is of type: %s" % type(returned))
+                logger.debug("Returned is of type: %s" % type(returned))
                 if isinstance(returned, responses.Response):
                     # serialize
                     response_class = returned.__class__.__name__
