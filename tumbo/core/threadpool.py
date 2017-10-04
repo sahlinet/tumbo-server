@@ -1,4 +1,4 @@
-from Queue import Queue
+from multiprocessing import Queue
 from threading import Thread
 
 # from http://code.activestate.com/recipes/577187-python-thread-pool/
