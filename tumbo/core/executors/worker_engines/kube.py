@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from pprint import pprint
 
@@ -9,8 +10,7 @@ from core.executors.worker_engines import BaseExecutor, ContainerNotFound
 
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
-#kubernetes.client.configuration.api_key['authorization'] = settings.KUBERNETES_TOKEN
-#kubernetes.client.configuration.api_key_prefix['authorization'] = 'Bearer'
+from kubernetes.config.config_exception import ConfigException
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +21,13 @@ class KubernetesExecutor(BaseExecutor):
     def __init__(self, *args, **kwargs):
 
         client.configuration.assert_hostname = False
-        config.load_kube_config()
-
-        self.api = client.CoreV1Api()
+        try:
+            config.load_incluster_config()
+            self.api = client.CoreV1Api()
+        except ConfigException, e:
+            logger.debug("kubernetes.config.load_incluster_config not working, doing config.load_kube_config")
+            config.load_kube_config()
+            self.api = client.CoreV1Api()
         self.namespace = "tumbo"
 
 
