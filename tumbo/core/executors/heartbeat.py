@@ -223,7 +223,7 @@ class HeartbeatThread(CommunicationThread):
             try:
                 set_metric(slug, int(process.rss)/1024, expire=86400)
             except Exception, e:
-                logger.error(e)
+                logger.warn(e)
 
             #logger.info(data['ready_for_init'], data['in_sync'])
 
