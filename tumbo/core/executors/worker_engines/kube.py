@@ -38,7 +38,7 @@ class KubernetesExecutor(BaseExecutor):
         try:
             self.api.create_namespace(body)
         except ApiException as e:
-            if e.status != 409:
+            if e.status not in [409, 403]:
                 print("Exception when calling CoreV1Api->create_namespace: %s\n" % e)
                 raise e
 
