@@ -87,7 +87,6 @@ class KubernetesExecutor(BaseExecutor):
                 "value": str(v)
             })
 
-        namespace = 'namespace_example' # str | object name and auth scope, such as for teams and projects
         rc_body = client.V1ReplicationController()
         rc_body.api_version = "v1"
         rc_body.kind = "ReplicationController"
@@ -98,7 +97,7 @@ class KubernetesExecutor(BaseExecutor):
         spec.replicas = 1
 
         pretty = 'pretty_example' # str | If 'true', then the output is pretty printed. (optional)
-        self.rc_manifest = {
+        rc_manifest = {
     "apiVersion": "v1",
     "kind": "ReplicationController",
     "metadata": {
@@ -106,7 +105,7 @@ class KubernetesExecutor(BaseExecutor):
             "service": self.name
         },
         "name": self.name,
-        "namespace": "tumbo",
+        "namespace": self.namespace,
     },
     "spec": {
         "replicas": 1,
@@ -157,8 +156,9 @@ class KubernetesExecutor(BaseExecutor):
 
 
         try:
-            api_response = self.api.create_namespaced_replication_controller(self.namespace, self.rc_manifest, pretty=pretty)
+            api_response = self.api.create_namespaced_replication_controller(self.namespace, rc_manifest, pretty=pretty)
         except ApiException as e:
+            logger.error(api_response)
             print "Exception when calling CoreV1Api->create_namespaced_replication_controller: %s\n" % e
             raise e
 
@@ -221,7 +221,7 @@ class KubernetesExecutor(BaseExecutor):
         label_selector = 'service=%s' % self.name # str | A selector to restrict the list of returned objects by their labels. Defaults to everything. (optional)
         watch = False # bool | Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion. (optional)
 
-        try: 
+        try:
             api_response = self.api.list_namespaced_replication_controller(self.namespace, pretty=pretty, include_uninitialized=include_uninitialized, label_selector=label_selector, watch=watch)
             if len(api_response.items) < 1:
                 raise ContainerNotFound()
