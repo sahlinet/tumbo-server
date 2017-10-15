@@ -17,6 +17,11 @@ chown -R tumbo:tumbo /static
 
 MANAGE_PY="/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py"
 
+if [ ! -z "$NEWRELIC_LICENSE" ]; then
+    echo "Create newrelic.ini"
+    sudo newrelic-admin generate-config /newrelic.ini
+fi
+
 if [ "$MODE" == "web" ]; then
 
     echo "Run collectstatic start"
