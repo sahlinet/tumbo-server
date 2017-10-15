@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+"""Module to run workers on Kubernetes Cluster
+"""
 import logging
-import os
 import time
-from pprint import pprint
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -17,6 +18,8 @@ logger = logging.getLogger(__name__)
 # Great examples: https://github.com/inovex/quobyte-kubernetes-operator/blob/master/quobyte-k8s-deployer.py
 
 class KubernetesExecutor(BaseExecutor):
+    """Implementation of the executor to run workers on Kubernetes.
+    """
 
     def __init__(self, *args, **kwargs):
 
@@ -39,7 +42,7 @@ class KubernetesExecutor(BaseExecutor):
             self.api.create_namespace(body)
         except ApiException as e:
             if e.status not in [409, 403]:
-                print("Exception when calling CoreV1Api->create_namespace: %s\n" % e)
+                print "Exception when calling CoreV1Api->create_namespace: %s\n" % e
                 raise e
 
         super(KubernetesExecutor, self).__init__(*args, **kwargs)
@@ -56,26 +59,26 @@ class KubernetesExecutor(BaseExecutor):
     @property
     def _start_command(self):
         start_command = "%s %smanage.py start_worker --vhost=%s --base=%s --username=%s --password=%s" % (
-                        "/home/tumbo/.virtualenvs/tumbo/bin/python",
-                        "/home/tumbo/code/app/",
-                        self.vhost,
-                        self.base_name,
-                        self.base_name, self.password
+            "/home/tumbo/.virtualenvs/tumbo/bin/python",
+            "/home/tumbo/code/app/",
+            self.vhost,
+            self.base_name,
+            self.base_name, self.password
         )
         return start_command.split(" ")
 
     def start(self, id, *args, **kwargs):
         env = {
-                "RABBITMQ_HOST": settings.WORKER_RABBITMQ_HOST,
-                "RABBITMQ_PORT": int(settings.WORKER_RABBITMQ_PORT),
-                "TUMBO_WORKER_THREADCOUNT": settings.TUMBO_WORKER_THREADCOUNT,
-                "TUMBO_PUBLISH_INTERVAL": settings.TUMBO_PUBLISH_INTERVAL,
-                "TUMBO_CORE_SENDER_PASSWORD": settings.TUMBO_CORE_SENDER_PASSWORD,
-                "EXECUTOR": "docker",
-                "SERVICE_PORT": self.executor.port,
-                "SERVICE_IP": self.executor.ip,
-                "secret": self.secret
-                }
+            "RABBITMQ_HOST": settings.WORKER_RABBITMQ_HOST,
+            "RABBITMQ_PORT": int(settings.WORKER_RABBITMQ_PORT),
+            "TUMBO_WORKER_THREADCOUNT": settings.TUMBO_WORKER_THREADCOUNT,
+            "TUMBO_PUBLISH_INTERVAL": settings.TUMBO_PUBLISH_INTERVAL,
+            "TUMBO_CORE_SENDER_PASSWORD": settings.TUMBO_CORE_SENDER_PASSWORD,
+            "EXECUTOR": "docker",
+            "SERVICE_PORT": self.executor.port,
+            "SERVICE_IP": self.executor.ip,
+            "secret": self.secret
+            }
 
         worker_env = []
         for k, v in env.iteritems():
@@ -85,7 +88,7 @@ class KubernetesExecutor(BaseExecutor):
             })
 
         namespace = 'namespace_example' # str | object name and auth scope, such as for teams and projects
-        rc_body = client.V1ReplicationController() # V1ReplicationController | 
+        rc_body = client.V1ReplicationController()
         rc_body.api_version = "v1"
         rc_body.kind = "ReplicationController"
         rc_body.metadata = {
@@ -153,10 +156,10 @@ class KubernetesExecutor(BaseExecutor):
 }
 
 
-        try: 
+        try:
             api_response = self.api.create_namespaced_replication_controller(self.namespace, self.rc_manifest, pretty=pretty)
         except ApiException as e:
-            print("Exception when calling CoreV1Api->create_namespaced_replication_controller: %s\n" % e)
+            print "Exception when calling CoreV1Api->create_namespaced_replication_controller: %s\n" % e
             raise e
 
         return api_response.metadata.uid
@@ -167,18 +170,18 @@ class KubernetesExecutor(BaseExecutor):
     def destroy(self, id, *args, **kwargs):
         # Check if destroyable state
         try:
-            state = self.get_replication_controller(id)
+            self.get_replication_controller(id)
         except ContainerNotFound, e:
             print e
             return True
-        # scale 
-        body = {"spec":{"replicas": 0}} 
+        # scale
+        body = {"spec":{"replicas": 0}}
         pretty = 'pretty_example'
 
-        try: 
+        try:
             api_response = self.api.patch_namespaced_replication_controller(self.name, self.namespace, body=body, pretty=pretty)
         except ApiException as e:
-            print("Exception when calling CoreV1Api->patch_namespaced_replication_controller_scale: %s\n" % e)
+            print "Exception when calling CoreV1Api->patch_namespaced_replication_controller_scale: %s\n" % e
 
         # status reports None before the pod is terminated.
         self._wait_for_pod_deletion(id)
@@ -190,11 +193,11 @@ class KubernetesExecutor(BaseExecutor):
         grace_period_seconds = 0
         orphan_dependents = True
 
-        try: 
+        try:
             #api_response = self.api.delete_namespaced_replication_controller(self.name, self.namespace, body, pretty=pretty, grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents, propagation_policy=propagation_policy)
             api_response = self.api.delete_namespaced_replication_controller(self.name, self.namespace, body, pretty=pretty, grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents)
         except ApiException as e:
-            print("Exception when calling CoreV1Api->delete_namespaced_replication_controller: %s\n" % e)
+            print "Exception when calling CoreV1Api->delete_namespaced_replication_controller: %s\n" % e
             raise e
         return True
 
@@ -230,12 +233,12 @@ class KubernetesExecutor(BaseExecutor):
     def state(self, id):
         if not id:
             return False
-        """ returns True if worker is running """
+        # returns True if worker is running
         try:
             available_replicas = self.get_replication_controller(id).items[0].status.available_replicas
         except ContainerNotFound:
             return False
-        return (available_replicas > 0)
+        return available_replicas > 0
 
     def addresses(self, id, port=None):
         return {
