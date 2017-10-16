@@ -19,7 +19,7 @@ MANAGE_PY="/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/mana
 
 if [ ! -z "$NEWRELIC_LICENSE" ]; then
     echo "Create newrelic.ini"
-    sudo newrelic-admin generate-config /newrelic.ini
+    sudo newrelic-admin generate-config $NEWRELIC_LICENSE /newrelic.ini
 fi
 
 if [ "$MODE" == "web" ]; then
