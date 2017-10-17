@@ -158,7 +158,7 @@ class KubernetesExecutor(BaseExecutor):
         try:
             api_response = self.api.create_namespaced_replication_controller(self.namespace, rc_manifest, pretty=pretty)
         except ApiException as e:
-            logger.error(api_response)
+            #logger.error(api_response)
             print "Exception when calling CoreV1Api->create_namespaced_replication_controller: %s\n" % e
             raise e
 
