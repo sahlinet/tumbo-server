@@ -130,6 +130,21 @@ The log messages are attached to the transaction and Tumbo's *CLi* displays the 
 
     tumbo-cli.py project helloworld transactions
 
+### Install packages
+
+Often your application has dependencies of other software. Tumbo provides following two methods to install software. Both methods return the command's output.
+
+#### OS Packages
+
+    self.package_install("packageA")
+
+#### Python Packages
+
+    self.pip_install("packageA")
+
+or
+
+    self.pip_install("packageA==0.2.1")
 
 ### Siblings
 

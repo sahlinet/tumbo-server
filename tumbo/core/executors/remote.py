@@ -7,6 +7,7 @@ import logging
 import sys
 import traceback
 import base64
+import sh
 
 from bunch import Bunch
 
@@ -391,6 +392,21 @@ def debug(tid, msg):
 def error(tid, msg):
     log_to_queue(tid, logging.ERROR, msg)
 
+from sys import platform as _platform
+def package_install(package_name):
+
+    if _platform == "linux" or _platform == "linux2":
+        return sh.yum("install", "-y", package_name)
+    elif _platform == "darwin":
+        return sh.brew("install", package_name)
+
+def pip_install(package_name):
+    output = sh.pip("freeze", package_name)
+    if package_name in output:
+        return "%s already installed" % package_name
+    else:
+        return sh.pip("install", package_name)
+
 
 def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfig={}):
         exception = None
@@ -457,11 +473,14 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
                 # attach foreign_functions
                 func.foreigns = Bunch(foreign_functions)
 
+                func.package_install = package_install
+                func.pip_install = pip_install
+
                 # attach siblings
                 func.siblings = Bunch(functions)
 
                 if model['fields']['name'] != "init":
-                    # attach plugins
+                    # attach plugins but not to init function
                     plugins = PluginRegistry()
                     for plugin in plugins.all_plugins:
                         try:
@@ -480,7 +499,6 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
                     # serialize
                     response_class = returned.__class__.__name__
                     returned = str(returned)
-                    #returned = returned
 
             except Exception, e:
                 logger.exception(e)
