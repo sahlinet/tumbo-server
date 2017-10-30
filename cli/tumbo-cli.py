@@ -5,7 +5,7 @@
 Usage:
   tumbo-cli.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage] [--settings=tumbo.dev]
   tumbo-cli.py server kubernetes run [--context=context] [--ingress]
-  tumbo-cli.py server kubernetes delete [--context=context]
+  tumbo-cli.py server kubernetes delete [--context=context] [--partial]
   tumbo-cli.py server docker run [--stop-after=<seconds>] [--ngrok-hostname=host] [--ngrok-authtoken=token]
   tumbo-cli.py server docker stop
   tumbo-cli.py server docker build
@@ -599,6 +599,8 @@ if __name__ == '__main__':
             # dev run
             if arguments['run']:
 
+                settings_module = "%s" % arguments.get('--settings', "tumbo.dev")
+
                 def stop_handler(signum, frame):
                     stop()
 
@@ -651,7 +653,6 @@ if __name__ == '__main__':
                 if PROPAGATE_VARIABLES:
                     env['PROPAGATE_VARIABLES'] = PROPAGATE_VARIABLES
 
-                settings_module = "%s" % arguments.get('--settings', "tumbo.dev")
 
                 cmd = "%s syncdb --noinput --settings=%s" % (manage_py, settings_module)
                 syncdb = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
@@ -864,9 +865,10 @@ if __name__ == '__main__':
                     base = kubectl(j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
                     print base
 
-                time.sleep(2)
+                time.sleep(5)
                 print kubectl("delete pods -l service=app --namespace=tumbo".split())
                 print kubectl("delete pods -l service=background --namespace=tumbo".split())
+                print kubectl("delete pods -l service=rp --namespace=tumbo".split())
 
                 if is_minikube:
                     print "Waiting to launch UI"
@@ -875,14 +877,23 @@ if __name__ == '__main__':
 
             # kubernetes delete
             if arguments['delete']:
-                print "Deleting Tumbo on Kubernetes"
-                try:
-                    base = kubectl("delete namespace tumbo".split(), _out=STDOUT, _err=STDERR)
-                except sh.ErrorReturnCode_1:
-                    pass
-                for cmd in cmd_list:
-                    base = kubectl(["delete", "-f"] + cmd.split(), _out=STDOUT, _err=STDERR)
-                    print base
+                if arguments['--partial']:
+
+                    cmd_list = [
+                        "./k8s-files/cli/rp.yml",
+                        #"./k8s-files/cli/core.yml",
+                        ]
+                    for cmd in cmd_list:
+                        base = kubectl(["delete", "-f"] + cmd.split(), _out=STDOUT, _err=STDERR)
+                else:
+                    print "Deleting Tumbo on Kubernetes"
+                    for cmd in cmd_list:
+                        base = kubectl(["delete", "-f"] + cmd.split(), _out=STDOUT, _err=STDERR)
+                        print base
+                    try:
+                        base = kubectl("delete namespace tumbo".split(), _out=STDOUT, _err=STDERR)
+                    except sh.ErrorReturnCode_1:
+                        pass
 
     if arguments['docker'] and arguments['url']:
         port = docker_compose("-p", "tumboserver", "-f", compose_file,

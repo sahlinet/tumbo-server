@@ -36,11 +36,11 @@ DATABASES['default']['PORT'] = get_var('DB_PORT')
 
 # 'postgresql://scott:tiger@localhost:5432/mydatabase'
 TUMBO_SCHEDULE_JOBSTORE = 'postgresql://%s:%s@%s:%s/%s' % (
-        get_var('JOBSTOREDB_USER'),
-        get_var('JOBSTOREDB_PASS'),
-        get_var('JOBSTOREDB_HOST'),
-        get_var('JOBSTOREDB_PORT'),
-        get_var('JOBSTOREDB_NAME')
+    get_var('JOBSTOREDB_USER'),
+    get_var('JOBSTOREDB_PASS'),
+    get_var('JOBSTOREDB_HOST'),
+    get_var('JOBSTOREDB_PORT'),
+    get_var('JOBSTOREDB_NAME')
 )
 
 try:

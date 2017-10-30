@@ -53,8 +53,10 @@ class RabbitmqAdminCtl(RabbitmqAdmin):
 
     def add_vhost(self, name):
         subprocess.Popen("%s add_vhost %s" % (self.rabbitmqctl, name), shell=True)
+
     def add_user(self, username, password):
         subprocess.Popen("%s add_user %s %s" % (self.rabbitmqctl, username, password), shell=True)
+
     def set_perms(self, vhost, username):
         subprocess.Popen("%s set_permissions -p %s %s \"^.*\" \".*\" \".*\" " % (self.rabbitmqctl, vhost, username), shell=True)
 
@@ -331,6 +333,6 @@ class CommunicationThread(threading.Thread):
 
         # topic receiver
         for topic in self.topic_receiver:
-            channel.exchange_declare(exchange="configuration", type='fanout', callback=self.on_exchange_declare)
+            channel.exchange_declare(exchange="configuration", exchange_type='fanout', callback=self.on_exchange_declare)
 
         self.channel = channel

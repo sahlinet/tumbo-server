@@ -293,8 +293,8 @@ class HeartbeatThread(CommunicationThread):
                     request = request_factory.get(url, data={'base': base_obj.name, 'id': init.id})
                     request.user = get_user_model().objects.get(username='admin')
 
-                    from core.views import DjendExecView
-                    view = DjendExecView()
+                    from core.views import ExecView
+                    view = ExecView()
                     response = view.get(request, base=base_obj.name, id=init.id)
                     logger.info("Init method called for base %s, response_code: %s" % (base_obj.name, response.status_code))
 

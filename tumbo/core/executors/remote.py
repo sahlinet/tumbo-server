@@ -85,8 +85,8 @@ def distribute(event, body, vhost, username, password):
             )
 
             self.channel = self.connection.channel()
-            self.channel.exchange_declare(exchange=CONFIGURATION_QUEUE, type='fanout')
-            self.channel.exchange_declare(exchange=FOREIGN_CONFIGURATION_QUEUE, type='fanout')
+            self.channel.exchange_declare(exchange=CONFIGURATION_QUEUE, exchange_type='fanout')
+            self.channel.exchange_declare(exchange=FOREIGN_CONFIGURATION_QUEUE, exchange_type='fanout')
 
 
         def call(self, body):
