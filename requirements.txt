@@ -3,7 +3,7 @@ bumpversion==0.5.3
 bunch==1.0.1
 configobj==5.0.6
 coverage==4.2
-Django==1.8.16
+Django==1.8.18
 django-compressor==1.5
 django-cors-headers==1.1.0
 django-debug-toolbar==1.6
@@ -30,7 +30,7 @@ mock==1.0.1
 ndg-httpsclient==0.3.2
 newrelic==2.94.0.79
 opbeat==3.1.1
-pika==0.9.14
+pika==0.11.0
 psutil==3.3.0
 psycopg2==2.6.1
 pyasn1==0.1.8
