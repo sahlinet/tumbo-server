@@ -34,7 +34,10 @@ def asjson(value):
 from redis_metrics.utils import get_r
 @register.assignment_tag
 def get_slug_list(filter):
-    slug_list = get_r().metric_slugs_by_category()['Uncategorized']
+    try:
+        slug_list = get_r().metric_slugs_by_category()['Uncategorized']
+    except KeyError:
+        slug_list = [] 
     slugs = []
     for slug in slug_list:
         if filter in slug:
