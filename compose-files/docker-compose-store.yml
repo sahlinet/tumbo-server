@@ -1,0 +1,9 @@
+db:
+  image: philipsahli/postgresql-test
+  ports:
+   - "5432"
+  environment:
+   - DB_NAME=tumbo
+   - DB_USER=store
+   - PASSWORD=tumbodev123
+   - SUPERUSER=true
