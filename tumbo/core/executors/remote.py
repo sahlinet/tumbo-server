@@ -373,8 +373,6 @@ def log_to_queue(tid, level, msg):
                           ))
     channel.close()
     channel.connection.close()
-    del channel.connection
-    del channel
 
 
 def info(tid, msg):

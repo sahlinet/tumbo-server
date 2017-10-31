@@ -599,7 +599,9 @@ if __name__ == '__main__':
             # dev run
             if arguments['run']:
 
-                settings_module = "%s" % arguments.get('--settings', "tumbo.dev")
+                settings_module = "%s" % arguments.get('--settings')
+                if not settings_module or settings_module == "None":
+                    settings_module = "tumbo.dev"
 
                 def stop_handler(signum, frame):
                     stop()
@@ -872,7 +874,7 @@ if __name__ == '__main__':
 
                 if is_minikube:
                     print "Waiting to launch UI"
-                    minikube = sh.Command("minikub")
+                    minikube = sh.Command("minikube")
                     minikube("service rp  --namespace tumbo".split())
 
             # kubernetes delete

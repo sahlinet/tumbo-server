@@ -211,7 +211,6 @@ class KubernetesExecutor(BaseExecutor):
 
         return True
 
-
     def log(self, id, *args, **kwargs):
         raise NotImplementedError
 

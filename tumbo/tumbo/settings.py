@@ -313,7 +313,7 @@ TEMPLATE_LOADERS = (
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-PROPAGATE_VARIABLES=os.environ.get("PROPAGATE_VARIABLES", "").split("|")
+PROPAGATE_VARIABLES = os.environ.get("PROPAGATE_VARIABLES", "").split("|")
 
 # social auth
 if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
