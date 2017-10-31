@@ -274,7 +274,7 @@ wait until the `status` is `FINISHED`.
 
 ### Schedules
 
-Add in the UI a configuration for a scheduled execution of a function. For example `*/30 * * *` (`second minute our day_of_week`).
+Add in the UI a configuration for a scheduled execution of a function. For example `0 */5 * * *` for every five minutes. (`second minute hour day_of_week`).
 
 
 * * *
