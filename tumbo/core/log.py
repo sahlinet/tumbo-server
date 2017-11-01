@@ -2,12 +2,14 @@ import logging
 import json
 from core.communication import CommunicationThread
 from core.models import Transaction
+import newrelic.agent
 
 logger = logging.getLogger(__name__)
 
 
 class LogReceiverThread(CommunicationThread):
 
+    @newrelic.agent.background_task(name='log-receiver', group='QueueConsumer')
     def on_message(self, ch, method, props, body):
         logger.debug("Message received")
         try:
