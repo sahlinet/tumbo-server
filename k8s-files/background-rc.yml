@@ -3,7 +3,6 @@ kind: ReplicationController
 metadata:
   creationTimestamp: null
   labels:
-    io.rancher.scheduler.affinity:host_label: type=worker
     service: background
   name: background
   namespace: tumbo
@@ -18,46 +17,40 @@ spec:
         service: background
     spec:
       containers:
+      - envFrom:
+        configMapRef:
+          name: tumbo-config
       - env:
         - name: MODE
           value: background
         - name: ADMIN_PASSWORD
-          value: planet
-        - name: DB_HOST
-          value: $${DB_PORT_5432_TCP_ADDR}
-        - name: DB_NAME
-          value: planet
-        - name: DB_PASS
-          value: $${DB_ENV_PASSWORD}
-        - name: DB_PORT
-          value: $${DB_PORT_5432_TCP_PORT}
-        - name: DB_USER
-          value: planet
-        - name: JOBSTOREDB_NAME
-          value: $${JOBSTOREDB_ENV_DB_NAME}
-        - name: JOBSTOREDB_USER
-          value: $${JOBSTOREDB_ENV_DB_USER}
+          valueFrom:
+            secretKeyRef:
+              name: passwords
+              key: adminpw
         - name: JOBSTOREDB_PASS
-          value: $${JOBSTOREDB_ENV_PASSWORD}
-        - name: JOBSTOREDB_PORT
-          value: $${JOBSTOREDB_PORT_5432_TCP_PORT}
-        - name: JOBSTOREDB_HOST
-          value: $${JOBSTOREDB_PORT_5432_TCP_ADDR}
-        - name: TUMBO_WORKER_IMPLEMENTATION
-          value: core.executors.worker_engines.rancher.RancherApiExecutor
+          valueFrom:
+            secretKeyRef:
+              name: passwords
+              key: jobstoredbpw
         - name: RABBITMQ_ADMIN_PASSWORD
-          value: $${QUEUE_ENV_RABBITMQ_PASS}
-        - name: RABBITMQ_ADMIN_USER
-          value: admin
-        - name: TUMBO_DOCKER_MEM_LIMIT
-          value: '"128m"'
-        - name: TUMBO_DOCKER_IMAGE
-          value: philipsahli/tumbo-worker:v0.2.4
-        image: philipsahli/tumbo-server:v0.2.4
-        imagePullPolicy: ""
+          valueFrom:
+            secretKeyRef:
+              name: passwords
+              key: rabbitmqadminpw
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: passwords
+              key: redispw
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: passwords
+              key: dbpw
+        image: philipsahli/tumbo-server:kubernetes
+        imagePullPolicy: "Always"
         name: background
-        ports:
-        - containerPort: 80
         resources: {}
       restartPolicy: Always
       serviceAccountName: ""

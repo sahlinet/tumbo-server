@@ -19,11 +19,16 @@ spec:
       containers:
       - env:
         - name: DB_NAME
-          value: store
+          value: jobstore
         - name: DB_USER
-          value: store
+          value: jobstore
         - name: SUPERUSER
           value: "true"
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: passwords
+              key: jobstoredbpw
         image: philipsahli/postgresql-test
         imagePullPolicy: ""
         name: jobstoredb

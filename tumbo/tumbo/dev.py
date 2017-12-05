@@ -12,7 +12,7 @@ if os.environ.get('CI', False):
 
 else:
     redis_pass = os.environ.get('CACHE_ENV_REDIS_PASS', None)
-    if redis_pass:
+    if not redis_pass:
         REDIS_URL = "redis://:%s@127.0.0.1:6379/1" % redis_pass
     else:
         REDIS_URL = "redis://127.0.0.1:6379/1"
@@ -86,7 +86,7 @@ TUMBO_PLUGINS_CONFIG = {
 
 TUMBO_SCHEDULE_JOBSTORE = "sqlite:////tmp/jobstore.db"
 
-REDIS_METRICS['PASSWORD'] = os.environ.get('CACHE_ENV_REDIS_PASS', None)
+#REDIS_METRICS['PASSWORD'] = os.environ.get('CACHE_ENV_REDIS_PASS', None)
 
 #TEMPLATE_LOADERS += (
 #     'core.loader.DevLocalRepositoryPathLoader',
