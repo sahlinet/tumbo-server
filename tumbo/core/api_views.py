@@ -29,7 +29,7 @@ from core.importer import import_base
 from core.models import Base, Apy, Setting, TransportEndpoint, Transaction
 from core.api_serializers import PublicApySerializer, ApySerializer, BaseSerializer, SettingSerializer, TransportEndpointSerializer, TransactionSerializer
 from core.utils import check_code
-from core.views import DjendExecView
+from core.views import ExecView
 
 User = get_user_model()
 
@@ -187,14 +187,14 @@ class ApyExecutionViewSet(viewsets.ModelViewSet):
 
         # public and owner
         if apy_obj.public or apy_obj.base.user == self.request.user:
-            return DjendExecView.as_view()(self.request, **kwargs)
+            return ExecView.as_view()(self.request, **kwargs)
 
         # shared key
         if request.GET.has_key('shared_key'):
             shared_key = request.GET.get('shared_key', None)
             if apy_obj.base.uuid == shared_key:
                 #request.session['shared_key'] = shared_key
-                return DjendExecView.as_view()(self.request, **kwargs)
+                return ExecView.as_view()(self.request, **kwargs)
         raise Http404
 
 

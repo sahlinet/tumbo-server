@@ -4,7 +4,8 @@
 
 ## Base
 
-A Base is a runtime unit and is running in an isolated environment. It can have many Execs.
+A Base is a runtime unit and is running in an isolated environment. It can have multiple Execs.
+
 
 ### Start and Stop
 
@@ -16,6 +17,42 @@ On the Base page you can export the configuration into a zip file. Later you
 can create or update the base on the same or on other platform.
 
 > If a Base contains a lot of static files, export and import might fail because of timeouts!
+
+* * *
+
+## CLI
+
+The CLI is an alternative to the Web UI and support almost the same features. It can help you to automate tasks.
+
+    $ tumbo-cli.py
+    Usage:
+    tumbo-cli.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage] [--settings=tumbo.dev]
+    tumbo-cli.py server kubernetes run [--context=context] [--ingress]
+    tumbo-cli.py server kubernetes delete [--context=context]
+    tumbo-cli.py server docker run [--stop-after=<seconds>] [--ngrok-hostname=host] [--ngrok-authtoken=token]
+    tumbo-cli.py server docker stop
+    tumbo-cli.py server docker build
+    tumbo-cli.py server docker pull
+    tumbo-cli.py server docker url
+    tumbo-cli.py server docker logs
+    tumbo-cli.py env list
+    tumbo-cli.py env <env-id> login <url>
+    tumbo-cli.py env <env-id> logout
+    tumbo-cli.py env <env-id> active
+    tumbo-cli.py env <env-id> open
+    tumbo-cli.py project list [--env=<env>]
+    tumbo-cli.py project <base-name> show [--env=<env>]
+    tumbo-cli.py project <base-name> open [--env=<env>]
+    tumbo-cli.py project <base-name> start [--env=<env>]
+    tumbo-cli.py project <base-name> stop [--env=<env>]
+    tumbo-cli.py project <base-name> restart [--env=<env>]
+    tumbo-cli.py project <base-name> destroy [--env=<env>]
+    tumbo-cli.py project <base-name> delete [--env=<env>]
+    tumbo-cli.py project <base-name> create [--env=<env>]
+    tumbo-cli.py project <base-name> function <function-name> execute [--async] [--public] [--nocolor] [--env=<env>]
+    tumbo-cli.py project <base-name> function <function-name> create [--env=<env>]
+    tumbo-cli.py project <base-name> function <function-name> edit [--env=<env>]
+    tumbo-cli.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>] [--nocolor] [--env=<env>]
 
 * * *
 
@@ -93,6 +130,21 @@ The log messages are attached to the transaction and Tumbo's *CLi* displays the 
 
     tumbo-cli.py project helloworld transactions
 
+### Install packages
+
+Often your application has dependencies of other software. Tumbo provides following two methods to install software. Both methods return the command's output.
+
+#### OS Packages
+
+    self.package_install("packageA")
+
+#### Python Packages
+
+    self.pip_install("packageA")
+
+or
+
+    self.pip_install("packageA==0.2.1")
 
 ### Siblings
 
@@ -222,7 +274,7 @@ wait until the `status` is `FINISHED`.
 
 ### Schedules
 
-Add in the UI a configuration for a scheduled execution of a function. For example `*/30 * * *` (`second minute our day_of_week`).
+Add in the UI a configuration for a scheduled execution of a function. For example `0 */5 * * *` for every five minutes. (`second minute hour day_of_week`).
 
 
 * * *
@@ -391,4 +443,4 @@ The token can be grabbed from your profile page.
 
 ### API Docs
 
-<a target="_blank" href="{% url 'django.swagger.base.view' %}#!/api">API Documentation</a>
+<a target="_blank" href="{% url 'api-docs' %}#!/api">API Documentation</a>

@@ -50,6 +50,8 @@ test:
     - docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test ui --settings=tumbo.dev"
     #
     - sh -x bin/build-worker.sh
+    # kill redis-server from circleci
+    - sudo pkill redis-server
     #
     - python cli/tumbo-cli.py server docker run:
         background: true
@@ -60,6 +62,14 @@ test:
     - pkill python
     #
 deployment:
+  feature:
+    branch: kubernetes
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker tag tumboserver_app philipsahli/tumbo-server:kubernetes
+      - docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:kubernetes
+      - docker push philipsahli/tumbo-server:kubernetes
+      - docker push philipsahli/tumbo-worker:kubernetes
   master:
     branch: master
     commands:

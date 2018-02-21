@@ -13,6 +13,7 @@ class ContainerNotFound(Exception):
 
 
 class BaseExecutor(object):
+
     def __init__(self, *args, **kwargs):
         self.vhost = kwargs['vhost']
         self.base_name = kwargs['base_name']
@@ -21,10 +22,13 @@ class BaseExecutor(object):
         self.executor = kwargs['executor']
         self.secret = kwargs['secret']
 
+        self.name = self._get_name()
+
+    def _get_name(self):
         # container name, must be unique, therefore we use a mix from site's domain name and executor
         slug = "worker-%s-%i-%s" % (Site.objects.get_current().domain,
             random.randrange(1,900000), self.base_name)
-        self.name = slug.replace("_", "-").replace(".", "-")
+        return slug.replace("_", "-").replace(".", "-")
 
     def addresses(self, id, port=None):
         return {

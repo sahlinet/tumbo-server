@@ -18,10 +18,17 @@ spec:
     spec:
       containers:
       - image: tutum/rabbitmq
+        env:
+        - name: RABBITMQ_PASS
+          valueFrom:
+            secretKeyRef:
+              name: passwords
+              key: rabbitmqadminpw
         imagePullPolicy: ""
         name: queue
         ports:
         - containerPort: 5672
+        - containerPort: 15672
         resources: {}
       restartPolicy: Always
       serviceAccountName: ""
