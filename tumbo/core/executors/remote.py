@@ -7,6 +7,7 @@ import logging
 import sys
 import traceback
 import base64
+import sh
 
 from bunch import Bunch
 
@@ -84,8 +85,8 @@ def distribute(event, body, vhost, username, password):
             )
 
             self.channel = self.connection.channel()
-            self.channel.exchange_declare(exchange=CONFIGURATION_QUEUE, type='fanout')
-            self.channel.exchange_declare(exchange=FOREIGN_CONFIGURATION_QUEUE, type='fanout')
+            self.channel.exchange_declare(exchange=CONFIGURATION_QUEUE, exchange_type='fanout')
+            self.channel.exchange_declare(exchange=FOREIGN_CONFIGURATION_QUEUE, exchange_type='fanout')
 
 
         def call(self, body):
@@ -171,7 +172,7 @@ def call_rpc_client(apy, vhost, username, password, async=False):
                                        routing_key=RPC_QUEUE,
                                        properties=properties,
                                        body=str(n))
-            logger.info("Message published to: %s:%s" %
+            logger.debug("Message published to: %s:%s" %
                         (self.vhost, RPC_QUEUE))
             while self.response is None and not self.async:
                 self.connection.process_data_events()
@@ -372,8 +373,6 @@ def log_to_queue(tid, level, msg):
                           ))
     channel.close()
     channel.connection.close()
-    del channel.connection
-    del channel
 
 
 def info(tid, msg):
@@ -390,6 +389,21 @@ def debug(tid, msg):
 
 def error(tid, msg):
     log_to_queue(tid, logging.ERROR, msg)
+
+from sys import platform as _platform
+def package_install(package_name):
+
+    if _platform == "linux" or _platform == "linux2":
+        return sh.yum("install", "-y", package_name)
+    elif _platform == "darwin":
+        return sh.brew("install", package_name)
+
+def pip_install(package_name):
+    output = sh.pip("freeze", package_name)
+    if package_name in output:
+        return "%s already installed" % package_name
+    else:
+        return sh.pip("install", package_name)
 
 
 def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfig={}):
@@ -457,30 +471,32 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
                 # attach foreign_functions
                 func.foreigns = Bunch(foreign_functions)
 
+                func.package_install = package_install
+                func.pip_install = pip_install
+
                 # attach siblings
                 func.siblings = Bunch(functions)
 
                 if model['fields']['name'] != "init":
-                    # attach plugins
+                    # attach plugins but not to init function
                     plugins = PluginRegistry()
                     for plugin in plugins.all_plugins:
                         try:
-                            logger.info("%s: Attach with settings: %s" % (plugin.name, pluginconfig[plugin.name].keys()))
+                            logger.debug("%s: Attach with settings: %s" % (plugin.name, pluginconfig[plugin.name].keys()))
                             setattr(func, plugin.shortname, plugin.attach_worker(**pluginconfig[plugin.name]))
                             if not hasattr(func, plugin.shortname):
                                 logger.warning("Func is None")
-                            logger.info("%s: Func attached to _do" % plugin.shortname)
+                            logger.debug("%s: Func attached to _do" % plugin.shortname)
                         except Exception, e:
                             logger.exception("%s: Not able to attach, pluginconfig is: %s" % (plugin, pluginconfig))
 
                 # execution
                 returned = func(func)
-                logger.info("Returned is of type: %s" % type(returned))
+                logger.debug("Returned is of type: %s" % type(returned))
                 if isinstance(returned, responses.Response):
                     # serialize
                     response_class = returned.__class__.__name__
                     returned = str(returned)
-                    #returned = returned
 
             except Exception, e:
                 logger.exception(e)

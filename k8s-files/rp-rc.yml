@@ -3,8 +3,6 @@ kind: ReplicationController
 metadata:
   creationTimestamp: null
   labels:
-    io.rancher.container.pull_image: always
-    io.rancher.scheduler.affinity:host_label: type=worker
     service: rp
   name: rp
   namespace: tumbo
@@ -18,34 +16,41 @@ spec:
       labels:
         service: rp
     spec:
+      nodeSelector:
+        type: entrypoint
       containers:
       - env:
+        - name: SERVERNAME
+          value: "tumbo-v2.sahli.net"
+        - name: VHOST_1_SERVERNAME
+          value: "tumbo-v2.sahli.net"
         - name: VHOST_1_SSL
+          value: "False"
+        - name: VHOST_1_PROXYCONF_notify_plain
           value: "True"
+        - name: VHOST_1_PROXYCONF_all_proxy_pass
+          value: "http://app:80"
+        - name: VHOST_1_PROXYCONF_all_location
+          value: "/"
+        - name: VHOST_1_PROXYCONF_notify_proxy_pass
+          value: "http://app:80"
         - name: VHOST_1_PROXYCONF_notify_plain
           value: "True"
         - name: VHOST_1_PROXYCONF_notify_location
-          value: /fastapp/dropbox_notify/
+          value: "/core/dashboard/dropbox_notify/"
         image: philipsahli/nginx-rp:latest
         imagePullPolicy: ""
         name: rp
         ports:
         - containerPort: 80
-        - containerPort: 443
-        resources: {}
+          containerPort: 443
         volumeMounts:
         - mountPath: /etc/letsencrypt/
-          name: varcertstumbo.sahli.net
-        - mountPath: /etc/nginx/ssl
-          name: etcnginxssl
+          name: certs
+      volumes:
+      - name: certs
+        emptyDir: {}
       restartPolicy: Always
       serviceAccountName: ""
-      volumes:
-      - hostPath:
-          path: /var/certs/tumbo.sahli.net
-        name: varcertstumbo.sahli.net
-      - hostPath:
-          path: /etc/nginx/ssl
-        name: etcnginxssl
 status:
   replicas: 0

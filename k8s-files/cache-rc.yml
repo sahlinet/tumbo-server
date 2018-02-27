@@ -18,10 +18,16 @@ spec:
     spec:
       containers:
       - image: tutum/redis
+        env:
+        - name: REDIS_PASS
+          valueFrom:
+            secretKeyRef:
+              name: passwords
+              key: redispw
         imagePullPolicy: ""
         name: cache
         ports:
-        - containerPort: 5672
+        - containerPort: 6379
         resources: {}
       restartPolicy: Always
       serviceAccountName: ""

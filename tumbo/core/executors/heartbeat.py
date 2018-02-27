@@ -47,12 +47,15 @@ def log_mem(**kwargs):
         while True:
             m = p.memory_info()
 
-            slug = "Background %s %s rss" % (socket.gethostname(), name)
-            set_metric(slug, float(m.rss)/(1024*1024)+50, expire=86400)
-            slug = "Background %s %s vms" % (socket.gethostname(), name)
-            set_metric(slug, float(m.vms)/(1024*1024)+50, expire=86400)
+            try:
+                slug = "Background %s %s rss" % (socket.gethostname(), name)
+                set_metric(slug, float(m.rss)/(1024*1024)+50, expire=86400)
+                slug = "Background %s %s vms" % (socket.gethostname(), name)
+                set_metric(slug, float(m.vms)/(1024*1024)+50, expire=86400)
 
-            logger.debug("Saving rss/vms for background process '%s'" % name)
+                logger.debug("Saving rss/vms for background process '%s'" % name)
+            except Exception, e:
+                logger.error(e)
 
             time.sleep(30)
     except Exception, e:
@@ -216,7 +219,11 @@ class HeartbeatThread(CommunicationThread):
             slug = vhost.replace("/", "")+"-rss"
             # logger.info("Sent metric for slug %s" % slug)
             from redis_metrics import set_metric
-            set_metric(slug, int(process.rss)/1024, expire=86400)
+
+            try:
+                set_metric(slug, int(process.rss)/1024, expire=86400)
+            except Exception, e:
+                logger.warn(e)
 
             #logger.info(data['ready_for_init'], data['in_sync'])
 
@@ -286,8 +293,8 @@ class HeartbeatThread(CommunicationThread):
                     request = request_factory.get(url, data={'base': base_obj.name, 'id': init.id})
                     request.user = get_user_model().objects.get(username='admin')
 
-                    from core.views import DjendExecView
-                    view = DjendExecView()
+                    from core.views import ExecView
+                    view = ExecView()
                     response = view.get(request, base=base_obj.name, id=init.id)
                     logger.info("Init method called for base %s, response_code: %s" % (base_obj.name, response.status_code))
 

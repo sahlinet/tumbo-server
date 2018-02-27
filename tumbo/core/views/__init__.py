@@ -9,6 +9,7 @@ from StringIO import StringIO
 
 from datetime import datetime, timedelta
 
+from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.contrib import messages
@@ -75,23 +76,24 @@ class ResponseUnavailableViewMixing():
     def verify(self, request, base_model):
         if not base_model.state:
             response = HttpResponse()
-            if "html" is request.META.get('HTTP_ACCEPT', None):
-                response.content_type = "text/html"
-                response.content = "Content cannot be delivered"
+            if "html" in request.META.get('HTTP_ACCEPT', None):
+                #response.content_type = "text/html"
+                #response.content = "Function cannot be executed"
+                response = render_to_response('503.html', {})
             response.status_code = 503
             return response
         else:
             return None
 
 
-class DjendMixin(object):
+class Mixin(object):
 
     def connection(self, request):
         logger.debug("Creating connection for %s" % request.user)
         return Connection(request.user.authprofile.dropbox_access_token)
 
 
-class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
+class ExecView(View, ResponseUnavailableViewMixing, Mixin):
     STATE_OK = "OK"
     STATE_NOK = "NOK"
     STATE_NOT_FOUND = "NOT_FOUND"
@@ -292,7 +294,7 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
             returned = json.loads(data['returned'])
             data['returned'] = returned
         except Exception, e:
-            logger.warn("returned data could not be loaded (%s)" % repr(e))
+            logger.debug("returned data could not be loaded as json (%s)" % repr(e))
             transaction.tout = json.dumps(data)
             transaction.status = FINISHED
             transaction.save()
@@ -315,14 +317,14 @@ class DjendExecView(View, ResponseUnavailableViewMixing, DjendMixin):
 
     @method_decorator(csrf_exempt)
     def post(self, request, *args, **kwargs):
-        return DjendExecView.get(self, request, *args, **kwargs)
+        return ExecView.get(self, request, *args, **kwargs)
 
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
-        return super(DjendExecView, self).dispatch(*args, **kwargs)
+        return super(ExecView, self).dispatch(*args, **kwargs)
 
 
-class DjendSharedView(View, ContextMixin):
+class SharedView(View, ContextMixin):
 
     def get(self, request, *args, **kwargs):
         context = RequestContext(request)
@@ -353,7 +355,7 @@ class DjendSharedView(View, ContextMixin):
         return HttpResponse(rs)
 
 
-class DjendBaseCreateView(View):
+class BaseCreateView(View):
 
     def post(self, request, *args, **kwargs):
 
@@ -371,9 +373,9 @@ class DjendBaseCreateView(View):
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
-        return super(DjendBaseCreateView, self).dispatch(*args, **kwargs)
+        return super(BaseCreateView, self).dispatch(*args, **kwargs)
 
-class DjendBaseDeleteView(View):
+class BaseDeleteView(View):
 
     def post(self, request, *args, **kwargs):
         base = Base.objects.get(name=kwargs['base'], user=request.user)
@@ -383,10 +385,10 @@ class DjendBaseDeleteView(View):
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
-        return super(DjendBaseDeleteView, self).dispatch(*args, **kwargs)
+        return super(BaseDeleteView, self).dispatch(*args, **kwargs)
 
 
-class DjendBaseSettingsView(View):
+class BaseSettingsView(View):
 
     def get(self, request, *args, **kwargs):
         base = Base.objects.get(name=kwargs['base'])
@@ -418,10 +420,10 @@ class DjendBaseSettingsView(View):
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
-        return super(DjendBaseSettingsView, self).dispatch(*args, **kwargs)
+        return super(BaseSettingsView, self).dispatch(*args, **kwargs)
 
 
-class DjendExecDeleteView(View):
+class ExecDeleteView(View):
 
     def post(self, request, *args, **kwargs):
         base = get_object_or_404(Base, name=kwargs['base'], user=User.objects.get(username=request.user.username))
@@ -439,15 +441,15 @@ class DjendExecDeleteView(View):
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
-        return super(DjendExecDeleteView, self).dispatch(*args, **kwargs)
+        return super(ExecDeleteView, self).dispatch(*args, **kwargs)
 
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
-        return super(DjendExecRenameView, self).dispatch(*args, **kwargs)
+        return super(ExecRenameView, self).dispatch(*args, **kwargs)
 
 
-class DjendBaseRenameView(View):
+class BaseRenameView(View):
 
     def post(self, request, *args, **kwargs):
         base = get_object_or_404(Base, name=kwargs['base'], user=User.objects.get(username=request.user.username))
@@ -458,10 +460,10 @@ class DjendBaseRenameView(View):
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
-        return super(DjendBaseRenameView, self).dispatch(*args, **kwargs)
+        return super(BaseRenameView, self).dispatch(*args, **kwargs)
 
 
-class DjendBaseSaveView(View):
+class BaseSaveView(View):
 
     def post(self, request, *args, **kwargs):
         base = get_object_or_404(Base, name=kwargs['base'], user=User.objects.get(username=request.user.username))
@@ -493,10 +495,10 @@ class DjendBaseSaveView(View):
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
-        return super(DjendBaseSaveView, self).dispatch(*args, **kwargs)
+        return super(BaseSaveView, self).dispatch(*args, **kwargs)
 
 
-class DjendBaseView(TemplateView, ContextMixin):
+class BaseView(TemplateView, ContextMixin):
 
     def _refresh_single_base(self, base):
         base = Base.objects.get(name=base)
@@ -510,7 +512,7 @@ class DjendBaseView(TemplateView, ContextMixin):
         # redirect to shared view
         if not request.user.is_authenticated():
             if request.GET.has_key('shared_key') or request.session.__contains__("shared_key"):
-                return DjendSharedView.as_view()(request, *args, **kwargs)
+                return SharedView.as_view()(request, *args, **kwargs)
 
         try:
             # refresh bases from dropbox
@@ -566,10 +568,10 @@ class DjendBaseView(TemplateView, ContextMixin):
         return HttpResponse(rs)
 
 
-class DjendView(TemplateView):
+class View(TemplateView):
 
     def get_context_data(self, **kwargs):
-        context = super(DjendView, self).get_context_data(**kwargs)
+        context = super(View, self).get_context_data(**kwargs)
         context['bases'] = Base.objects.filter(user=self.request.user).order_by('name')
         context['public_bases'] = Base.objects.filter(public=True).order_by('name')
 
@@ -582,7 +584,7 @@ class DjendView(TemplateView):
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
-        return super(DjendView, self).dispatch(*args, **kwargs)
+        return super(View, self).dispatch(*args, **kwargs)
 
 
 def get_dropbox_auth_flow(web_app_session):

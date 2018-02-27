@@ -20,7 +20,7 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-class DjendStaticView(ResponseUnavailableViewMixing, View):
+class StaticView(ResponseUnavailableViewMixing, View):
 
     def _render_html(self, request, t, **kwargs):
         if isinstance(t, str):

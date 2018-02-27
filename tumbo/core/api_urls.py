@@ -51,7 +51,7 @@ urlpatterns = patterns('',
     url(r'^api-token-auth/', 'rest_framework.authtoken.views.obtain_auth_token'),
 
     # api-docs
-    url(r'^api-docs', get_swagger_view(title='Tumbo API'))
+    url(r'^api-docs', get_swagger_view(title='Tumbo API'), name='api-docs')
 )
 
 from rest_framework.urlpatterns import format_suffix_patterns

@@ -6,9 +6,14 @@ metadata:
   namespace: tumbo
 spec:
   ports:
-  - name: ""
+  - name: "communication"
     nodePort: 0
     port: 5672
+    protocol: ""
+    targetPort: 0
+  - name: "management"
+    nodePort: 0
+    port: 15672
     protocol: ""
     targetPort: 0
   selector:

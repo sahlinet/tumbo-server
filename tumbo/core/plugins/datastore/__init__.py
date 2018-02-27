@@ -240,7 +240,7 @@ class PsqlDataStoreSingleton(PsqlDataStore):
 class DataStorePlugin(Plugin):
 
     def attach_worker(self, **kwargs):
-        logger.info("Attach to worker")
+        logger.debug("Attach to worker")
         return PsqlDataStoreSingleton(schema=kwargs['USER'],
                                       password=kwargs['PASSWORD'], **kwargs)
 
