@@ -78,5 +78,3 @@ output
 MANIFEST.in
 secrets/*
 *.retry
-
-k8s-files/**
