@@ -79,4 +79,4 @@ MANIFEST.in
 secrets/*
 *.retry
 
-config.ini
+*.ini
