@@ -78,3 +78,5 @@ output
 MANIFEST.in
 secrets/*
 *.retry
+
+config.ini
