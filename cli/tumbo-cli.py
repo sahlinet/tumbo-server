@@ -74,6 +74,7 @@ from pygments.formatters import Terminal256Formatter
 from docopt import docopt
 from tabulate import tabulate
 from ConfigParser import RawConfigParser
+from base64 import b64encode
 
 BASH = sh.Command("bash")
 PYTHON = sh.Command(sys.executable)
@@ -854,7 +855,8 @@ if __name__ == '__main__':
             print conf.sections()
             for each_section in conf.sections():
                 for (each_key, each_val) in conf.items(each_section):
-                    
+                    if each_val.startswith('b64:'):
+                        each_val = b64encode(each_val)
                     ini_dict[each_key.upper()] = each_val
 
             pprint.pprint(ini_dict)

@@ -24,7 +24,7 @@ items:
             - name: MODE
               value: web
             - name: NEWRELIC_LICENSE
-              value: bd80f971051885433a13f77eae8db909e0be6e98
+              value: bd80fp971051885433a13f77eae8db909e0be6e98
             - name: ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
