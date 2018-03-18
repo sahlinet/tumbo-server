@@ -21,7 +21,7 @@ ecdsa==0.10
 -e git+https://github.com/docker/docker-py.git@aa19d7b6609c6676e8258f6b900dea2eda1dbe95#egg=docker_py-master
 -e git+https://github.com/rpalacios/django-sequence-field.git#egg=django_sequence_field-master
 #
-gevent==1.0.1
+gevent==1.2.2
 greenlet==0.4.5
 gunicorn==19.6.0
 jsonfield==0.9.22
