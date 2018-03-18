@@ -4,9 +4,9 @@
 
 Usage:
   tumbo-cli.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage] [--settings=tumbo.dev]
-  tumbo-cli.py server kubernetes run [--context=context] [--ingress]
-  tumbo-cli.py server kubernetes delete [--context=context] [--partial]
-  tumbo-cli.py server kubernetes show [--context=context]
+  tumbo-cli.py server kubernetes run [--context=context] [--ingress] [--ini=ini_file]
+  tumbo-cli.py server kubernetes delete [--context=context] [--partial] [--ini=ini_file]
+  tumbo-cli.py server kubernetes show [--context=context] [--ini=ini_file]
   tumbo-cli.py server docker run [--stop-after=<seconds>] [--ngrok-hostname=host] [--ngrok-authtoken=token]
   tumbo-cli.py server docker stop
   tumbo-cli.py server docker build
@@ -74,7 +74,7 @@ from pygments.formatters import Terminal256Formatter
 from docopt import docopt
 from tabulate import tabulate
 from ConfigParser import RawConfigParser
-from base64 import b64encode
+from base64 import standard_b64encode
 
 BASH = sh.Command("bash")
 PYTHON = sh.Command(sys.executable)
@@ -88,6 +88,7 @@ if os.name == "nt":
 else:
     STDOUT="/dev/stdout"
     STDERR="/dev/stderr"
+
 
 try:
     import tumbo
@@ -520,6 +521,8 @@ def tolocaltime(dt):
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version="0.4.4")
+
+    ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
         try:
             ngrok = sh.Command("ngrok")
@@ -849,24 +852,26 @@ if __name__ == '__main__':
 
             
             conf = RawConfigParser()
-            conf.read('config.ini')
+            conf.read(ini)
             
             ini_dict = {}
-            print conf.sections()
+            #print conf.sections()
             for each_section in conf.sections():
                 for (each_key, each_val) in conf.items(each_section):
-                    if each_val.startswith('b64:'):
-                        each_val = b64encode(each_val)
+                    #print each_val
+                    #if each_val.startswith('b64:'):
+                    #    import pdb; pdb.set_trace()
+                    #    each_val = standard_b64encode(each_val)
                     ini_dict[each_key.upper()] = each_val
 
-            pprint.pprint(ini_dict)
+            #pprint.pprint(ini_dict)
 
             env = ini_dict
 
-            print env['HOST']
+            #print env['HOST']
 
             if arguments['show']:
-                print "Show Kubernetes Resources"
+                print "Show Kubernetes Resources\n"
 
                 print kubectl("get pods --namespace=tumbo".split())
             if arguments['run']:
