@@ -6,6 +6,7 @@ Usage:
   tumbo-cli.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage] [--settings=tumbo.dev]
   tumbo-cli.py server kubernetes run [--context=context] [--ingress]
   tumbo-cli.py server kubernetes delete [--context=context] [--partial]
+  tumbo-cli.py server kubernetes show [--context=context]
   tumbo-cli.py server docker run [--stop-after=<seconds>] [--ngrok-hostname=host] [--ngrok-authtoken=token]
   tumbo-cli.py server docker stop
   tumbo-cli.py server docker build
@@ -72,6 +73,7 @@ from pygments.formatters import Terminal256Formatter
 
 from docopt import docopt
 from tabulate import tabulate
+from ConfigParser import RawConfigParser
 
 BASH = sh.Command("bash")
 PYTHON = sh.Command(sys.executable)
@@ -844,6 +846,27 @@ if __name__ == '__main__':
                 "./k8s-files/cli/rp.yml"
                 ]
 
+            
+            conf = RawConfigParser()
+            conf.read('config.ini')
+            
+            ini_dict = {}
+            print conf.sections()
+            for each_section in conf.sections():
+                for (each_key, each_val) in conf.items(each_section):
+                    
+                    ini_dict[each_key.upper()] = each_val
+
+            pprint.pprint(ini_dict)
+
+            env = ini_dict
+
+            print env['HOST']
+
+            if arguments['show']:
+                print "Show Kubernetes Resources"
+
+                print kubectl("get pods --namespace=tumbo".split())
             if arguments['run']:
                 print "Starting Tumbo on Kubernetes"
                 try:
@@ -854,19 +877,13 @@ if __name__ == '__main__':
                     base = kubectl("create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=tumbo:default".split(), _out=STDOUT, _err=STDERR)
                 except sh.ErrorReturnCode_1:
                     pass
-                env = {
-                    #"HOST": "192.168.99.100",
-                    "HOST": "tumbo-v2.sahli.net",
-                    "FRONTEND_HOST": "tumbo-v2.sahli.net"
-                }
 
                 if arguments["--ingress"]:
                     cmd_list.append("./k8s-files/cli/ingress.yml")
 
                 for cmd in cmd_list:
                     base = kubectl(j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
-                    print base
-
+                    
                 time.sleep(5)
                 print kubectl("delete pods -l service=app --namespace=tumbo".split())
                 print kubectl("delete pods -l service=background --namespace=tumbo".split())
