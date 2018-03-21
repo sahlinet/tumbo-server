@@ -9,6 +9,9 @@ jobs:
       - run: docker info
       - run: pip install Markdown==2.6.6
       - run: pip install codacy-coverage
+      #
+      - run: sudo apt-get install postgresql-devel
+      #
       - run: pip install -r requirements.txt
       # TODO: coverage should be run in cotainer and data directory for output should be added as volume
       - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
@@ -16,9 +19,7 @@ jobs:
       - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
       - run: coverage xml
       - run: python-codacy-coverage -r coverage.xml
-      #
-      - run: sudo apt-get install postgresql-devel
-      #
+
       - run: pip install -r requirements-cli.txt
       #
       - run: sed -i 's|/var/run/docker.sock|/run/docker.sock|g' compose-files/docker-compose-app-docker_socket_exec.yml
