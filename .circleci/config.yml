@@ -1,10 +1,9 @@
 version: 2
 jobs:
   build:
-    docker:
-      - image: circleci/python:2.7.14-jessie-browsers
-        environment:
-            FRONTEND_HOST: "localhost"
+    machine: true
+    environment:
+      - FRONTEND_HOST: "localhost"
     steps:
       - checkout
       - run: docker info
