@@ -17,6 +17,8 @@ jobs:
       - run: coverage xml
       - run: python-codacy-coverage -r coverage.xml
       #
+      - run: sudo apt-get install postgresql-devel
+      #
       - run: pip install -r requirements-cli.txt
       #
       - run: sed -i 's|/var/run/docker.sock|/run/docker.sock|g' compose-files/docker-compose-app-docker_socket_exec.yml
