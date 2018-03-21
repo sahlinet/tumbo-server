@@ -8,8 +8,10 @@ jobs:
       - checkout
       - run: docker info
       # set VERSION
-      - run: echo 'export VERSION=${CIRCLE_TAG:=$CIRCLE_BRANCH}' >> $BASH_ENV 
+      - run: echo 'export FLOW_VERSION=${CIRCLE_TAG:=$CIRCLE_BRANCH}' >> $BASH_ENV
+      - run: echo 'export TUMBO_VERSION=`./cli/tumbo-cli.py --version`' >> $BASH_ENV
       - run: echo $VERSION
+      - run: echo $TUMBO_VERSION
       - run: pip install Markdown==2.6.6
       - run: pip install codacy-coverage
       #
@@ -56,7 +58,7 @@ jobs:
               DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa python cli/tumbo-cli.py server docker run
           background: true
           no_output_timeout: 3m
-      - run: sleep 240
+      - run: sleep 120
       - run: docker inspect tumboserver_app_1
       - run: curl --retry 10 --retry-delay 5 -v $(python cli/tumbo-cli.py server docker url)
       - run: pkill python
@@ -67,21 +69,31 @@ jobs:
       - run: "[ -z ${CIRCLE_TAG+x} ] || docker push philipsahli/tumbo-server:$VERSION"
       - run: "[ -z ${CIRCLE_TAG+x} ] || docker push philipsahli/tumbo-worker:$VERSION"
       - run: "[ -z ${CIRCLE_TAG+x} ] || pip install twine==1.11.0"
-      - run: "[ -z ${CIRCLE_TAG+x} ] || twine upload -r pypitest -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz"
+      - run: "[ -z ${CIRCLE_TAG+x} ] || twine upload -r $PYPI_HOST -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz"
+      - run: #./trigger-deploy.sh
+      
+  trigger_deploy:
+    machine: true
+    steps:
+      - run: docker info
 
 workflows:
   version: 2
-  build_and_test:
+  test:
     jobs:
       - build_test:
+          context: test
           filters:
             branches:
               only:
                 - develop
                 - /feature.*/
-      # - build_test:
-      #     filters:
-      #       branches:
-      #         ignore: /.*/
-      #       tags:
-      #         only: /^v.*/
+  release:
+    jobs:
+      - build_test:
+          context: live
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
