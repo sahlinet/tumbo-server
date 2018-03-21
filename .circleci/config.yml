@@ -38,6 +38,11 @@ jobs:
       - run: python cli/tumbo-cli.py server docker pull > /dev/null
       - run: python cli/tumbo-cli.py server docker build
 
+  test:
+    machine: true
+    environment:
+      - FRONTEND_HOST: "localhost"
+    steps:
       # Tests
       - run: mkdir shared
       - run: chown 1000:1000 shared
@@ -59,14 +64,25 @@ jobs:
       - run: curl --retry 10 --retry-delay 5 -v $(python cli/tumbo-cli.py server docker url)
       - run: pkill python
 
+  push:
+    machine: true
+    environment:
+      - FRONTEND_HOST: "localhost"
+    steps:
       - run: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - run: docker tag tumboserver_app philipsahli/tumbo-server:master
-      - run: docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:master
-      - run: docker push philipsahli/tumbo-server:master
-      - run: docker push philipsahli/tumbo-worker:master
+      - run: docker tag tumboserver_app philipsahli/tumbo-server:develop
+      - run: docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:develop
+      - run: docker push philipsahli/tumbo-server:develop
+      - run: docker push philipsahli/tumbo-worker:develop
 
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
+      - test:
+          requires:
+           - build
+      - push:
+          requires:
+           - test
