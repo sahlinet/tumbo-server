@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run: docker info
       # set VERSION
-      - run: echo 'export FLOW_VERSION=${CIRCLE_TAG:=$CIRCLE_BRANCH}' >> $BASH_ENV
+      - run: echo 'export VERSION=${CIRCLE_TAG:=$CIRCLE_BRANCH}' >> $BASH_ENV
       #- run: echo 'export TUMBO_VERSION=`./cli/tumbo-cli.py --version`' >> $BASH_ENV
       - run: echo $VERSION
       #- run: echo $TUMBO_VERSION
@@ -68,9 +68,9 @@ jobs:
           command: |
             if [ -n "$CIRCLE_TAG" ]; then
                  docker login -u $DOCKER_USER -p $DOCKER_PASS
-                 docker tag tumboserver_app philipsahli/tumbo-server:$VERSION
-                 docker push philipsahli/tumbo-server:$VERSION
-                 docker push philipsahli/tumbo-worker:$VERSION
+                 docker tag tumboserver_app philipsahli/tumbo-server:$CIRCLE_TAG
+                 docker push philipsahli/tumbo-server:$CIRCLE_TAG
+                 docker push philipsahli/tumbo-worker:$CIRCLE_TAG
 
                  pip install twine==1.11.0
                  twine upload -r $PYPI_HOST -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz
