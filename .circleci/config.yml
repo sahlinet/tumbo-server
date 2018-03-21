@@ -90,6 +90,7 @@ workflows:
               only:
                 - develop
                 - /feature.*/
+                - /hotfix.*/
   snapshot-release:
     jobs:
       - build_test:
