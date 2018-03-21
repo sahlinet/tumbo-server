@@ -62,13 +62,26 @@ jobs:
       - run: pkill python
 
       # Push
-      - run: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - run: docker tag tumboserver_app philipsahli/tumbo-server:$VERSION
-      - run: docker push philipsahli/tumbo-server:$VERSION
-      - run: docker push philipsahli/tumbo-worker:$VERSION
+      - run: "[ -z ${CIRCLE_TAG+x} ] || docker login -u $DOCKER_USER -p $DOCKER_PASS"
+      - run: "[ -z ${CIRCLE_TAG+x} ] || docker tag tumboserver_app philipsahli/tumbo-server:$VERSION"
+      - run: "[ -z ${CIRCLE_TAG+x} ] || docker push philipsahli/tumbo-server:$VERSION"
+      - run: "[ -z ${CIRCLE_TAG+x} ] || docker push philipsahli/tumbo-worker:$VERSION"
+      - run: "[ -z ${CIRCLE_TAG+x} ] || pip install twine==1.11.0"
+      - run: "[ -z ${CIRCLE_TAG+x} ] || twine upload -r pypitest -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz"
 
 workflows:
   version: 2
   build_and_test:
     jobs:
-      - build_test
+      - build_test:
+          filters:
+            branches:
+              only:
+                - develop
+                - /feature.*/
+      # - build_test:
+      #     filters:
+      #       branches:
+      #         ignore: /.*/
+      #       tags:
+      #         only: /^v.*/
