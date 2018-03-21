@@ -70,7 +70,6 @@ jobs:
       - run: "[ -z ${CIRCLE_TAG+x} ] || docker push philipsahli/tumbo-worker:$VERSION"
       - run: "[ -z ${CIRCLE_TAG+x} ] || pip install twine==1.11.0"
       - run: "[ -z ${CIRCLE_TAG+x} ] || twine upload -r $PYPI_HOST -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz"
-      - run: #./trigger-deploy.sh
       
   trigger_deploy:
     machine: true
