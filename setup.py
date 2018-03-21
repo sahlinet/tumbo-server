@@ -15,6 +15,12 @@ directories = glob.glob('compose-files/')
 for directory in directories:
         files = glob.glob(directory+'*')
         data_files.append(("tumbo_server/"+directory, files))
+directories = glob.glob('k8s-files/cli/')
+for directory in directories:
+        files = glob.glob(directory+'*')
+        data_files.append(("tumbo_server/"+directory, files))
+
+
 
 setup(name='tumbo-server',
     version=__VERSION__,
