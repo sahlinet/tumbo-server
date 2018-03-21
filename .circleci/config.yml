@@ -1,8 +1,7 @@
 version: 2
 jobs:
   build_test:
-    docker:
-      - image: docker:17.05.0-ce-git
+    machine: true
     environment:
       - FRONTEND_HOST: "localhost"
     steps:
