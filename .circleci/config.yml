@@ -53,7 +53,7 @@ jobs:
       #
       - run: 
           command: |
-              python cli/tumbo-cli.py server docker run
+              DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa python cli/tumbo-cli.py server docker run
           background: true
           no_output_timeout: 3m
       - run: sleep 240
