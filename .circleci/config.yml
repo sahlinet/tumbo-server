@@ -9,9 +9,9 @@ jobs:
       - run: docker info
       # set VERSION
       - run: echo 'export FLOW_VERSION=${CIRCLE_TAG:=$CIRCLE_BRANCH}' >> $BASH_ENV
-      - run: echo 'export TUMBO_VERSION=`./cli/tumbo-cli.py --version`' >> $BASH_ENV
+      #- run: echo 'export TUMBO_VERSION=`./cli/tumbo-cli.py --version`' >> $BASH_ENV
       - run: echo $VERSION
-      - run: echo $TUMBO_VERSION
+      #- run: echo $TUMBO_VERSION
       - run: pip install Markdown==2.6.6
       - run: pip install codacy-coverage
       #
