@@ -6,7 +6,6 @@ jobs:
       - FRONTEND_HOST: "localhost"
     steps:
       - checkout
-      - setup_remote_docker
       - run: docker info
       - run: pip install Markdown==2.6.6
       - run: pip install codacy-coverage
