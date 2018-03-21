@@ -1,0 +1,70 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:2.7.14-jessie-browsers
+        environment:
+            FRONTEND_HOST: "localhost"
+    steps:
+      - checkout
+      - run: docker info
+      - run: pip install Markdown==2.6.6
+      - run: pip install codacy-coverage
+      - run: pip install -r requirements.txt
+      # TODO: coverage should be run in cotainer and data directory for output should be added as volume
+      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
+      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
+      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
+      - run: coverage xml
+      - run: python-codacy-coverage -r coverage.xml
+      #
+      - run: pip install -r requirements-cli.txt
+      #
+      - run: sed -i 's|/var/run/docker.sock|/run/docker.sock|g' compose-files/docker-compose-app-docker_socket_exec.yml
+      - run: egrep sock compose-files/docker-compose-app-docker_socket_exec.yml
+      ## docs
+      - run: markdown_py -o html5 -f tumbo/ui/templates/docs_content.html docs/user_guide.md
+      - run: git config --global push.default current
+      - run: git config --global user.email "philip@sahli.net"
+      - run: git config --global user.name "Philip Sahli"
+      - run: git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
+        #- git push
+      #
+      - run: sudo chmod 777 /run/docker.sock
+      #
+      - run: bash bin/create_package.sh > /dev/null
+      - run: python cli/tumbo-cli.py server docker pull > /dev/null
+      - run: python cli/tumbo-cli.py server docker build
+
+      # Tests
+      - run: mkdir shared
+      - run: chown 1000:1000 shared
+      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test core --settings=tumbo.dev"
+      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test aaa --settings=tumbo.dev"
+      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test ui --settings=tumbo.dev"
+      #
+      - run: sh -x bin/build-worker.sh
+      # kill redis-server from circleci
+      - run: sudo pkill redis-server
+      #
+      - run: 
+          command: |
+              python cli/tumbo-cli.py server docker
+          background: true
+          no_output_timeout: 3m
+      - run: sleep 240
+      - run: docker inspect tumboserver_app_1
+      - run: curl --retry 10 --retry-delay 5 -v $(python cli/tumbo-cli.py server docker url)
+      - run: pkill python
+
+      - run: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - run: docker tag tumboserver_app philipsahli/tumbo-server:master
+      - run: docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:master
+      - run: docker push philipsahli/tumbo-server:master
+      - run: docker push philipsahli/tumbo-worker:master
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
