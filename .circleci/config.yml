@@ -7,6 +7,9 @@ jobs:
     steps:
       - checkout
       - run: docker info
+      # set VERSION
+      - run: echo 'export VERSION=${CIRCLE_TAG:=$CIRCLE_BRANCH}' >> $BASH_ENV 
+      - run: echo $VERSION
       - run: pip install Markdown==2.6.6
       - run: pip install codacy-coverage
       #
@@ -60,10 +63,9 @@ jobs:
 
       # Push
       - run: docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - run: docker tag tumboserver_app philipsahli/tumbo-server:$CIRCLE_BRANCH
-      - run: docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_BRANCH
-      - run: docker push philipsahli/tumbo-server:$CIRCLE_BRANCH
-      - run: docker push philipsahli/tumbo-worker:$CIRCLE_BRANCH
+      - run: docker tag tumboserver_app philipsahli/tumbo-server:$VERSION
+      - run: docker push philipsahli/tumbo-server:$VERSION
+      - run: docker push philipsahli/tumbo-worker:$VERSION
 
 workflows:
   version: 2
