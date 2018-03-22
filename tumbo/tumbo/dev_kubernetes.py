@@ -1,7 +1,11 @@
+import socket
+
 from settings import *
 
 from os.path import expanduser
 home = expanduser("~")
+
+ip = socket.gethostbyname(socket.gethostname())
 
 if os.environ.get('CI', False):
     CACHES = {
@@ -31,22 +35,15 @@ STATIC_URL = '/static/'
 RABBITMQ_HTTP_API_PORT = "15672"
 RABBITMQ_ADMIN_USER = "guest"
 RABBITMQ_ADMIN_PASSWORD = "guest"
-RABBITMQ_HOST = "localhost"
+RABBITMQ_HOST = "127.0.0.1"
 RABBITMQ_PORT = 5672
 
 DROPBOX_CONSUMER_KEY = os.environ['DROPBOX_CONSUMER_KEY']
 DROPBOX_CONSUMER_SECRET = os.environ['DROPBOX_CONSUMER_SECRET']
 DROPBOX_REDIRECT_URL = os.environ['DROPBOX_REDIRECT_URL']
 
-# Spawn
+# Set Executor
 TUMBO_WORKER_IMPLEMENTATION = "core.executors.worker_engines.kube.KubernetesExecutor"
-
-# Rancher
-#TUMBO_WORKER_IMPLEMENTATION = "core.executors.worker_engines.rancher.RancherApiExecutor"
-#RANCHER_ACCESS_KEY="0F91E6F0567CB4006008"
-#RANCHER_ACCESS_SECRET="8jHYKwWw5RSE72fGGvEF8UgbmtXLj62BzGKZwRvJ"
-#RANCHER_ENVIRONMENT_ID="1e1"
-#RANCHER_URL="http://192.168.99.1:8080"
 
 TUMBO_CORE_SENDER_PASSWORD = "h8h9h0h1h2h3"
 TUMBO_CORE_RECEIVER_PASSWORD = "h8h9h0h1h2h3"
@@ -58,13 +55,13 @@ STATIC_ROOT = "/static/"
 
 DEBUG = True
 # TODO: get from var
-#WORKER_RABBITMQ_HOST = "192.168.99.1"
-WORKER_RABBITMQ_HOST = "192.168.1.2"
+WORKER_RABBITMQ_HOST = ip
 WORKER_RABBITMQ_PORT = "5672"
 ALLOWED_HOSTS = "*"
 
 TUMBO_REPOSITORIES_PATH = home + "/workspace"
 TUMBO_DEV_STORAGE_DROPBOX_PATH = home + "/Dropbox/Apps/tumbo dev/"
+
 
 TUMBO_PLUGINS_CONFIG = {
     'core.plugins.stats': {},
@@ -74,15 +71,19 @@ TUMBO_PLUGINS_CONFIG = {
         'token': os.environ.get('DIGITALOCEAN_CONFIG', None),
         'zone': os.environ.get('DIGITALOCEAN_ZONE', None)
     },
-    'core.plugins.datastore': {
-        'ENGINE': "django.db.backends.postgresql_psycopg2",
-        'HOST': "127.0.0.1",
-        'PORT': "15432",
-        'NAME': "store",
-        'USER': "store",
-        'PASSWORD': "store123"
-    }
 }
+
+STORE_ENABLED = False
+if STORE_ENABLED:
+    TUMBO_PLUGINS_CONFIG['core.plugins.datastore'] = {
+	    'ENGINE': "django.db.backends.postgresql_psycopg2",
+	    'HOST': "127.0.0.1",
+	    'PORT': "15432",
+	    'NAME': "store",
+	    'USER': "store",
+	    'PASSWORD': "store123"
+	}
+
 
 TUMBO_SCHEDULE_JOBSTORE = "sqlite:////tmp/jobstore.db"
 

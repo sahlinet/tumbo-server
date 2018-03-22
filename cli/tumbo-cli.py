@@ -648,7 +648,7 @@ if __name__ == '__main__':
                     sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                     print "Starting rabbitmq"
-                    cmd_args = "/usr/local/Cellar/rabbitmq/3.6.6/sbin/rabbitmq-server"
+                    cmd_args = "/usr/local/Cellar/rabbitmq/3.7.4/sbin/rabbitmq-server"
                     sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                 print "Starting Development Server"

@@ -14,9 +14,24 @@ Released Version from PyPi
 
 # Modes
 
-## Dev Server with workers on Kubernetes
+## Development Server with Workers on Kubernetes
 
-    tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes
+    brew install rabbitmq
+    brew install postgresql
+    brew install redis
+
+    /usr/local/Cellar/rabbitmq/3.7.4/sbin/rabbitmq-plugins enable rabbitmq_management
+
+We start the rabbitmq-server with listening on all interfaces. This allows to login with Tumbo with the `guest` account over loopback interface and the workers from remote.
+
+    RABBITMQ_NODE_IP_ADDRESS=0.0.0.0 /usr/local/Cellar/rabbitmq/3.7.4/sbin/rabbitmq-server
+
+    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a CACHE_ENV_REDIS_PASS=asdf tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes --autostart
+
+Then login on http://localhost:8000/ with the following credentials: 
+
+    username: admin
+    password: adminpw
 
 ## Minikube
 
@@ -40,4 +55,9 @@ Deploy Tumbo.
 
 ## Kubernetes Cluster 
 
-    tumbo-cli.py server kubernetes run --context=kubernetes-admin@kubernetes
+    tumbo-cli.py server kubernetes run --context=kubernetes-admin@kubernetes --ini=cluster.ini
+
+## Undeploy Tumbo
+
+   tumbo-cli.py server kubernetes delete --context=minikube --ini=minikube.ini
+   

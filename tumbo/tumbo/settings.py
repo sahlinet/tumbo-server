@@ -82,7 +82,7 @@ else:
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': "tumbo",
         'HOST': "localhost",
-        'PORT': 32768,
+        'PORT': 5432,
         'USER': "store",
         'PASSWORD': "tumbodev123"
         }
