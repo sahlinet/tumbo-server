@@ -95,10 +95,12 @@ try:
     tumbo_path = os.path.join(os.path.dirname(tumbo.__file__), "..")
     manage_py = "%s/tumbo/manage.py" % tumbo_path
     compose_files_path = sys.prefix+"/tumbo_server/compose-files"
+    k8s_files_path = sys.prefix+"/tumbo_server/k8s-files/cli"
 except ImportError:
     tumbo_path = os.path.abspath(".")
     manage_py = "tumbo/manage.py"
     compose_files_path = "compose-files"
+    k8s_files_path = "k8s-files/cli"
 
 compose_file = "%s/docker-compose-app-docker_socket_exec.yml" % compose_files_path
 compose_file_base = "%s/docker-compose-base.yml" % compose_files_path
@@ -520,7 +522,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.10-dev")
+    arguments = docopt(__doc__, version="0.4.11-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -843,11 +845,11 @@ if __name__ == '__main__':
             kubectl(cmd.split())
             # kubernetes run
             cmd_list = [
-                "./k8s-files/cli/config.yml",
-                "./k8s-files/cli/passwords.yml",
-                "./k8s-files/cli/base.yml",
-                "./k8s-files/cli/core.yml",
-                "./k8s-files/cli/rp.yml"
+                os.path.join(k8s_files_path, "config.yml"),
+                os.path.join(k8s_files_path, "passwords.yml"),
+                os.path.join(k8s_files_path, "base.yml"),
+                os.path.join(k8s_files_path, "core.yml"),
+                os.path.join(k8s_files_path, "rp.yml")
                 ]
 
             

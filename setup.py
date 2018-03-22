@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import glob
 import os
 
-__VERSION__ = "0.4.10-dev"
+__VERSION__ = "0.4.11-dev"
 
 
 # http://stackoverflow.com/questions/14399534/how-can-i-reference-requirements-txt-for-the-install-requires-kwarg-in-setuptool
@@ -15,6 +15,12 @@ directories = glob.glob('compose-files/')
 for directory in directories:
         files = glob.glob(directory+'*')
         data_files.append(("tumbo_server/"+directory, files))
+directories = glob.glob('k8s-files/cli/')
+for directory in directories:
+        files = glob.glob(directory+'*')
+        data_files.append(("tumbo_server/"+directory, files))
+
+
 
 setup(name='tumbo-server',
     version=__VERSION__,
