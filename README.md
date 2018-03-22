@@ -1,8 +1,8 @@
 # Tumbo Server - Highly flexible Application Runtime Platform
 
-`develop` [![Circle  CI (master)](https://circleci.com/gh/sahlinet/tumbo-server/tree/develop.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/sahlinet/tumbo-server/tree/develop)
+`develop` [![Circle  CI (master)](https://img.shields.io/circleci/project/github/sahlinet/tumbo-server/develop.svg)](https://circleci.com/gh/sahlinet/tumbo-server/tree/develop)
 
-`master` [![Circle  CI (master)](https://circleci.com/gh/sahlinet/tumbo-server/tree/master.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/sahlinet/tumbo-server/tree/master)
+`master` [![Circle  CI (master)](https://img.shields.io/circleci/project/github/sahlinet/tumbo-server/master.svg)](https://circleci.com/gh/sahlinet/tumbo-server/tree/master)
 
 [![Code Climate](https://codeclimate.com/github/sahlinet/tumbo-server/badges/gpa.svg)](https://codeclimate.com/github/sahlinet/tumbo-server) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b5a70b9303884bad87271b81fb78c11a)](https://www.codacy.com/app/philipsahli/tumbo-server?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sahlinet/tumbo-server&amp;utm_campaign=Badge_Grade) [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/b5a70b9303884bad87271b81fb78c11a)](https://www.codacy.com/app/philipsahli/tumbo-server?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sahlinet/tumbo-server&amp;utm_campaign=Badge_Coverage)
 

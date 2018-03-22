@@ -31,6 +31,8 @@ jobs:
       - run: egrep sock compose-files/docker-compose-app-docker_socket_exec.yml
       ## docs
       - run: markdown_py -o html5 -f tumbo/ui/templates/docs_content.html docs/user_guide.md
+      - run: cli/tumbo-cli.py 2>&1| sed  's/^/     /' > docs/cli.txt
+      - run: git add docs/cli.txt
       - run: git config --global push.default current
       - run: git config --global user.email "philip@sahli.net"
       - run: git config --global user.name "Philip Sahli"
@@ -66,10 +68,8 @@ jobs:
       # Push
       - run: 
           command: |
-            # TODO: Check this, :develop is pushed to dockerhub https://circleci.com/gh/sahlinet/tumbo-server/472
             if [[ $VERSION == v* ]]; then
                  docker login -u $DOCKER_USER -p $DOCKER_PASS
-                 docker images
                  docker tag tumboserver_app philipsahli/tumbo-server:$CIRCLE_TAG
                  docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_TAG
                  docker images
