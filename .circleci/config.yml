@@ -89,6 +89,7 @@ workflows:
             branches:
               only:
                 - develop
+                - master
                 - /feature.*/
   snapshot-release:
     jobs:
@@ -107,4 +108,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /v[0-9]+\.[0-9]+\.[0-9]$/
+              only: /v[0-9]+\.[0-9]+\.[0-9]+$/
