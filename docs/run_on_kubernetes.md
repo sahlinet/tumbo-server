@@ -1,3 +1,7 @@
+# Overview
+
+![High Level Architecture on Kubernetes](https://github.com/sahlinet/tumbo-server/raw/develop/diagrams/HighLevelOnKubernetes.png "High Level Architecture on Kubernetes")
+
 # Install
 
 Develop Branch from TestPypi
@@ -6,15 +10,34 @@ Develop Branch from TestPypi
 
 Released Version from PyPi
 
-    pip install tumbo-server==0.4.11-dev
+    pip install tumbo-server==0.4.12
 
-python cli/tumbo-cli.py  server dev run --settings=tumbo.dev_kubernetes
+# Modes
 
-# Dev Server with workers on Kubernetes
-    cli/tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes
+## Dev Server with workers on Kubernetes
 
-# Minikube
-    cli/tumbo-cli.py server kubernetes run --context=minikube
+    tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes
 
-# Kubernetes Cluster 
-    cli/tumbo-cli.py server kubernetes run --context=contextname
+## Minikube
+
+Create the configuration file:
+
+    [kubernetes]
+    namespace=tumbo
+    context=minikube
+
+    [site]
+    host=192.168.99.100
+    password="aHVodWxhbGFsYQ=="
+    frontend_host=192.168.99.100
+    ADMIN_PASSWORD=hellohello
+    ALLOWED_HOSTS=192.168.99.100:31999
+    SERVER_NAME=192.168.99.100
+
+Deploy Tumbo.
+
+    tumbo-cli.py server kubernetes run --context=minikube --ini=minikube.ini
+
+## Kubernetes Cluster 
+
+    tumbo-cli.py server kubernetes run --context=kubernetes-admin@kubernetes
