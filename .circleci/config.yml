@@ -31,7 +31,7 @@ jobs:
       - run: egrep sock compose-files/docker-compose-app-docker_socket_exec.yml
       ## docs
       - run: markdown_py -o html5 -f tumbo/ui/templates/docs_content.html docs/user_guide.md
-      - run: cli/tumbo-cli.py 2>&1| sed  's/^/     /' > docs/cli.txt
+      - run: cli/tumbo-cli.py --help 2>&1| sed  's/^/     /' > docs/cli.txt
       - run: git add docs/cli.txt
       - run: git config --global push.default current
       - run: git config --global user.email "philip@sahli.net"
