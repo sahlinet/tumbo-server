@@ -6,7 +6,7 @@
 
 Develop Branch from TestPypi
 
-    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple tumbo-server==0.4.11-dev
+    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple tumbo-server==0.4.11
 
 Released Version from PyPi
 
