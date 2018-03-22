@@ -20,7 +20,7 @@ data:
    RABBITMQ_ADMIN_USER: admin
    RABBITMQ_HOST: queue
    TUMBO_DOCKER_MEM_LIMIT: 128m
-   TUMBO_DOCKER_IMAGE: "philipsahli/tumbo-worker:v0.4.11"
+   TUMBO_DOCKER_IMAGE: "philipsahli/tumbo-worker:v0.4.12-dev"
    TUMBO_SOCIAL_AUTH: "True"
    ALLOWED_HOSTS: "*"
    FRONTEND_HOST: "{{ HOST }}"
