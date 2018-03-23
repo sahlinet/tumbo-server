@@ -32,7 +32,7 @@ urlpatterns = patterns('',
     url(r'login/$', 'aaa.views.login', name='login'),
     url(r'logout/$', 'aaa.views.logout', name='core-logout'),
     url(r'done/$', 'aaa.views.done', name='done'),
-    url(r'profile/$', 'ui.views.profile', name='core-profile'),
+    url(r'^profile/$', 'ui.views.profile', name='core-profile'),
 
     url(r'admin/', include(admin.site.urls)),
     #url(r'dashboard/', include('core.urls')),
