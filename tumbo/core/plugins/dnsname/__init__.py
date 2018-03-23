@@ -116,7 +116,7 @@ class DNSNamePlugin(Plugin):
 		domain = plugin_settings['zone']
 
                 if not domain:
-                    logger.warn("zone for DNSNamePlugin not set")
+                    #logger.warn("zone for DNSNamePlugin not set")
                     return context
 		v = v + "." + domain
 		context[k] = v
