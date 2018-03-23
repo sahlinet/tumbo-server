@@ -26,6 +26,10 @@ We start the rabbitmq-server with listening on all interfaces. This allows to lo
 
     RABBITMQ_NODE_IP_ADDRESS=0.0.0.0 /usr/local/Cellar/rabbitmq/3.7.4/sbin/rabbitmq-server
 
+Start Redis
+
+    redis-server &
+
     CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a CACHE_ENV_REDIS_PASS=asdf tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes --autostart
 
 Then login on http://localhost:8000/ with the following credentials: 
