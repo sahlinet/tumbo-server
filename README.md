@@ -133,8 +133,9 @@ a job runs and deletes transaction data older than
 
 ### Run
 
-    coverage run --append --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
-    coverage run --append --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
+    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a coverage run --append --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
     coverage run --append --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
+    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a coverage run --append --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
+    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a coverage run --append --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
 
 See also the configuration in `circle.yml` for a better understanding.
