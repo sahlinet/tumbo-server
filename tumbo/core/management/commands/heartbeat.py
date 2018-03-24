@@ -5,7 +5,7 @@ import threading
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
-from core.executors.heartbeat import HeartbeatThread, inactivate, log_mem, update_status, HEARTBEAT_QUEUE
+from core.executors.heartbeat import HeartbeatThread, inactivate, updater, log_mem, update_status, HEARTBEAT_QUEUE
 from core.executors.async import AsyncResponseThread
 from core.log import LogReceiverThread
 from core.communication import RabbitmqAdmin
@@ -44,13 +44,20 @@ class Command(BaseCommand):
 
         core_threads = []
 
-
         if mode in  ["cleanup", "all"]:
             # start cleanup thread
             inactivate_thread = threading.Thread(target=inactivate, name="InactivateThread")
             inactivate_thread.daemon = True
             inactivate_thread.start()
             core_threads.append(inactivate_thread)
+
+            updater_thread = threading.Thread(target=updater, name="UpdaterThread")
+            updater_thread.daemon = True
+            updater_thread.start()
+            core_threads.append(updater_thread)
+            update_status_thread = threading.Thread(target=update_status, args=["UpdaterThread", 1, [updater_thread]])
+            update_status_thread.daemon = True
+            update_status_thread.start()
 
             update_status_thread = threading.Thread(target=update_status, args=["InactiveThread", 1, [inactivate_thread]])
             update_status_thread.daemon = True
