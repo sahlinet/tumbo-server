@@ -40,7 +40,7 @@ class KubernetesExecutor(BaseExecutor):
         metadata.name = self.namespace
         body.metadata = metadata
         try:
-            self.api.create_namespace(body)
+            self.api.create_namespace(body, _request_timeout=3)
         except ApiException as e:
             if e.status not in [409, 403]:
                 print "Exception when calling CoreV1Api->create_namespace: %s\n" % e
@@ -122,7 +122,7 @@ class KubernetesExecutor(BaseExecutor):
                         "containers": [
                             {
                                 "env": worker_env,
-                                "image": "philipsahli/tumbo-worker:v0.4.13-dev",
+                                "image": "philipsahli/tumbo-worker:v0.4.14-dev",
                                 "imagePullPolicy": "Always",
                                 "name": self.name,
                                 "command": self._start_command,
@@ -160,7 +160,7 @@ class KubernetesExecutor(BaseExecutor):
         rc_manifest = self._prepare(self, id, *args, **kwargs)
         try:
             api_response = self.api.create_namespaced_replication_controller(
-                self.namespace, rc_manifest, pretty='pretty_example')
+                self.namespace, rc_manifest, pretty='pretty_example', _request_timeout=3)
         except ApiException as e:
             # logger.error(api_response)
             print "Exception when calling CoreV1Api->create_namespaced_replication_controller: %s\n" % e
@@ -244,7 +244,7 @@ class KubernetesExecutor(BaseExecutor):
 
         try:
             api_response = self.api.list_namespaced_replication_controller(
-                self.namespace, pretty=pretty, include_uninitialized=include_uninitialized, label_selector=label_selector, watch=watch)
+                self.namespace, pretty=pretty, include_uninitialized=include_uninitialized, label_selector=label_selector, watch=watch, _request_timeout=3)
             if len(api_response.items) < 1:
                 raise ContainerNotFound()
         except ApiException as e:

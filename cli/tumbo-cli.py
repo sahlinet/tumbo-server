@@ -522,7 +522,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.13-dev")
+    arguments = docopt(__doc__, version="0.4.14-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -654,7 +654,7 @@ if __name__ == '__main__':
                 print "Starting Development Server"
                 env = {}
                 env.update(os.environ)
-                env.update({'PYTHONPATH': "fastapp", 'CACHE_ENV_REDIS_PASS': os.environ['CACHE_ENV_REDIS_PASS'],
+                env.update({'PYTHONPATH': "fastapp", 
                             'DROPBOX_CONSUMER_KEY': os.environ['DROPBOX_CONSUMER_KEY'],
                             'DROPBOX_CONSUMER_SECRET': os.environ['DROPBOX_CONSUMER_SECRET'],
                             'DROPBOX_REDIRECT_URL': os.environ['DROPBOX_REDIRECT_URL'],
