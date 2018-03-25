@@ -45,11 +45,16 @@ class Command(BaseCommand):
         core_threads = []
 
         if mode in  ["cleanup", "all"]:
-            # start cleanup thread
-            inactivate_thread = threading.Thread(target=inactivate, name="InactivateThread")
-            inactivate_thread.daemon = True
-            inactivate_thread.start()
-            core_threads.append(inactivate_thread)
+            if "Kubernetes" not in settings.TUMBO_WORKER_IMPLEMENTATION:
+                # On Kubernetes we should not have orphaned processes
+                inactivate_thread = threading.Thread(target=inactivate, name="InactivateThread")
+                inactivate_thread.daemon = True
+                inactivate_thread.start()
+                core_threads.append(inactivate_thread)
+
+                update_status_thread = threading.Thread(target=update_status, args=["InactiveThread", 1, [inactivate_thread]])
+                update_status_thread.daemon = True
+                update_status_thread.start()
 
             updater_thread = threading.Thread(target=updater, name="UpdaterThread")
             updater_thread.daemon = True
@@ -59,9 +64,7 @@ class Command(BaseCommand):
             update_status_thread.daemon = True
             update_status_thread.start()
 
-            update_status_thread = threading.Thread(target=update_status, args=["InactiveThread", 1, [inactivate_thread]])
-            update_status_thread.daemon = True
-            update_status_thread.start()
+
 
 
         log_mem_thread = threading.Thread(target=log_mem, kwargs={'name': "Background-%s" % mode})
