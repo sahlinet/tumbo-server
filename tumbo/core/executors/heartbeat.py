@@ -75,19 +75,20 @@ def inactivate():
             time.sleep(0.1)
             now = datetime.now().replace(tzinfo=pytz.UTC)
             with transaction.atomic():
-                for instance in Instance.objects.filter(last_beat__lte=now-timedelta(minutes=1), is_alive=True):
-                    logger.info("inactive instance '%s' detected, mark stopped" % instance)
-                    instance.mark_down()
-                    instance.save()
-
-                # start if is_started and not running
                 try:
-                    for base in Base.objects.select_for_update(nowait=True).filter(executor__started=True):
-                    #for executor in Executor.objects.select_for_update(nowait=True).filter(started=True):
-                        if not base.executor.is_running():
-                            # log start with last beat datetime
-                            logger.error("Start worker for not running base: %s" % base.name)
-                            base.executor.start()
+                    for instance in Instance.objects.filter(last_beat__lte=now-timedelta(minutes=1), is_alive=True):
+                        logger.info("inactive instance '%s' detected, mark stopped" % instance)
+                        instance.mark_down()
+                        instance.save()
+
+                    # start if is_started and not running
+                    
+                        for base in Base.objects.select_for_update(nowait=True).filter(executor__started=True):
+                        #for executor in Executor.objects.select_for_update(nowait=True).filter(started=True):
+                            if not base.executor.is_running():
+                                # log start with last beat datetime
+                                logger.error("Start worker for not running base: %s" % base.name)
+                                base.executor.start()
                 except DatabaseError, e:
                     logger.exception("Executor(s) was locked with select_for_update")
             time.sleep(10)
@@ -107,20 +108,20 @@ def updater():
 
             time.sleep(0.1)
             now = datetime.now().replace(tzinfo=pytz.UTC)
-            with transaction.atomic():
+            #with transaction.atomic():
                 
-                pool = gevent_pool.Pool(10)
-                qs = Instance.objects.filter(last_beat__gte=now-timedelta(minutes=1), is_alive=True).exclude(process__version=__VERSION__)
-                if len(qs) > 0:
-                    logger.info("%s running with old version" % str(len(qs)))
-                else:
-                    logger.debug("No instances with old version found")
+            pool = gevent_pool.Pool(10)
+            qs = Instance.objects.filter(last_beat__gte=now-timedelta(minutes=1), is_alive=True).exclude(process__version=__VERSION__)
+            if len(qs) > 0:
+                logger.info("%s running with old version" % str(len(qs)))
+            else:
+                logger.debug("No instances with old version found")
 
-                for instance in qs:
-                    logger.info("Instance '%s' with old version detected (%s->%s)" % (instance, instance.process.version, __VERSION__))
-                    worker = Greenlet.spawn(_recreate, instance.executor.base)
-                    pool.add(gevent.spawn(worker.run))
-                pool.join()
+            for instance in qs:
+                logger.info("Instance '%s' with old version detected (%s->%s)" % (instance, instance.process.version, __VERSION__))
+                worker = Greenlet.spawn(_recreate, instance.executor.base)
+                pool.add(gevent.spawn(worker.run))
+            pool.join()
 
             time.sleep(10)
     except Exception, e:
