@@ -4,13 +4,13 @@
 
 # Install
 
-Develop Branch from TestPypi
+Development Release from PyPi's Testing Site
 
     pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple tumbo-server==0.4.15-dev
 
 Released Version from PyPi
 
-    pip install tumbo-server==0.4.15-dev
+    pip install tumbo-server==0.4.15
 
 # Modes
 
