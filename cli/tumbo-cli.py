@@ -4,7 +4,7 @@
 
 Usage:
   tumbo-cli.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage] [--settings=tumbo.dev]
-  tumbo-cli.py server kubernetes run [--context=context] [--ingress] [--ini=ini_file]
+  tumbo-cli.py server kubernetes run [--context=context] [--ingress] [--ini=ini_file] [--kubeconfig=kubeconfig]
   tumbo-cli.py server kubernetes delete [--context=context] [--partial] [--ini=ini_file]
   tumbo-cli.py server kubernetes show [--context=context] [--ini=ini_file]
   tumbo-cli.py server docker run [--stop-after=<seconds>] [--ngrok-hostname=host] [--ngrok-authtoken=token]
@@ -841,8 +841,12 @@ if __name__ == '__main__':
             context = arguments["--context"]
             is_minikube = context == "minikube"
 
-            cmd = "config use-context %s" % arguments["--context"]
-            kubectl(cmd.split())
+            base_cmd = ""
+            if arguments['--kubeconfig']:
+                os.environ['KUBECONFIG'] = arguments['--kubeconfig']
+            if arguments["--context"]:
+                cmd = "config use-context %s" % arguments["--context"]
+                kubectl(cmd.split())
             # kubernetes run
             cmd_list = [
                 os.path.join(k8s_files_path, "config.yml"),

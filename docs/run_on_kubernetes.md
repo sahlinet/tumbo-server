@@ -30,12 +30,14 @@ Start Redis
 
     redis-server &
 
-    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a CACHE_ENV_REDIS_PASS=asdf tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes --autostart
+    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes --autostart
 
 Then login on http://localhost:8000/ with the following credentials: 
 
     username: admin
     password: adminpw
+
+   This mode is only suitable for developers which do  development on Tumbo Core.
 
 ## Minikube
 
@@ -59,7 +61,13 @@ Deploy Tumbo.
 
 ## Kubernetes Cluster 
 
+If using the default `kubeconfig` in `$HOME/.kube/` the context can be specified. This context will be used within `tumbo-cli.py`.
+
     tumbo-cli.py server kubernetes run --context=kubernetes-admin@kubernetes --ini=cluster.ini
+
+A `kubeconfig` can be used from another location with adding the argument `--kubeconfig`. If this file only contains one cluster/context, the argument `--context` is not needed.
+
+    tumbo-cli.py server kubernetes run --kubeconfig=$HOME/Downloads/kubeconfig --ini=cluster.ini
 
 ## Undeploy Tumbo
 
