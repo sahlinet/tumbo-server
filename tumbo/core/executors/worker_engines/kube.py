@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 # Great examples: https://github.com/inovex/quobyte-kubernetes-operator/blob/master/quobyte-k8s-deployer.py
 
+
 class KubernetesExecutor(BaseExecutor):
     """Implementation of the executor to run workers on Kubernetes.
     """
@@ -28,18 +29,18 @@ class KubernetesExecutor(BaseExecutor):
             config.load_incluster_config()
             self.api = client.CoreV1Api()
         except ConfigException, e:
-            logger.debug("kubernetes.config.load_incluster_config not working, doing config.load_kube_config")
+            logger.debug(
+                "kubernetes.config.load_incluster_config not working, doing config.load_kube_config")
             config.load_kube_config()
             self.api = client.CoreV1Api()
         self.namespace = "tumbo"
-
 
         body = client.V1Namespace()
         metadata = client.V1ObjectMeta()
         metadata.name = self.namespace
         body.metadata = metadata
         try:
-            self.api.create_namespace(body)
+            self.api.create_namespace(body, _request_timeout=3)
         except ApiException as e:
             if e.status not in [409, 403]:
                 print "Exception when calling CoreV1Api->create_namespace: %s\n" % e
@@ -52,8 +53,8 @@ class KubernetesExecutor(BaseExecutor):
     def _get_name(self):
         # container name, must be unique, therefore we use a mix from site's domain name and executor
         slug = "worker-%s-%s-%s" % (Site.objects.get_current().domain,
-            self.username,
-            self.base_name)
+                                    self.username,
+                                    self.base_name)
         return slug.replace("_", "-").replace(".", "-")
 
     @property
@@ -67,7 +68,7 @@ class KubernetesExecutor(BaseExecutor):
         )
         return start_command.split(" ")
 
-    def start(self, id, *args, **kwargs):
+    def _prepare(self, id, *args, **kwargs):
         env = {
             "RABBITMQ_HOST": settings.WORKER_RABBITMQ_HOST,
             "RABBITMQ_PORT": int(settings.WORKER_RABBITMQ_PORT),
@@ -78,7 +79,7 @@ class KubernetesExecutor(BaseExecutor):
             "SERVICE_PORT": self.executor.port,
             "SERVICE_IP": self.executor.ip,
             "secret": self.secret
-            }
+        }
 
         worker_env = []
         for k, v in env.iteritems():
@@ -96,70 +97,85 @@ class KubernetesExecutor(BaseExecutor):
         spec = client.V1ReplicationControllerSpec()
         spec.replicas = 1
 
-        pretty = 'pretty_example' # str | If 'true', then the output is pretty printed. (optional)
         rc_manifest = {
-    "apiVersion": "v1",
-    "kind": "ReplicationController",
-    "metadata": {
-        "labels": {
-            "service": self.name
-        },
-        "name": self.name,
-        "namespace": self.namespace,
-    },
-    "spec": {
-        "replicas": 1,
-        "selector": {
-            "service": self.name
-        },
-        "template": {
+            "apiVersion": "v1",
+            "kind": "ReplicationController",
             "metadata": {
                 "labels": {
-                    "service": self.name,
-                }
+                    "service": self.name
+                },
+                "name": self.name,
+                "namespace": self.namespace,
             },
             "spec": {
-                "containers": [
-                    {
-                        "env": worker_env,
-                        "image": "philipsahli/tumbo-worker:kubernetes",
-                        "imagePullPolicy": "Always",
-                        "name": self.name,
-                        "command": self._start_command,
-                        "ports": [
+                "replicas": 1,
+                "selector": {
+                    "service": self.name
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "service": self.name,
+                        }
+                    },
+                    "spec": {
+                        "containers": [
                             {
-                                "containerPort": 80,
-                                "protocol": "TCP"
+                                "env": worker_env,
+                                "image": "philipsahli/tumbo-worker:v0.4.15-dev",
+                                "imagePullPolicy": "Always",
+                                "name": self.name,
+                                "command": self._start_command,
+                                "ports": [
+                                    {
+                                        "containerPort": 80,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File"
                             }
                         ],
-                        "resources": {},
-                        "terminationMessagePath": "/dev/termination-log",
-                        "terminationMessagePolicy": "File"
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "terminationGracePeriodSeconds": 30
                     }
-                ],
-                "dnsPolicy": "ClusterFirst",
-                "restartPolicy": "Always",
-                "schedulerName": "default-scheduler",
-                "securityContext": {},
-                "terminationGracePeriodSeconds": 30
+                }
+            },
+            "status": {
+                "availableReplicas": 1,
+                "fullyLabeledReplicas": 1,
+                "observedGeneration": 3,
+                "readyReplicas": 1,
+                "replicas": 1
             }
         }
-    },
-    "status": {
-        "availableReplicas": 1,
-        "fullyLabeledReplicas": 1,
-        "observedGeneration": 3,
-        "readyReplicas": 1,
-        "replicas": 1
-    }
-}
 
+        return rc_manifest
 
+    def start(self, id, *args, **kwargs):
+        rc_manifest = self._prepare(self, id, *args, **kwargs)
         try:
-            api_response = self.api.create_namespaced_replication_controller(self.namespace, rc_manifest, pretty=pretty)
+            api_response = self.api.create_namespaced_replication_controller(
+                self.namespace, rc_manifest, pretty='pretty_example', _request_timeout=3)
         except ApiException as e:
-            #logger.error(api_response)
+            # logger.error(api_response)
             print "Exception when calling CoreV1Api->create_namespaced_replication_controller: %s\n" % e
+            raise e
+
+        return api_response.metadata.uid
+
+    def update(self, id, *args, **kwargs):
+        rc_manifest = self._prepare(self, id, *args, **kwargs)
+        try:
+            api_response = self.api.patch_namespaced_replication_controller(
+                self.namespace, rc_manifest, pretty='pretty_example')
+        except ApiException as e:
+            # logger.error(api_response)
+            print "Exception when calling CoreV1Api->patch_namespaced_replication_controller: %s\n" % e
             raise e
 
         return api_response.metadata.uid
@@ -175,11 +191,12 @@ class KubernetesExecutor(BaseExecutor):
             print e
             return True
         # scale
-        body = {"spec":{"replicas": 0}}
+        body = {"spec": {"replicas": 0}}
         pretty = 'pretty_example'
 
         try:
-            api_response = self.api.patch_namespaced_replication_controller(self.name, self.namespace, body=body, pretty=pretty)
+            api_response = self.api.patch_namespaced_replication_controller(
+                self.name, self.namespace, body=body, pretty=pretty)
         except ApiException as e:
             print "Exception when calling CoreV1Api->patch_namespaced_replication_controller_scale: %s\n" % e
 
@@ -195,7 +212,8 @@ class KubernetesExecutor(BaseExecutor):
 
         try:
             #api_response = self.api.delete_namespaced_replication_controller(self.name, self.namespace, body, pretty=pretty, grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents, propagation_policy=propagation_policy)
-            api_response = self.api.delete_namespaced_replication_controller(self.name, self.namespace, body, pretty=pretty, grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents)
+            api_response = self.api.delete_namespaced_replication_controller(
+                self.name, self.namespace, body, pretty=pretty, grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents)
         except ApiException as e:
             print "Exception when calling CoreV1Api->delete_namespaced_replication_controller: %s\n" % e
             raise e
@@ -215,17 +233,23 @@ class KubernetesExecutor(BaseExecutor):
         raise NotImplementedError
 
     def get_replication_controller(self, id):
-        pretty = 'pretty_example' # str | If 'true', then the output is pretty printed. (optional)
-        include_uninitialized = True # bool | If true, partially initialized resources are included in the response. (optional)
-        label_selector = 'service=%s' % self.name # str | A selector to restrict the list of returned objects by their labels. Defaults to everything. (optional)
-        watch = False # bool | Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion. (optional)
+        # str | If 'true', then the output is pretty printed. (optional)
+        pretty = 'pretty_example'
+        # bool | If true, partially initialized resources are included in the response. (optional)
+        include_uninitialized = True
+        # str | A selector to restrict the list of returned objects by their labels. Defaults to everything. (optional)
+        label_selector = 'service=%s' % self.name
+        # bool | Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion. (optional)
+        watch = False
 
         try:
-            api_response = self.api.list_namespaced_replication_controller(self.namespace, pretty=pretty, include_uninitialized=include_uninitialized, label_selector=label_selector, watch=watch)
+            api_response = self.api.list_namespaced_replication_controller(
+                self.namespace, pretty=pretty, include_uninitialized=include_uninitialized, label_selector=label_selector, watch=watch, _request_timeout=3)
             if len(api_response.items) < 1:
                 raise ContainerNotFound()
         except ApiException as e:
-            logger.error("Exception when calling CoreV1Api->list_namespaced_replication_controller: %s\n" % e)
+            logger.error(
+                "Exception when calling CoreV1Api->list_namespaced_replication_controller: %s\n" % e)
             raise e
         return api_response
 
@@ -234,7 +258,8 @@ class KubernetesExecutor(BaseExecutor):
             return False
         # returns True if worker is running
         try:
-            available_replicas = self.get_replication_controller(id).items[0].status.available_replicas
+            available_replicas = self.get_replication_controller(
+                id).items[0].status.available_replicas
         except ContainerNotFound:
             return False
         return available_replicas > 0
@@ -243,7 +268,7 @@ class KubernetesExecutor(BaseExecutor):
         return {
             'ip': None,
             'ip6': None
-            }
+        }
 
     def get_instances(self, id):
         pass

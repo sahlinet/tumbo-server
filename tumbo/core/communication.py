@@ -75,7 +75,7 @@ class RabbitmqHttpApi(RabbitmqAdmin):
 
         host = getattr(settings, "RABBITMQ_HOST", "localhost")
         port = getattr(settings, "RABBITMQ_HTTP_API_PORT", "15672")
-        logger.info("%s@%s:%s" % (user, host, str(port)))
+        logger.debug("%s@%s:%s" % (user, host, str(port)))
 
         if data:
             data=json.dumps(data)
@@ -85,7 +85,7 @@ class RabbitmqHttpApi(RabbitmqAdmin):
             return r.json()
         else:
             r = requests.put(url+uri, data=data, headers={'content-type': "application/json"}, auth=(user, password))
-        if r.status_code != 204:
+        if r.status_code not in [204, 201]:
             logger.error(str((r.url, r.status_code, r.content, data)))
             raise Exception("%s: %s" % (r.status_code, r.content))
 

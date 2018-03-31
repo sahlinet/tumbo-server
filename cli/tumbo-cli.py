@@ -4,7 +4,7 @@
 
 Usage:
   tumbo-cli.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage] [--settings=tumbo.dev]
-  tumbo-cli.py server kubernetes run [--context=context] [--ingress] [--ini=ini_file]
+  tumbo-cli.py server kubernetes run [--context=context] [--ingress] [--ini=ini_file] [--kubeconfig=kubeconfig]
   tumbo-cli.py server kubernetes delete [--context=context] [--partial] [--ini=ini_file]
   tumbo-cli.py server kubernetes show [--context=context] [--ini=ini_file]
   tumbo-cli.py server docker run [--stop-after=<seconds>] [--ngrok-hostname=host] [--ngrok-authtoken=token]
@@ -522,7 +522,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.12")
+    arguments = docopt(__doc__, version="0.4.15-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -648,13 +648,13 @@ if __name__ == '__main__':
                     sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                     print "Starting rabbitmq"
-                    cmd_args = "/usr/local/Cellar/rabbitmq/3.6.6/sbin/rabbitmq-server"
+                    cmd_args = "/usr/local/Cellar/rabbitmq/3.7.4/sbin/rabbitmq-server"
                     sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                 print "Starting Development Server"
                 env = {}
                 env.update(os.environ)
-                env.update({'PYTHONPATH': "fastapp", 'CACHE_ENV_REDIS_PASS': os.environ['CACHE_ENV_REDIS_PASS'],
+                env.update({'PYTHONPATH': "fastapp", 
                             'DROPBOX_CONSUMER_KEY': os.environ['DROPBOX_CONSUMER_KEY'],
                             'DROPBOX_CONSUMER_SECRET': os.environ['DROPBOX_CONSUMER_SECRET'],
                             'DROPBOX_REDIRECT_URL': os.environ['DROPBOX_REDIRECT_URL'],
@@ -841,8 +841,12 @@ if __name__ == '__main__':
             context = arguments["--context"]
             is_minikube = context == "minikube"
 
-            cmd = "config use-context %s" % arguments["--context"]
-            kubectl(cmd.split())
+            base_cmd = ""
+            if arguments['--kubeconfig']:
+                os.environ['KUBECONFIG'] = arguments['--kubeconfig']
+            if arguments["--context"]:
+                cmd = "config use-context %s" % arguments["--context"]
+                kubectl(cmd.split())
             # kubernetes run
             cmd_list = [
                 os.path.join(k8s_files_path, "config.yml"),

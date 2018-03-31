@@ -6,6 +6,7 @@ import os
 import socket
 import subprocess
 import pytz
+import gevent
 from datetime import datetime, timedelta
 
 from django.core.urlresolvers import reverse
@@ -24,6 +25,9 @@ from core.plugins import call_plugin_func
 from core import __VERSION__
 from core.utils import load_setting
 #from core.utils import profileit
+
+from gevent import Greenlet
+from gevent import pool as gevent_pool
 
 import psutil
 
@@ -71,21 +75,54 @@ def inactivate():
             time.sleep(0.1)
             now = datetime.now().replace(tzinfo=pytz.UTC)
             with transaction.atomic():
-                for instance in Instance.objects.filter(last_beat__lte=now-timedelta(minutes=1), is_alive=True):
-                    logger.info("inactive instance '%s' detected, mark stopped" % instance)
-                    instance.mark_down()
-                    instance.save()
-
-                # start if is_started and not running
                 try:
-                    for base in Base.objects.select_for_update(nowait=True).filter(executor__started=True):
-                    #for executor in Executor.objects.select_for_update(nowait=True).filter(started=True):
-                        if not base.executor.is_running():
-                            # log start with last beat datetime
-                            logger.error("Start worker for not running base: %s" % base.name)
-                            base.executor.start()
+                    for instance in Instance.objects.filter(last_beat__lte=now-timedelta(minutes=1), is_alive=True):
+                        logger.info("inactive instance '%s' detected, mark stopped" % instance)
+                        instance.mark_down()
+                        instance.save()
+
+                    # start if is_started and not running
+                    
+                        for base in Base.objects.select_for_update(nowait=True).filter(executor__started=True):
+                        #for executor in Executor.objects.select_for_update(nowait=True).filter(started=True):
+                            if not base.executor.is_running():
+                                # log start with last beat datetime
+                                logger.error("Start worker for not running base: %s" % base.name)
+                                base.executor.start()
                 except DatabaseError, e:
                     logger.exception("Executor(s) was locked with select_for_update")
+            time.sleep(10)
+    except Exception, e:
+        logger.exception(e)
+
+
+def _recreate(base):
+    base.destroy()
+    base.start()
+    logger.info("'%s' recreated" % base)
+
+def updater():
+    try:
+        while True:
+            logger.debug("UpdaterThread run")
+
+            time.sleep(0.1)
+            now = datetime.now().replace(tzinfo=pytz.UTC)
+            #with transaction.atomic():
+                
+            pool = gevent_pool.Pool(10)
+            qs = Instance.objects.filter(last_beat__gte=now-timedelta(minutes=1), is_alive=True).exclude(process__version=__VERSION__)
+            if len(qs) > 0:
+                logger.info("%s running with old version" % str(len(qs)))
+            else:
+                logger.debug("No instances with old version found")
+
+            for instance in qs:
+                logger.info("Instance '%s' with old version detected (%s->%s)" % (instance, instance.process.version, __VERSION__))
+                worker = Greenlet.spawn(_recreate, instance.executor.base)
+                pool.add(gevent.spawn(worker.run))
+            pool.join()
+
             time.sleep(10)
     except Exception, e:
         logger.exception(e)
@@ -141,7 +178,7 @@ class HeartbeatThread(CommunicationThread):
 
     def send_message(self):
     	"""
-        Client functionality for heartbeating and sending statistics.
+        Client-side functionality for heartbeating and sending metrics.
         """
         logger.debug("send heartbeat to %s:%s" % (self.vhost, HEARTBEAT_QUEUE))
         pid = os.getpid()
@@ -188,12 +225,10 @@ class HeartbeatThread(CommunicationThread):
 
         self.schedule_next_message()
 
-    #@profileit
     def on_message(self, ch, method, props, body):
     	"""
-        Server functionality for storing status and statistics.
+        Server functionality for storing received status and metrics.
         """
-
         try:
             data = json.loads(body)
             vhost = data['vhost']
@@ -210,14 +245,16 @@ class HeartbeatThread(CommunicationThread):
             instance.last_beat = datetime.now().replace(tzinfo=pytz.UTC)
             instance.save()
 
-            process, created = Process.objects.get_or_create(name=vhost)
+            process, created = Process.objects.get_or_create(name=vhost, instance=instance)
             process.rss = int(data['rss'])
             if data.has_key('version'):
                 process.version = data['version']
+                if process.version != __VERSION__:
+                    logger.info("Heartbeat detected old version: %s->%s" % (process.version, __VERSION__))
             process.save()
 
             slug = vhost.replace("/", "")+"-rss"
-            # logger.info("Sent metric for slug %s" % slug)
+            
             from redis_metrics import set_metric
 
             try:
@@ -225,7 +262,7 @@ class HeartbeatThread(CommunicationThread):
             except Exception, e:
                 logger.warn(e)
 
-            #logger.info(data['ready_for_init'], data['in_sync'])
+            logger.debug("Sync status: " + str(data['ready_for_init']), str(data['in_sync']))
 
             # verify and warn for incomplete threads
             try:
