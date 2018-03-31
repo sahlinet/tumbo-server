@@ -92,6 +92,7 @@ workflows:
                 - master
                 - /feature.*/
                 - /hotfix.*/
+                - /.*/
   snapshot-release:
     jobs:
       - build_test:
