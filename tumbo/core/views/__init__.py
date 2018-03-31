@@ -144,7 +144,7 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
                     base_model.executor.password
                     )
             end = int(round(time.time() * 1000))
-            ms=str(end-start)
+            ms = str(end-start)
 
             logger.debug("DATA: %s" % str(response_data))
 

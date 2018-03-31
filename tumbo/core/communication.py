@@ -94,7 +94,7 @@ class RabbitmqHttpApi(RabbitmqAdmin):
         self._call("/api/vhosts/%s" % urllib.quote_plus(name))
 
     def add_user(self, name, password):
-        self._call("/api/users/%s" % name, data={'password': password, 'tags': "" })
+        self._call("/api/users/%s" % name, data={'password': password, 'tags': ""})
 
     def set_perms(self, vhost, username, permissions):
         logger.info("Set perms for user %s (%s)" % (username, permissions))

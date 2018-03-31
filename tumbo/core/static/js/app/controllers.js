@@ -16,7 +16,6 @@
   }
 
 
-
   window.app = angular.module("execApp", ["ngGrid", "base64", "ngResource",
       "baseServices", "angularFileUpload", "ngCookies",
       "ui.bootstrap", "xeditable"
@@ -110,7 +109,7 @@
                       "new_base_name": this.new_base_name
                   }), // pass in data as strings
                   headers: {
-                      "Content-Type": 'application/x-www-form-urlencoded'
+                      "Content-Type": "application/x-www-form-urlencoded"
                   } // set the headers so angular passing info as form data (not request payload)
               }).success(function(data, status, headers, config) {
                   $document.find("form#new_base div").append(
@@ -297,13 +296,13 @@
                   "name": apy.name
               }, apy).$promise.then(function(data) {
                   $scope.alerts.push({
-                      type: 'success',
+                      type: "success",
                       msg: "Exec '" + apy.name +
                           "' saved"
                   });
               }, function(data) {
                   $scope.alerts.push({
-                      type: 'danger',
+                      type: "danger",
                       msg: "Exec '" + apy.name +
                           "' not saved"
                   });
@@ -312,7 +311,7 @@
                   angular.forEach(data.data.detail.errors,
                       function(value, key) {
                           $scope.alerts.push({
-                              type: 'danger',
+                              type: "danger",
                               msg: value.filename +
                                   ":" + value.lineno +
                                   ":" + value.col +
@@ -322,7 +321,7 @@
                   angular.forEach(data.data.detail.warnings,
                       function(value, key) {
                           $scope.alerts.push({
-                              type: 'warning',
+                              type: "warning",
                               msg: value.filename +
                                   ":" + value.lineno +
                                   ":" + value.col +
