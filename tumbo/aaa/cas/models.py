@@ -12,8 +12,8 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
 
-
 logger = logging.getLogger(__name__)
+
 
 class InvalidTicket(Exception):
     pass
@@ -37,7 +37,7 @@ class TicketManager(models.Manager):
         Generate a sufficiently opaque ticket string to ensure the ticket is
         not guessable. If a prefix is provided, prepend it to the string.
         """
-        #if not prefix:
+        # if not prefix:
         #    prefix = self.model.TICKET_PREFIX
         return "%s-%d-%s" % (prefix, int(time.time()),
                              get_random_string(length=20))
@@ -56,7 +56,7 @@ class TicketManager(models.Manager):
         if not ticket:
             raise InvalidRequest("No ticket string provided")
 
-        #if not self.model.TICKET_RE.match(ticket):
+        # if not self.model.TICKET_RE.match(ticket):
         #    raise InvalidTicket("Ticket string %s is invalid" % ticket)
 
         try:
@@ -64,18 +64,20 @@ class TicketManager(models.Manager):
         except self.model.DoesNotExist:
             raise InvalidTicket("Ticket %s does not exist" % ticket)
 
-        #if t.is_consumed():
+        # if t.is_consumed():
         #    raise InvalidTicket("%s %s has already been used" %
         #                        (t.name, ticket))
         if t.is_expired():
-            raise InvalidTicket("%s %s has expired" % (t.user.username, ticket))
+            raise InvalidTicket("%s %s has expired" %
+                                (t.user.username, ticket))
 
         logger.debug("Validated %s %s" % (t.user.username, ticket))
         return t
 
 
 class Ticket(models.Model):
-    ticket = models.CharField(_('ticket'), primary_key=True, max_length=255, unique=True)
+    ticket = models.CharField(
+        _('ticket'), primary_key=True, max_length=255, unique=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name=_('user'))
     expires = models.DateTimeField(_('expires'))
     consumed = models.DateTimeField(_('consumed'), null=True)
@@ -91,4 +93,3 @@ class Ticket(models.Model):
 
     def is_expired(self):
         return self.expires <= now()
-

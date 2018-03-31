@@ -20,19 +20,22 @@ from ui.views import context
 
 logger = logging.getLogger(__name__)
 
+
 def dummy(request):
     raise Exception("Dummy")
+
 
 def logout(request):
     """Logs out user"""
     auth_logout(request)
     return redirect('/')
 
+
 def logout_userland(request, username, base):
     """Logs out user"""
     logger.info("logout_userland for %s/%s" % (username, base))
     auth_logout(request)
-    return redirect(reverse("cas-logout")+"?next="+request.GET.get("next", None))
+    return redirect(reverse("cas-logout") + "?next=" + request.GET.get("next", None))
 
 
 @login_required
@@ -41,10 +44,11 @@ def done(request):
     """Login complete view, displays user data"""
     return context()
 
+
 def loginpage_userland(request, username, base):
     base = get_object_or_404(Base, name=base)
-    return render(request, 'aaa/cas_loginpage.html', {'userland': username, 'base': base.name
-                , 'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS)})
+    return render(request, 'aaa/cas_loginpage.html', {'userland': username, 'base': base.name, 'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS)})
+
 
 def login(request):
     username = request.POST['username']

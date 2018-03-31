@@ -10,20 +10,21 @@ from core.importer import import_base
 
 logger = logging.getLogger("core.executors.remote")
 
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--username',
-            dest='username',
-            help='Import base for user'),
-        ) + (
+                    dest='username',
+                    help='Import base for user'),
+    ) + (
         make_option('--file',
-            dest='file',
-            help='Export file to import'),
-        ) + (
+                    dest='file',
+                    help='Export file to import'),
+    ) + (
         make_option('--name',
-            dest='name',
-            help='Base name'),
-        )
+                    dest='name',
+                    help='Base name'),
+    )
 
     help = 'Import base'
 
@@ -37,5 +38,5 @@ class Command(BaseCommand):
         override_private = True
 
         base = import_base(zf, user, options['name'],
-                override_public, override_private)
+                           override_public, override_private)
         base.save()

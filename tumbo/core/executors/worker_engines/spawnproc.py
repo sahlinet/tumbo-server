@@ -28,17 +28,22 @@ class SpawnExecutor(BaseExecutor):
             env.update(default_env)
             env.update(os.environ.copy())
             env['EXECUTOR'] = "Spawn"
-            env['TUMBO_CORE_SENDER_PASSWORD'] = load_setting("TUMBO_CORE_SENDER_PASSWORD")
-            env['TUMBO_WORKER_THREADCOUNT'] = str(load_setting("TUMBO_WORKER_THREADCOUNT"))
-            env['TUMBO_PUBLISH_INTERVAL'] = str(load_setting("TUMBO_PUBLISH_INTERVAL"))
+            env['TUMBO_CORE_SENDER_PASSWORD'] = load_setting(
+                "TUMBO_CORE_SENDER_PASSWORD")
+            env['TUMBO_WORKER_THREADCOUNT'] = str(
+                load_setting("TUMBO_WORKER_THREADCOUNT"))
+            env['TUMBO_PUBLISH_INTERVAL'] = str(
+                load_setting("TUMBO_PUBLISH_INTERVAL"))
             env['RABBITMQ_HOST'] = str(load_setting("WORKER_RABBITMQ_HOST"))
             env['RABBITMQ_PORT'] = str(load_setting("WORKER_RABBITMQ_PORT"))
             python_paths = ""
             try:
                 for p in os.environ['PYTHONPATH'].split(":"):
                     logger.info(p)
-                    python_paths += ":"+os.path.abspath(p)
-                    python_paths += ":"+os.path.abspath(os.path.join(settings.PROJECT_ROOT, "../../tumbo"))
+                    python_paths += ":" + os.path.abspath(p)
+                    python_paths += ":" + \
+                        os.path.abspath(os.path.join(
+                            settings.PROJECT_ROOT, "../../tumbo"))
             except KeyError:
                 pass
             env['PYTHONPATH'] = python_paths
@@ -79,4 +84,4 @@ class SpawnExecutor(BaseExecutor):
         # if pid, check
         if not pid:
             return False
-        return (subprocess.call("/bin/ps -p %s -o command|egrep -c %s 1>/dev/null" % (pid, self.base_name), shell=True)==0)
+        return (subprocess.call("/bin/ps -p %s -o command|egrep -c %s 1>/dev/null" % (pid, self.base_name), shell=True) == 0)

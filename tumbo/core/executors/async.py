@@ -13,7 +13,7 @@ class AsyncResponseThread(CommunicationThread):
 
     def on_message(self, ch, method, props, body):
         try:
-            logger.debug(self.name+": "+sys._getframe().f_code.co_name)
+            logger.debug(self.name + ": " + sys._getframe().f_code.co_name)
             data = json.loads(body)
 
             try:

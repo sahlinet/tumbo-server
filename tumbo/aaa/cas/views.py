@@ -22,6 +22,7 @@ User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
+
 def loginpage(request):
     """
     If a user wants to login, he opens the url named `cas-login`, which renders the cas_loginpage.html.
@@ -30,7 +31,8 @@ def loginpage(request):
     logging.info("Start login for accessing a base")
     if request.method == "GET":
         service = request.GET['service']
-        m = re.match(r".*/userland/(?P<username>.*?)/(?P<basename>.*?)/", service)
+        m = re.match(
+            r".*/userland/(?P<username>.*?)/(?P<basename>.*?)/", service)
         if m:
             # we received an URI
             username = m.group('username')
@@ -48,21 +50,21 @@ def loginpage(request):
         if request.user.is_authenticated:
             user = request.user
 
-        logger.info("Next: "+request.session['next'])
+        logger.info("Next: " + request.session['next'])
 
-        return render(request, 'aaa/cas_loginpage.html', {'user': user, 'userland': username, 'basename': basename
-                , 'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS)})
+        return render(request, 'aaa/cas_loginpage.html', {'user': user, 'userland': username, 'basename': basename, 'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS)})
 
     elif request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
         service = request.POST['service']
-        user = authenticate(username=username, password=password, redirect_uri="/cas/login/")
+        user = authenticate(username=username,
+                            password=password, redirect_uri="/cas/login/")
         if user is not None:
             if user.is_active:
                 auth_login(request, user)
                 ticket = Ticket.objects.create_ticket(user=user)
-                return redirect(service+"?ticket=%s" % ticket.ticket)
+                return redirect(service + "?ticket=%s" % ticket.ticket)
             else:
                 return redirect('/disabled')
         else:
@@ -85,6 +87,7 @@ def verify(request):
 
         ticket.user.backend = 'django.contrib.auth.backends.ModelBackend'
     return HttpResponse(token)
+
 
 def logout(request):
     """Logs out user"""
