@@ -11,6 +11,7 @@ from django.contrib.auth import login as auth_login
 
 from core.models import Base
 from core.utils import read_jwt
+import django.contrib.sessions.backends.cache
 
 User = get_user_model()
 
@@ -20,10 +21,11 @@ logger = logging.getLogger(__name__)
 def cas_login(function):
     def wrapper(request, *args, **kwargs):
         # logger.debug("authenticate %s" % request.user)
-        user=request.user
+        user = request.user
 
         # if logged in
         if request.user.is_authenticated():
+            #import pdb; pdb.set_trace()
             logger.info("user.is_authenticated with user %s" % request.user.username)
             logger.info("user has internalid: %s" % request.user.authprofile.internalid)
             return function(request, *args, **kwargs)
@@ -49,7 +51,8 @@ def cas_login(function):
             cas_ticketverify=reverse('cas-ticketverify')
             cas_ticketverify+="?ticket=%s&service=%s" % (ticket, service_full)
             host = urlparse(request.build_absolute_uri()).netloc
-            response = requests.get("https://%s%s" % (host, cas_ticketverify))
+            # TODO: normally with https
+            response = requests.get("http://%s%s" % (host, cas_ticketverify))
             logger.info("Response from verify: " + str(response.status_code))
             logger.info("Response from verify: " + response.text)
 
@@ -63,6 +66,7 @@ def cas_login(function):
             auth_login(request, user)
 
             request.session['cookie_path'] = "/userland/%s/%s" % (base.user.username, base.name)
+            logger.info("Setting cookie_path to: " % request.session['cookie_path'])
             request.session.cycle_key()
 
             # user is logged in successfully, redirect to service URL

@@ -38,6 +38,7 @@ def home(request):
 def profile(request):
     """Home view, displays login mechanism"""
     auth, created = AuthProfile.objects.get_or_create(user=request.user)
+    print auth, created
     if not request.user.is_authenticated():
         raise Exception("Not Logged in")
 

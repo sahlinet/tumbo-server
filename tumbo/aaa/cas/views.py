@@ -12,6 +12,7 @@ from django.contrib.auth import logout as auth_logout
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
 from core.utils import create_jwt
 from core.models import Base
@@ -22,6 +23,7 @@ User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
+@csrf_exempt
 def loginpage(request):
     """
     If a user wants to login, he opens the url named `cas-login`, which renders the cas_loginpage.html.

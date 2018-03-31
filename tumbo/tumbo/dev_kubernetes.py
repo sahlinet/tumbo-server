@@ -87,7 +87,8 @@ if STORE_ENABLED:
 
 TUMBO_SCHEDULE_JOBSTORE = "sqlite:////tmp/jobstore.db"
 
-REDIS_METRICS['PASSWORD'] = os.environ.get('CACHE_ENV_REDIS_PASS', None)
+if os.environ.get('CACHE_ENV_REDIS_PASS', None):
+    REDIS_METRICS['PASSWORD'] = os.environ.get('CACHE_ENV_REDIS_PASS')
 
 #TEMPLATE_LOADERS += (
 #     'core.loader.DevLocalRepositoryPathLoader',
