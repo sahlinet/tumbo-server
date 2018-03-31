@@ -83,19 +83,19 @@ coverage_cmd = "coverage run --timid --source=tumbo --parallel-mode "
 
 # output
 if os.name == "nt":
-    STDOUT="CON"
-    STDERR="CON"
+    STDOUT = "CON"
+    STDERR = "CON"
 else:
-    STDOUT="/dev/stdout"
-    STDERR="/dev/stderr"
+    STDOUT = "/dev/stdout"
+    STDERR = "/dev/stderr"
 
 
 try:
     import tumbo
     tumbo_path = os.path.join(os.path.dirname(tumbo.__file__), "..")
     manage_py = "%s/tumbo/manage.py" % tumbo_path
-    compose_files_path = sys.prefix+"/tumbo_server/compose-files"
-    k8s_files_path = sys.prefix+"/tumbo_server/k8s-files/cli"
+    compose_files_path = sys.prefix + "/tumbo_server/compose-files"
+    k8s_files_path = sys.prefix + "/tumbo_server/k8s-files/cli"
 except ImportError:
     tumbo_path = os.path.abspath(".")
     manage_py = "tumbo/manage.py"
@@ -104,6 +104,7 @@ except ImportError:
 
 compose_file = "%s/docker-compose-app-docker_socket_exec.yml" % compose_files_path
 compose_file_base = "%s/docker-compose-base.yml" % compose_files_path
+
 
 def confirm(prompt=None, resp=False):
     """prompts for yes or no response from the user. Returns True for yes and
@@ -144,12 +145,14 @@ def confirm(prompt=None, resp=False):
         if ans == 'n' or ans == 'N':
             return False
 
+
 def custom_format(s, l=None, nocolor=False):
     if l:
         s = s[:int(l)]
     if nocolor:
         return s
     return highlight(s, JsonLexer(), Terminal256Formatter())
+
 
 class EnvironmentList(object):
     @staticmethod
@@ -162,14 +165,16 @@ class EnvironmentList(object):
             if ".json" in ffile:
                 envId = ffile.replace(".json", "")
                 env = Env.load(envId)
-                table.append([envId, env.config_data['url'], env.active_str, env.config_data['username']])
+                table.append([envId, env.config_data['url'],
+                              env.active_str, env.config_data['username']])
         print tabulate(table, headers=['ID', 'URL', 'active', 'User'])
 
     @staticmethod
     def get_active(env=None):
         if not env:
             try:
-                active_envId = os.path.basename(os.readlink("%s/.tumbo/active_env" % os.path.expanduser("~")).replace(".json", ""))
+                active_envId = os.path.basename(os.readlink(
+                    "%s/.tumbo/active_env" % os.path.expanduser("~")).replace(".json", ""))
             except OSError:
                 return None
         else:
@@ -184,7 +189,7 @@ class Env(object):
         self.config_data = None
 
         try:
-            if self.envId+".json" in os.readlink("%s/.tumbo/active_env" % os.path.expanduser("~")):
+            if self.envId + ".json" in os.readlink("%s/.tumbo/active_env" % os.path.expanduser("~")):
                 self.active = True
                 self.active_str = "*"
             else:
@@ -196,15 +201,16 @@ class Env(object):
 
     def _call_api(self, url, method="GET", params=None, json=None, exit_on_error=True):
         try:
-            r = requests.request(method, self.config_data['url']+url,
-                                 #allow_redirects=False,
+            r = requests.request(method, self.config_data['url'] + url,
+                                 # allow_redirects=False,
                                  headers={
-                                    'Authorization': "Token %s" % self.config_data['token']
-                                 },
-                                 params=params,
-                                 json=json
-                                 )
-            response = r.json() if 'Content-Type' in r.headers and "json" in r.headers['Content-Type'] else r.text
+                'Authorization': "Token %s" % self.config_data['token']
+            },
+                params=params,
+                json=json
+            )
+            response = r.json(
+            ) if 'Content-Type' in r.headers and "json" in r.headers['Content-Type'] else r.text
             if exit_on_error:
                 r.raise_for_status()
         except requests.exceptions.HTTPError as e:
@@ -218,7 +224,8 @@ class Env(object):
 
     def _gettoken(self):
         url = self.url + "/core/api/api-token-auth/"
-        r = requests.post(url, data={'username': self.user, 'password': self.password})
+        r = requests.post(
+            url, data={'username': self.user, 'password': self.password})
 
         if r.status_code != 200:
             print "Wrong username/password for '%s'" % self.url
@@ -288,7 +295,7 @@ class Env(object):
             return id
 
     def __str__(self):
-        self.envId = "* "+self.envId if self.active else self.envId
+        self.envId = "* " + self.envId if self.active else self.envId
         return "%-20s   %-30s" % (self.envId, self.config_data['url'])
 
     def set_active(self):
@@ -303,7 +310,7 @@ class Env(object):
             url = "%s/core" % self.config_data['url']
         else:
             url = "%s/core/base/%s/index" % (self.config_data['url'], base)
-        webbrowser.open(url+"/")
+        webbrowser.open(url + "/")
 
     def projects_list(self):
         status_code, projects = self._call_api("/core/api/base/")
@@ -316,29 +323,34 @@ class Env(object):
         print tabulate(table, headers=["Projectname", "State"])
 
     def project_create(self, name):
-        status_code, response = self._call_api("/core/api/base/", method="POST", json={"name": name})
+        status_code, response = self._call_api(
+            "/core/api/base/", method="POST", json={"name": name})
         if status_code == 201:
             print "Project %s created" % (name)
         else:
             print status_code
 
     def project_stop(self, name):
-        status_code, projects = self._call_api("/core/api/base/%s/stop/" % name, method="POST")
+        status_code, projects = self._call_api(
+            "/core/api/base/%s/stop/" % name, method="POST")
         if status_code == 200:
             print "Project %s stopped" % name
 
     def project_start(self, name):
-        status_code, projects = self._call_api("/core/api/base/%s/start/" % name, method="POST")
+        status_code, projects = self._call_api(
+            "/core/api/base/%s/start/" % name, method="POST")
         if status_code == 200:
             print "Project %s started" % name
 
     def project_destroy(self, name):
-        status_code, projects = self._call_api("/core/api/base/%s/destroy/" % name, method="POST")
+        status_code, projects = self._call_api(
+            "/core/api/base/%s/destroy/" % name, method="POST")
         if status_code == 200:
             print "Project executor destroyed"
 
     def project_delete(self, name):
-        status_code, projects = self._call_api("/core/api/base/%s/delete/" % name, method="POST")
+        status_code, projects = self._call_api(
+            "/core/api/base/%s/delete/" % name, method="POST")
         if status_code == 200:
             print "Project %s deleted" % name
         else:
@@ -355,18 +367,22 @@ class Env(object):
         for executor in project['executors']:
             table.append([
                 executor['port'],
-                executor['ip'] + " / " + executor['plugins'].get('dnsnameplugin', {}).get('SERVICE_DNS_V4', ""),
-                str(executor['ip6']) + " / " + executor['plugins'].get('dnsnameplugin', {}).get('SERVICE_DNS_V6', ""),
+                executor['ip'] + " / " + executor['plugins'].get(
+                    'dnsnameplugin', {}).get('SERVICE_DNS_V4', ""),
+                str(executor['ip6']) + " / " + executor['plugins'].get(
+                    'dnsnameplugin', {}).get('SERVICE_DNS_V6', ""),
             ])
 
         print tabulate(table, headers=["Port", "IPv4", "IPv6"])
 
-        status_code, functions = self._call_api("/core/api/base/%s/apy/" % name)
+        status_code, functions = self._call_api(
+            "/core/api/base/%s/apy/" % name)
         if status_code == 404:
             print "Project does not exist"
             return
 
-        status_code, settings = self._call_api("/core/api/base/%s/setting/" % name)
+        status_code, settings = self._call_api(
+            "/core/api/base/%s/setting/" % name)
         print "\nSettings\n********"
         table = []
         for setting in settings:
@@ -378,8 +394,10 @@ class Env(object):
         table = []
         for function in functions:
             schedule = function['schedule'] if function['schedule'] else ""
-            executed = function['counter']['executed'] if function.get("counter") else 0
-            failed = function['counter']['failed'] if function.get("counter") else 0
+            executed = function['counter']['executed'] if function.get(
+                "counter") else 0
+            failed = function['counter']['failed'] if function.get(
+                "counter") else 0
             public = "Yes" if function['public'] else "No"
             table.append([
                 function['name'],
@@ -394,7 +412,8 @@ class Env(object):
         data = {}
         if tid:
             data['rid'] = tid
-        status_code, transactions = self._call_api("/core/api/base/%s/transactions/" % name, method="GET", params=data)
+        status_code, transactions = self._call_api(
+            "/core/api/base/%s/transactions/" % name, method="GET", params=data)
         print status_code, transactions
 
         logs_only = arguments.get('--logs', False)
@@ -428,21 +447,25 @@ class Env(object):
                 else:
                     level_s = "UNKNOWN"
                 table.append([
-                    "Log (%s)" % level_s, created, custom_format(log['msg'], cut, nocolor)
+                    "Log (%s)" % level_s, created, custom_format(
+                        log['msg'], cut, nocolor)
                 ])
             if not logs_only:
                 table.append([
-                    "Out", tolocaltime(transaction['modified']), custom_format(tout, cut, nocolor)
+                    "Out", tolocaltime(transaction['modified']), custom_format(
+                        tout, cut, nocolor)
                 ])
             print tabulate(table, headers=[rid, "Date", "Type"], tablefmt="simple")
 
     def create_function(self, project_name, function_name):
-        status_code, response = self._call_api("/core/api/base/%s/apy/" % (project_name), method="POST", json={"name": function_name})
+        status_code, response = self._call_api(
+            "/core/api/base/%s/apy/" % (project_name), method="POST", json={"name": function_name})
         if status_code == 201:
             print "Function %s/%s created" % (project_name, function_name)
 
     def edit_function(self, project_name, function_name, path=None):
-        status_code, response = self._call_api("/core/api/base/%s/apy/%s" % (project_name, function_name), method="GET")
+        status_code, response = self._call_api(
+            "/core/api/base/%s/apy/%s" % (project_name, function_name), method="GET")
         if not path:
             tfile, path = tempfile.mkstemp()
             f = open(path, "w")
@@ -454,7 +477,8 @@ class Env(object):
         if confirm():
 
             f = open(path, "r")
-            status_code, response = self._call_api("/core/api/base/%s/apy/%s/" % (project_name, function_name), method="PATCH", json={'module': f.read()}, exit_on_error=False)
+            status_code, response = self._call_api("/core/api/base/%s/apy/%s/" % (
+                project_name, function_name), method="PATCH", json={'module': f.read()}, exit_on_error=False)
             print status_code
             if status_code == 200:
                 print "Saved"
@@ -466,12 +490,13 @@ class Env(object):
                 call(["/usr/bin/vim", path])
             #status_code, response = self._call_api("/core/api/base/%s/apy/" % (project_name), method="POST", json={"name": function_name})
 
-
     def execute(self, project_name, function_name, async=False):
         if not async:
-            status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
+            status_code, response = self._call_api(
+                "/core/api/base/%s/apy/%s/execute/?json" % (project_name, function_name))
         else:
-            status_code, response = self._call_api("/core/api/base/%s/apy/%s/execute/?json=&async=" % (project_name, function_name))
+            status_code, response = self._call_api(
+                "/core/api/base/%s/apy/%s/execute/?json=&async=" % (project_name, function_name))
             print "Started with id '%s'" % response['rid']
         state_url = response.get('url', None)
         if not state_url and response['status'] == "OK":
@@ -486,7 +511,8 @@ class Env(object):
                 sys.stdout.flush()
                 time.sleep(2)
 
-        response = response[:1000]+"... truncated ..." if len(response) > 999 else response
+        response = response[:1000] + \
+            "... truncated ..." if len(response) > 999 else response
         print "HTTP Status Code: %s" % status_code
         sys.stdout.write("Response: ")
         nocolor = arguments.get('--nocolor', False)
@@ -501,10 +527,12 @@ def do_ngrok():
     ngrok_authtoken = arguments.get("--ngrok-authtoken", None)
     print "Starting ngrok for %s with %s" % (ngrok_hostname, ngrok_authtoken)
     if arguments['docker']:
-        port = docker_compose("-p", "tumboserver", "-f", compose_file, "port", "app", "80").split(":")[1]
+        port = docker_compose("-p", "tumboserver", "-f",
+                              compose_file, "port", "app", "80").split(":")[1]
     else:
         port = 8000
-    cmd = '-hostname=%s -authtoken=%s localhost:%s' % (ngrok_hostname, ngrok_authtoken, port)
+    cmd = '-hostname=%s -authtoken=%s localhost:%s' % (
+        ngrok_hostname, ngrok_authtoken, port)
     ngrok(cmd.split(), _out="/dev/null", _err=STDERR, _bg=True)
 
 
@@ -513,7 +541,7 @@ def tolocaltime(dt):
     import pytz     # $ pip install pytz
     import tzlocal  # $ pip install tzlocal
 
-    local_timezone = tzlocal.get_localzone() # get pytz tzinfo
+    local_timezone = tzlocal.get_localzone()  # get pytz tzinfo
     try:
         utc_time = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S.%fZ")
     except Exception:
@@ -591,13 +619,16 @@ if __name__ == '__main__':
 
                 if arguments['<function-name>']:
                     if arguments['execute']:
-                        env.execute(arguments['<base-name>'], arguments['<function-name>'], async=arguments['--async'])
+                        env.execute(
+                            arguments['<base-name>'], arguments['<function-name>'], async=arguments['--async'])
 
                     if arguments['create']:
-                        env.create_function(arguments['<base-name>'], arguments['<function-name>'])
+                        env.create_function(
+                            arguments['<base-name>'], arguments['<function-name>'])
 
                     if arguments['edit']:
-                        env.edit_function(arguments['<base-name>'], arguments['<function-name>'])
+                        env.edit_function(
+                            arguments['<base-name>'], arguments['<function-name>'])
 
             if arguments['transactions']:
                 tid = arguments.get('--tid', None)
@@ -642,10 +673,11 @@ if __name__ == '__main__':
                     print "Starting postgresql"
                     cmd_args = '-u postgres /usr/bin/postgres -D /var/lib/pgsql/data'
                     sudo = sh.Command("sudo")
-                    cmd = sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
+                    cmd = sudo(cmd_args.split(), _out=STDOUT,
+                               _err=STDERR, _bg=True)
 
                     print "Starting redis"
-                    cmd_args = "redis-server" # /etc/redis.conf"
+                    cmd_args = "redis-server"  # /etc/redis.conf"
                     sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                     print "Starting rabbitmq"
@@ -655,66 +687,82 @@ if __name__ == '__main__':
                 print "Starting Development Server"
                 env = {}
                 env.update(os.environ)
-                env.update({'PYTHONPATH': "fastapp", 
+                env.update({'PYTHONPATH': "fastapp",
                             'DROPBOX_CONSUMER_KEY': os.environ['DROPBOX_CONSUMER_KEY'],
                             'DROPBOX_CONSUMER_SECRET': os.environ['DROPBOX_CONSUMER_SECRET'],
                             'DROPBOX_REDIRECT_URL': os.environ['DROPBOX_REDIRECT_URL'],
-                           })
-                PROPAGATE_VARIABLES = os.environ.get("PROPAGATE_VARIABLES", None)
+                            })
+                PROPAGATE_VARIABLES = os.environ.get(
+                    "PROPAGATE_VARIABLES", None)
                 if PROPAGATE_VARIABLES:
                     env['PROPAGATE_VARIABLES'] = PROPAGATE_VARIABLES
 
-
-                cmd = "%s syncdb --noinput --settings=%s" % (manage_py, settings_module)
-                syncdb = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
+                cmd = "%s syncdb --noinput --settings=%s" % (
+                    manage_py, settings_module)
+                syncdb = PYTHON(cmd.split(), _env=env,
+                                _out=STDOUT, _err=STDERR, _bg=True)
                 syncdb.wait()
 
-                cmd = "%s makemigrations core --settings=%s" % (manage_py, settings_module)
+                cmd = "%s makemigrations core --settings=%s" % (
+                    manage_py, settings_module)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                migrate = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
+                migrate = PYTHON(cmd.split(), _env=env,
+                                 _out=STDOUT, _err=STDERR, _bg=True)
                 migrate.wait()
 
-                cmd = "%s migrate --noinput --settings=%s" % (manage_py, settings_module)
+                cmd = "%s migrate --noinput --settings=%s" % (
+                    manage_py, settings_module)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                migrate = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
+                migrate = PYTHON(cmd.split(), _env=env,
+                                 _out=STDOUT, _err=STDERR, _bg=True)
                 migrate.wait()
 
-                cmd = "%s  migrate aaa --noinput --settings=%s" % (manage_py, settings_module)
+                cmd = "%s  migrate aaa --noinput --settings=%s" % (
+                    manage_py, settings_module)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                migrate = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
+                migrate = PYTHON(cmd.split(), _env=env,
+                                 _out=STDOUT, _err=STDERR, _bg=True)
                 migrate.wait()
 
                 try:
-                    cmd = "%s create_admin --username=admin --password=adminpw --email=info@localhost --settings=%s" % (manage_py, settings_module)
-                    adminuser = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
+                    cmd = "%s create_admin --username=admin --password=adminpw --email=info@localhost --settings=%s" % (
+                        manage_py, settings_module)
+                    adminuser = PYTHON(cmd.split(), _env=env,
+                                       _out=STDOUT, _err=STDERR, _bg=True)
                     adminuser.wait()
                 except Exception, e:
                     print e
                     print "adminuser already exists?"
 
-                cmd = "%s import_base --username=admin --file %s/examples/generics.zip  --name=generics --settings=%s" % (manage_py, tumbo_path, settings_module)
+                cmd = "%s import_base --username=admin --file %s/examples/generics.zip  --name=generics --settings=%s" % (
+                    manage_py, tumbo_path, settings_module)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                generics_import = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
+                generics_import = PYTHON(
+                    cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
 
                 background_pids = []
 
-                #for mode in ["cleanup", "heartbeat", "async", "log", "scheduler"]:
+                # for mode in ["cleanup", "heartbeat", "async", "log", "scheduler"]:
                 for mode in ["all", ]:
-                    cmd = "%s heartbeat --mode=%s --settings=%s" % (manage_py, mode, settings_module)
+                    cmd = "%s heartbeat --mode=%s --settings=%s" % (
+                        manage_py, mode, settings_module)
                     if arguments['--coverage']:
                         cmd = coverage_cmd + cmd
-                    background = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
+                    background = PYTHON(
+                        cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                     background_pids.append(background.pid)
 
-                cmd = "%s runserver 0.0.0.0:8000 --settings=%s" % (manage_py, settings_module)
+                cmd = "%s runserver 0.0.0.0:8000 --settings=%s" % (
+                    manage_py, settings_module)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
 
-                app = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _tty_in=True, _in=sys.stdin, _bg=True, _cwd=HOME+"/workspace/tumbo-server")
+                app = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _tty_in=True,
+                             _in=sys.stdin, _bg=True, _cwd=HOME + "/workspace/tumbo-server")
 
                 if arguments['--ngrok-hostname'] and arguments['docker']:
                     if not ngrok:
@@ -730,7 +778,8 @@ if __name__ == '__main__':
             if 'test' in arguments:
                 print "Testing example on Docker"
 
-                r = requests.post("http://localhost:8000/core/api/api-token-auth/", data={'username': "admin", 'password': "admin"})
+                r = requests.post("http://localhost:8000/core/api/api-token-auth/",
+                                  data={'username': "admin", 'password': "admin"})
                 token = r.json()['token']
                 print token
                 r = requests.post("http://localhost:8000/core/api/base/87/start/", headers={
@@ -765,11 +814,12 @@ if __name__ == '__main__':
                 create_package.wait()
 
                 OPTS = ""
-                #if os.environ.get("CI", False):
+                # if os.environ.get("CI", False):
                 #    print "Building images with --no-cache option"
                 #    OPTS += "--no-cache"
 
-                cmd = "-p tumboserver -f %s build --pull %s" % (compose_file, OPTS)
+                cmd = "-p tumboserver -f %s build --pull %s" % (
+                    compose_file, OPTS)
                 build = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 build.wait()
 
@@ -799,11 +849,13 @@ if __name__ == '__main__':
 
                 try:
                     cmd = "-p tumboserver -f %s up -d --no-recreate" % compose_file_base
-                    base = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
+                    base = docker_compose(
+                        cmd.split(), _out=STDOUT, _err=STDERR)
                     time.sleep(40)
 
                     cmd = "-p tumboserver -f %s up --no-recreate" % compose_file
-                    app = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR, _bg=True, _env=os.environ)
+                    app = docker_compose(
+                        cmd.split(), _out=STDOUT, _err=STDERR, _bg=True, _env=os.environ)
 
                     if arguments['--ngrok-hostname']:
                         time.sleep(10)
@@ -812,7 +864,8 @@ if __name__ == '__main__':
                     if arguments['--stop-after']:
                         print "Sleeping for %s seconds" % arguments['--stop-after']
                         time.sleep(int(arguments['--stop-after']))
-                        raise Exception("Stopping after %s" % arguments['--stop-after'])
+                        raise Exception("Stopping after %s" %
+                                        arguments['--stop-after'])
                     else:
                         app.wait()
 
@@ -826,7 +879,8 @@ if __name__ == '__main__':
                     app = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
 
                     cmd = "-p tumboserver -f %s kill" % compose_file
-                    base = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
+                    base = docker_compose(
+                        cmd.split(), _out=STDOUT, _err=STDERR)
 
                     try:
                         sh.pkill("ngrok")
@@ -855,27 +909,26 @@ if __name__ == '__main__':
                 os.path.join(k8s_files_path, "base.yml"),
                 os.path.join(k8s_files_path, "core.yml"),
                 os.path.join(k8s_files_path, "rp.yml")
-                ]
+            ]
 
-            
             conf = RawConfigParser()
             conf.read(ini)
-            
+
             ini_dict = {}
-            #print conf.sections()
+            # print conf.sections()
             for each_section in conf.sections():
                 for (each_key, each_val) in conf.items(each_section):
-                    #print each_val
-                    #if each_val.startswith('b64:'):
+                    # print each_val
+                    # if each_val.startswith('b64:'):
                     #    import pdb; pdb.set_trace()
                     #    each_val = standard_b64encode(each_val)
                     ini_dict[each_key.upper()] = each_val
 
-            #pprint.pprint(ini_dict)
+            # pprint.pprint(ini_dict)
 
             env = ini_dict
 
-            #print env['HOST']
+            # print env['HOST']
 
             if arguments['show']:
                 print "Show Kubernetes Resources\n"
@@ -884,11 +937,13 @@ if __name__ == '__main__':
             if arguments['run']:
                 print "Starting Tumbo on Kubernetes"
                 try:
-                    base = kubectl("create namespace tumbo".split(), _out=STDOUT, _err=STDERR)
+                    base = kubectl("create namespace tumbo".split(),
+                                   _out=STDOUT, _err=STDERR)
                 except sh.ErrorReturnCode_1:
                     pass
                 try:
-                    base = kubectl("create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=tumbo:default".split(), _out=STDOUT, _err=STDERR)
+                    base = kubectl(
+                        "create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=tumbo:default".split(), _out=STDOUT, _err=STDERR)
                 except sh.ErrorReturnCode_1:
                     pass
 
@@ -896,8 +951,9 @@ if __name__ == '__main__':
                     cmd_list.append("./k8s-files/cli/ingress.yml")
 
                 for cmd in cmd_list:
-                    base = kubectl(j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
-                    
+                    base = kubectl(
+                        j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
+
                 time.sleep(5)
                 print kubectl("delete pods -l service=app --namespace=tumbo".split())
                 print kubectl("delete pods -l service=background --namespace=tumbo".split())
@@ -915,20 +971,23 @@ if __name__ == '__main__':
                     cmd_list = [
                         "./k8s-files/cli/rp.yml",
                         #"./k8s-files/cli/core.yml",
-                        ]
+                    ]
                     for cmd in cmd_list:
-                        base = kubectl(["delete", "-f"] + cmd.split(), _out=STDOUT, _err=STDERR)
+                        base = kubectl(["delete", "-f"] +
+                                       cmd.split(), _out=STDOUT, _err=STDERR)
                 else:
                     print "Deleting Tumbo on Kubernetes"
                     for cmd in cmd_list:
-                        base = kubectl(["delete", "-f"] + cmd.split(), _out=STDOUT, _err=STDERR)
+                        base = kubectl(["delete", "-f"] +
+                                       cmd.split(), _out=STDOUT, _err=STDERR)
                         print base
                     try:
-                        base = kubectl("delete namespace tumbo".split(), _out=STDOUT, _err=STDERR)
+                        base = kubectl(
+                            "delete namespace tumbo".split(), _out=STDOUT, _err=STDERR)
                     except sh.ErrorReturnCode_1:
                         pass
 
     if arguments['docker'] and arguments['url']:
-        #port = docker_compose("-p", "tumboserver", "-f", compose_file,
+        # port = docker_compose("-p", "tumboserver", "-f", compose_file,
         #                      "port", "app", "80").split(":")[1]
         print "http://%s:%s" % ("127.0.0.1", str(8000))
