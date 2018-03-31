@@ -5,7 +5,7 @@ def _is_member(user, group):
     print user.groups.filter(name=group).exists()
     return user.groups.filter(name=group).exists()
 
-def restrict_user(backend, user, response, *args, **kwargs):
+def restrict_user(backend, user, response, *args):
     if user.is_superuser: return
 
     group = getattr(settings, "SOCIAL_AUTH_USER_GROUP", None)

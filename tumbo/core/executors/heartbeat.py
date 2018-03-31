@@ -80,8 +80,7 @@ def inactivate():
                         logger.info("inactive instance '%s' detected, mark stopped" % instance)
                         instance.mark_down()
                         instance.save()
-
-                    # start if is_started and not running
+                        #start if is_started and not running
                     
                         for base in Base.objects.select_for_update(nowait=True).filter(executor__started=True):
                         #for executor in Executor.objects.select_for_update(nowait=True).filter(started=True):
@@ -152,7 +151,7 @@ def update_status(parent_name, thread_count, threads):
                 if t.isAlive():
                     logger.debug("Thread '%s' is alive." % t.name)
                     thread_model.started()
-                    alive_thread_count=alive_thread_count+1
+                    alive_thread_count = alive_thread_count+1
                 elif hasattr(t, "health") and t.health():
                     logger.debug("Thread '%s' is healthy." % t.name)
                     thread_model.started()

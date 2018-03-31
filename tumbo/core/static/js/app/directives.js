@@ -1,9 +1,9 @@
 window.app.directive("codemirror", function() {
   return {
-    restrict: 'A',
+    restrict: "A",
     priority: 2,
     scope: {
-        'module': '=codemirror'
+        "module": "=codemirror"
     },
     template: "{{module}}",
     link: function(scope, elem, attrs) {
@@ -28,7 +28,7 @@ window.app.directive("codemirror", function() {
           scope.$apply(function() {
             scope.apy.module = myCodeMirror.getValue();
           });
-        //scope.apy.$save({'baseId': window.active_base_id, 'id': scope.apy.id});
+        //scope.apy.$save({"baseId": window.active_base_id, "id": scope.apy.id});
       });
     }
   };

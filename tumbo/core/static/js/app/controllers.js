@@ -42,7 +42,7 @@
               });
               // to address @blesh's comment, set attribute value to 'false'
               // on blur event:
-              element.bind('blur', function() {
+              element.bind("blur", function() {
                   scope.$apply(model.assign(scope, false));
               });
           }
@@ -60,21 +60,14 @@
               var bases = Bases.all(function() {
                   angular.forEach(bases, function(base) {
                       base.apy_models = Apy.all({
-                          'name': base.name
+                          "name": base.name
                       });
                   });
                   $scope.bases = bases;
               });
           };
 
-          $scope.public_apys = PublicApy.all();
-
-
-          /*$scope.$watch("bases", function(newvalue) {
-              console.log("Changed to " + newvalue);
-          });
-            */
-
+          $scope.publicApys = PublicApy.all();
 
           $scope.relate = function(apy) {
               if ($scope.base.foreign_apys.indexOf(apy.url) == -1) {
@@ -85,7 +78,7 @@
               }
 
               $scope.base.$update({
-                  'name': $scope.base.name
+                  "name": $scope.base.name
               });
 
           };
@@ -93,13 +86,13 @@
           $scope.is_related = function(apy) {
                 if ($scope.base.foreign_ays !== undefined) {
                     return !($scope.base.foreign_apys.indexOf(apy.url) == -1);
-                };
+                }
           };
 
           //if (!angular.isUndefined(window.active_base_id)) {
           if (window.active_base_id.length !== 0) {
               $scope.base = Base.get({
-                  'name': window.active_base
+                  "name": window.active_base
               });
           };
 
@@ -114,13 +107,13 @@
                   method: 'POST',
                   url: 'base/new',
                   data: $.param({
-                      'new_base_name': this.new_base_name
+                      "new_base_name": this.new_base_name
                   }), // pass in data as strings
                   headers: {
-                      'Content-Type': 'application/x-www-form-urlencoded'
+                      "Content-Type": 'application/x-www-form-urlencoded'
                   } // set the headers so angular passing info as form data (not request payload)
               }).success(function(data, status, headers, config) {
-                  $document.find('form#new_base div').append(
+                  $document.find("form#new_base div").append(
                       angular.element(
                           "<span class='help-block'>Base created</span>"
                       ));
@@ -135,7 +128,7 @@
                           "<span class='help-block'>" +
                           data + "</span>"));
                   $document.find("form#new_base").addClass(
-                      'has-warning');
+                      "has-warning");
               });
               $scope.creation_is_running = false;
           };
@@ -192,10 +185,10 @@
                   $scope.upload = $upload.upload({
                       url: '/core/api/base/import', //upload.php script, node.js route, or servlet url
                       //method: 'POST' or 'PUT',
-                      //headers: {'header-key': 'header-value'},
+                      //headers: {"header-key": 'header-value'},
                       //withCredentials: true,
                       headers: {
-                          'X-CSRFToken': $cookies.csrftoken
+                          "X-CSRFToken": $cookies.csrftoken
                       },
                       data: {
                           attachment: $scope.myModelObj,
@@ -207,10 +200,6 @@
                       //fileFormDataName: myFile, //or a list of names for multiple files (html5). Default is 'file'
                       // customize how data is added to formData. See #40#issuecomment-28612000 for sample code
                       //formDataAppender: function(formData, key, val){}
-                  }).progress(function(evt) {
-                      console.log('percent: ' + parseInt(
-                          100.0 * evt.loaded / evt.total
-                      ));
                   }).success(function(data, status, headers,
                       config) {
                       // file is uploaded successfully
@@ -249,7 +238,7 @@
 
           $scope.init = function() {
               var apys = Apy.all({
-                  'name': window.active_base
+                  "name": window.active_base
               }, function() {
                   $scope.apys = apys;
                   counter = 0;
@@ -266,7 +255,6 @@
               // setup pusher for listening to counter events
               /*
             Pusher.subscribe(window.channel, "counter", function(item) {
-                console.log(item);
                 $scope.apys.map(function(apy) {
                     if (apy.id == item['apy_id']) {
                         apy.counter = item['counter'];
@@ -276,8 +264,6 @@
 
             Pusher.subscribe(window.channel, 'pusher:subscription_succeeded',
                 function(members) {
-                    console.log("subscription_succeeded");
-                    console.log(members);
                     add_client_message("Subscription succeeded.");
                 });
                   */
@@ -296,9 +282,9 @@
 
           $scope.create = function() {
               Apy.create({
-                  'name': window.active_base
+                  "name": window.active_base
               }, {
-                  'name': $scope.new_exec_name
+                  "name": $scope.new_exec_name
               }, function(apy) {
                   $scope.apys.push(apy);
                   $scope.showNewExec = false;
@@ -307,8 +293,8 @@
 
           $scope.save = function(apy) {
               Apy1.update({
-                  'base_name': window.active_base,
-                  'name': apy.name
+                  "base_name": window.active_base,
+                  "name": apy.name
               }, apy).$promise.then(function(data) {
                   $scope.alerts.push({
                       type: 'success',
@@ -347,11 +333,11 @@
           };
 
           $scope.delete = function(apy) {
-              //Apy1.update({'baseId': window.active_base_id, 'id': apy.id}, apy);
+              //Apy1.update({"baseId": window.active_base_id, 'id': apy.id}, apy);
               console.info(apy);
               Apy1.delete({
-                  'base_name': window.active_base,
-                  'name': apy.name
+                  "base_name": window.active_base,
+                  "name": apy.name
               }, function(data) {
                   var indx = $scope.apys.indexOf(apy);
                   $scope.apys.splice(indx, 1);
@@ -361,8 +347,8 @@
 
           $scope.clone = function(apy) {
               Apy1.clone({
-                  'base_name': window.active_base,
-                  'name': apy.name
+                  "base_name": window.active_base,
+                  "name": apy.name
               }, apy, function(data) {
                   $scope.apys.push(data);
               });
@@ -375,7 +361,7 @@
           };
 
           $scope.printcurl = function(apy) {
-              var parser = document.createElement('a');
+              var parser = document.createElement("a");
               parser.href = document.URL;
               add_client_message("user:   curl -u " + window.username +
                   " -H'Cookie: " + document.cookie + "' \"" +
@@ -395,7 +381,7 @@
           $scope.rename = function($event) {
               new_exec_name = $($event.currentTarget.parentNode.parentNode)
                   .find(
-                      'input').first().val();
+                      "input").first().val();
               this.apy.name = new_exec_name;
               this.apy.$save();
           };
@@ -445,7 +431,7 @@
 
               $scope.init = function() {
                   $scope.myData = Settings.all({
-                      'name': window.active_base
+                      "name": window.active_base
                   });
               };
 
@@ -461,7 +447,7 @@
                   $scope.myData.map(function(item) {
                       if (item.id === undefined) {
                           new_item = Settings.create({
-                              'name': window.active_base
+                              "name": window.active_base
                           }, item, function() {
                               if (new_item['id'] !==
                                   undefined) {
@@ -472,8 +458,8 @@
 
                       } else {
                           Setting.update({
-                              'name': window.active_base,
-                              'id': item.id
+                              "name": window.active_base,
+                              "id": item.id
                           }, item);
                       }
                   });
@@ -484,8 +470,8 @@
                   $scope.gridOptions.selectItem(index, false);
                   removed = $scope.myData.splice(index, 1)[0];
                   Setting.delete({
-                      'name': window.active_base,
-                      'id': removed.id
+                      "name": window.active_base,
+                      "id": removed.id
                   });
               };
           }
@@ -496,12 +482,10 @@
           restrict: 'A',
           priority: 2,
           scope: {
-              'apy': '=codemirror'
+              "apy": '=codemirror'
           },
           template: '{{apy.module}}',
           link: function(scope, elem, attrs) {
-              //console.log(scope);
-              //console.log(scope.apy);
               var myCodeMirror = CodeMirror(function(elt) {
                   elem.parent().replaceWith(elt);
               }, {
@@ -522,7 +506,6 @@
                   showCursorWhenSelecting: true
               });
               myCodeMirror.on("blur", function(cm, cmChangeObject) {
-                  console.log("scope.$apply");
                   scope.$apply(function() {
                       scope.apy.module =
                           myCodeMirror.getValue();
@@ -594,7 +577,6 @@
         };*/
 
           /*  $scope.checkName = function(data) {
-            console.log("user.name.onbeforesave:", data);
             if (data !== 'awesome') {
               return "Username should be `awesome`";
             }
@@ -617,24 +599,17 @@
           $scope.saveTable = function() {
               //$scope.users already updated
 
-              console.log("tableform.onaftersave");
               var results = [];
               itemsPendingSave = [];
               angular.forEach($scope.endpoints, function(endpoint) {
-                  console.log(endpoint);
-                  console.log(endpoint.id);
                   if (angular.isUndefined(endpoint.id)) {
-                      console.log("create");
                       te = TransportEndpoints.save(endpoint);
-                      console.log(te);
                       endpoint.id = te.id;
 
                   } else {
-                      console.log("update");
-
-                      //Setting.update({'baseId': window.active_base_id, 'id': item.id}, item);
+                      //Setting.update({"baseId": window.active_base_id, 'id': item.id}, item);
                       TransportEndpoints.update({
-                          'id': endpoint.id
+                          "id": endpoint.id
                       }, endpoint);
                   }
                   //results.push($http.post('/saveUser', user));
@@ -664,17 +639,11 @@
       }
   ]);
 
-  /*    window.app.config(function($resourceProvider) {
-        console.log($resourceProvider);
-      $resourceProvider.defaults.stripTrailingSlashes = false;
-    });
-  */
-
   window.app.config(['$httpProvider', '$cookiesProvider', function(
       $httpProvider, $cookiesProvider) {
       $httpProvider.interceptors.push(function($q, $cookies) {
           return {
-              'request': function(config) {
+              "request": function(config) {
                   //config.url = config.url + '?id=123';
                   if (config.method == "POST" || config
                       .method == "PUT") {

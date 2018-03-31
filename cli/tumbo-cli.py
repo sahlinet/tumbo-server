@@ -181,6 +181,7 @@ class Env(object):
     def __init__(self, envId, url=None):
         self.url = url
         self.envId = envId
+        self.config_data = None
 
         try:
             if self.envId+".json" in os.readlink("%s/.tumbo/active_env" % os.path.expanduser("~")):

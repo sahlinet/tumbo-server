@@ -604,7 +604,7 @@ def get_static(path, vhost, username, password, async=False):
 class StaticServerThread(CommunicationThread):
 
     def __init__(self, *args, **kwargs):
-        return super(StaticServerThread, self).__init__(*args, **kwargs)
+        super(StaticServerThread, self).__init__(*args, **kwargs)
 
     def on_message(self, ch, method, props, body):
         logger.debug(self.name+": "+sys._getframe().f_code.co_name)

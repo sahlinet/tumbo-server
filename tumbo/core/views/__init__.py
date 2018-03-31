@@ -441,11 +441,6 @@ class ExecDeleteView(View):
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
-        return super(ExecDeleteView, self).dispatch(*args, **kwargs)
-
-
-    @csrf_exempt
-    def dispatch(self, *args, **kwargs):
         return super(ExecRenameView, self).dispatch(*args, **kwargs)
 
 
@@ -574,12 +569,6 @@ class View(TemplateView):
         context = super(View, self).get_context_data(**kwargs)
         context['bases'] = Base.objects.filter(user=self.request.user).order_by('name')
         context['public_bases'] = Base.objects.filter(public=True).order_by('name')
-
-        #try:
-        #    token = self.request.user.auth_token
-        #except Token.DoesNotExist:
-        #    token = Token.objects.create(user=self.request.user)
-        #context['TOKEN'] = token
         return context
 
     @method_decorator(login_required)

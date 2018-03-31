@@ -260,14 +260,6 @@ class CommunicationThread(threading.Thread):
                 logger.warn(self.vhost)
                 logger.warn(self.queues_consume)
                 raise e
-            finally:
-                pass
-                try:
-                    self._connection.close()
-                    self._connection.ioloop.start() # allow connection to close
-                except Exception, e:
-                    logger.error("Heartbeat thread lost connection")
-                    logger.exception(e)
 
     def stop(self):
         logger.debug(self.name+": "+sys._getframe().f_code.co_name)
