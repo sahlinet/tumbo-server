@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: List
+items:
+-   apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: rp
+      name: rp
+      namespace: tumbo
+    spec:
+      replicas: 1
+      selector:
+        service: rp
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            service: rp
+        spec:
+          #nodeSelector:
+            #kubernetes.io/hostname: kubernetes-node-2
+          containers:
+          - env:
+            - name: SERVERNAME
+              value: "{{ HOST }}"
+            - name: FIX_FRONTEND_PORT
+            #  value: ":31999"
+              value: ""
+            - name: FIX_SCHEME
+              value: "https"
+            - name: VHOST_1_SERVERNAME
+              value: "{{ HOST }}"
+            - name: VHOST_1_SSL
+              value: "False"
+            - name: VHOST_1_PROXYCONF_notify_plain
+              value: "True"
+            - name: VHOST_1_PROXYCONF_all_proxy_pass
+              value: "http://app:80"
+            - name: VHOST_1_PROXYCONF_all_location
+              value: "/"
+            - name: VHOST_1_PROXYCONF_notify_proxy_pass
+              value: "http://app:80"
+            - name: VHOST_1_PROXYCONF_notify_plain
+              value: "True"
+            - name: VHOST_1_PROXYCONF_notify_location
+              value: "/core/dashboard/dropbox_notify/"
+            image: philipsahli/nginx-rp:latest
+            imagePullPolicy: ""
+            name: rp
+            ports:
+            - containerPort: 80
+              containerPort: 443
+            volumeMounts:
+            - mountPath: /etc/letsencrypt/
+              name: certs
+          volumes:
+          - name: certs
+            emptyDir: {}
+          restartPolicy: Always
+          serviceAccountName: ""
+    status:
+      replicas: 0
+-   apiVersion: v1
+    kind: Service
+    metadata:
+      name: rp
+      namespace: tumbo
+    spec:
+      ports:
+      - name: "plain"
+        port: 80
+        targetPort: 80
+        nodePort: 31999
+        protocol: "TCP"
+      #- name: "ssl"
+      #  #nodePort: 443
+      #  port: 443
+      #  protocol: "TCP"
+      selector:
+        service: rp
+      type: LoadBalancer
+      #externalIPs:
+      #    - 192.168.99.100
+      #selector:
+      #    app: nginx-ingress
+      #type: NodePort

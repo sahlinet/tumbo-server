@@ -1,0 +1,165 @@
+apiVersion: v1
+kind: List
+items:
+-   apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: app
+      name: app
+      namespace: tumbo
+    spec:
+      replicas: 1
+      selector:
+        service: app
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            service: app
+        spec:
+          containers:
+          - env:
+            - name: MODE
+              value: web
+            - name: NEWRELIC_LICENSE
+              value: bd80fp971051885433a13f77eae8db909e0be6e98
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: adminpw 
+            - name: JOBSTOREDB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: jobstoredbpw
+            - name: RABBITMQ_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: rabbitmqadminpw
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: redispw
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: dbpw
+            envFrom:
+            - configMapRef:
+                name: tumbo-config
+            image: philipsahli/tumbo-server:v0.4.12
+            imagePullPolicy: "Always"
+            name: app
+            ports:
+            - containerPort: 80
+            resources: {}
+          restartPolicy: Always
+          serviceAccountName: ""
+          #volumes:
+          #- name: secrets
+          #  secret:
+          #  secretName: redispw
+    status:
+      replicas: 0
+-   apiVersion: v1
+    kind: Service
+    metadata:
+      creationTimestamp: null
+      name: app
+      namespace: tumbo
+    spec:
+      ports:
+      - name: ""
+        nodePort: 0
+        port: 80
+        protocol: ""
+        targetPort: 0
+      selector:
+        service: app
+    status:
+      loadBalancer: {}
+-   apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: background
+      name: background
+      namespace: tumbo
+    spec:
+      replicas: 1
+      selector:
+        service: background
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            service: background
+        spec:
+          containers:
+          - env:
+            - name: MODE
+              value: background
+            - name: NEWRELIC_LICENSE
+              value: bd80f971051885433a13f77eae8db909e0be6e98
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: adminpw
+            - name: JOBSTOREDB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: jobstoredbpw
+            - name: RABBITMQ_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: rabbitmqadminpw
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: redispw
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: dbpw
+            envFrom:
+            - configMapRef:
+                name: tumbo-config
+            image: philipsahli/tumbo-server:v0.4.12
+            imagePullPolicy: "Always"
+            name: background
+            resources: {}
+          restartPolicy: Always
+          serviceAccountName: ""
+          volumes: null
+    status:
+      replicas: 0
+-   apiVersion: v1
+    kind: Service
+    metadata:
+      creationTimestamp: null
+      name: background
+      namespace: tumbo
+    spec:
+      ports:
+      - name: ""
+        nodePort: 0
+        port: 80
+        protocol: ""
+        targetPort: 0
+      selector:
+        service: background
+    status:
+      loadBalancer: {}
+

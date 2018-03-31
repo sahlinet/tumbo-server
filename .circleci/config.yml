@@ -1,0 +1,112 @@
+version: 2
+jobs:
+  build_test:
+    machine: true
+    environment:
+      - FRONTEND_HOST: "localhost"
+    steps:
+      - checkout
+      - run: docker info
+      # set VERSION
+      - run: echo 'export VERSION=${CIRCLE_TAG:=$CIRCLE_BRANCH}' >> $BASH_ENV
+      #- run: echo 'export TUMBO_VERSION=`./cli/tumbo-cli.py --version`' >> $BASH_ENV
+      - run: echo $VERSION
+      #- run: echo $TUMBO_VERSION
+      - run: pip install Markdown==2.6.6
+      - run: pip install codacy-coverage
+      #
+      - run: sudo apt-get update && sudo apt-get install libpq-dev
+      #
+      - run: pip install -r requirements.txt
+      # TODO: coverage should be run in cotainer and data directory for output should be added as volume
+      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
+      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
+      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
+      - run: coverage xml
+      - run: python-codacy-coverage -r coverage.xml
+
+      - run: pip install -r requirements-cli.txt
+      #
+      - run: sed -i 's|/var/run/docker.sock|/run/docker.sock|g' compose-files/docker-compose-app-docker_socket_exec.yml
+      - run: egrep sock compose-files/docker-compose-app-docker_socket_exec.yml
+      ## docs
+      - run: markdown_py -o html5 -f tumbo/ui/templates/docs_content.html docs/user_guide.md
+      - run: cli/tumbo-cli.py --help 2>&1| sed  's/^/     /' > docs/cli.txt
+      - run: git add docs/cli.txt
+      - run: git config --global push.default current
+      - run: git config --global user.email "philip@sahli.net"
+      - run: git config --global user.name "Philip Sahli"
+      - run: git commit tumbo/ui/templates/docs*.html -m "update docs [ci skip]" || true
+      #- git push
+      #
+      - run: sudo chmod 777 /run/docker.sock
+      #
+      - run: pip install --upgrade setuptools
+      - run: bash bin/create_package.sh > /dev/null
+      - run: python cli/tumbo-cli.py server docker pull > /dev/null
+      - run: python cli/tumbo-cli.py server docker build
+
+      # Tests
+      - run: sudo mkdir shared
+      - run: sudo chown 1000:1000 shared
+      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test core --settings=tumbo.dev"
+      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test aaa --settings=tumbo.dev"
+      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test ui --settings=tumbo.dev"
+      #
+      - run: sh -x bin/build-worker.sh
+      #
+      - run: 
+          command: |
+              DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa python cli/tumbo-cli.py server docker run
+          background: true
+          no_output_timeout: 3m
+      - run: sleep 120
+      - run: docker inspect tumboserver_app_1
+      - run: curl --retry 10 --retry-delay 5 -v $(python cli/tumbo-cli.py server docker url)
+      - run: pkill python
+
+      # Push
+      - run: 
+          command: |
+            if [[ $VERSION == v* ]]; then
+                 docker login -u $DOCKER_USER -p $DOCKER_PASS
+                 docker tag tumboserver_app philipsahli/tumbo-server:$CIRCLE_TAG
+                 docker tag philipsahli/tumbo-worker:develop philipsahli/tumbo-worker:$CIRCLE_TAG
+                 docker images
+                 docker push philipsahli/tumbo-server:$CIRCLE_TAG
+                 docker push philipsahli/tumbo-worker:$CIRCLE_TAG
+                 pip install twine==1.11.0
+                 twine upload -r $PYPI_HOST -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz
+            fi
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - build_test:
+          context: test
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+                - /feature.*/
+                - /hotfix.*/
+  snapshot-release:
+    jobs:
+      - build_test:
+          context: test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*?dev/
+  release:
+    jobs:
+      - build_test:
+          context: live
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+\.[0-9]+\.[0-9]+$/

@@ -13,3 +13,6 @@ class PluginUserConfig(models.Model):
     plugin_name = models.CharField(max_length=30)
     base = models.ForeignKey("core.Base")
     config = JSONField(default="{}")
+
+    #class Meta:
+    #    app_label = "core"

@@ -36,19 +36,26 @@ DATABASES['default']['PORT'] = get_var('DB_PORT')
 
 # 'postgresql://scott:tiger@localhost:5432/mydatabase'
 TUMBO_SCHEDULE_JOBSTORE = 'postgresql://%s:%s@%s:%s/%s' % (
-        get_var('JOBSTOREDB_USER'),
-        get_var('JOBSTOREDB_PASS'),
-        get_var('JOBSTOREDB_HOST'),
-        get_var('JOBSTOREDB_PORT'),
-        get_var('JOBSTOREDB_NAME')
+    get_var('JOBSTOREDB_USER'),
+    get_var('JOBSTOREDB_PASS'),
+    get_var('JOBSTOREDB_HOST'),
+    get_var('JOBSTOREDB_PORT'),
+    get_var('JOBSTOREDB_NAME')
 )
 
 try:
     CACHE_TCP_ADDR = os.environ['CACHE_1_PORT_6379_TCP_ADDR']
 except KeyError, e:
-    CACHE_TCP_ADDR = os.environ['CACHE_PORT_6379_TCP_ADDR']
+    if os.environ.get("KUBERNETES_PORT", None):
+        CACHE_TCP_ADDR = "cache"
+    else:
+        CACHE_TCP_ADDR = os.environ['CACHE_PORT_6379_TCP_ADDR']
 
-REDIS_URL = "redis://:%s@%s:6379/1" % (os.environ['CACHE_ENV_REDIS_PASS'], CACHE_TCP_ADDR)
+
+if os.environ.get("KUBERNETES_PORT", None):
+    REDIS_URL = "redis://:%s@%s:6379/1" % (os.environ['REDIS_PASSWORD'].rstrip(), CACHE_TCP_ADDR)
+else:
+    REDIS_URL = "redis://:%s@%s:6379/1" % (os.environ['CACHE_ENV_REDIS_PASS'], CACHE_TCP_ADDR)
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 CACHES = {
@@ -63,11 +70,18 @@ CACHES = {
 
 STATIC_URL = '/static/'
 
-RABBITMQ_HTTP_API_PORT = get_var('QUEUE_PORT_15672_TCP_PORT')
-RABBITMQ_ADMIN_USER = get_var('RABBITMQ_ADMIN_USER')
-RABBITMQ_ADMIN_PASSWORD = get_var('RABBITMQ_ADMIN_PASSWORD')
-RABBITMQ_HOST = get_var('QUEUE_PORT_5672_TCP_ADDR')
-RABBITMQ_PORT = int(get_var('QUEUE_PORT_5672_TCP_PORT'))
+if os.environ.get("KUBERNETES_PORT", None):
+    RABBITMQ_HTTP_API_PORT = 15672
+    RABBITMQ_ADMIN_USER = "admin"
+    RABBITMQ_ADMIN_PASSWORD = os.environ['RABBITMQ_ADMIN_PASSWORD']
+    RABBITMQ_HOST = "queue"
+    RABBITMQ_PORT = 5672
+else:
+    RABBITMQ_HTTP_API_PORT = get_var('QUEUE_PORT_15672_TCP_PORT')
+    RABBITMQ_ADMIN_USER = get_var('RABBITMQ_ADMIN_USER')
+    RABBITMQ_ADMIN_PASSWORD = get_var('RABBITMQ_ADMIN_PASSWORD')
+    RABBITMQ_HOST = get_var('QUEUE_PORT_5672_TCP_ADDR')
+    RABBITMQ_PORT = int(get_var('QUEUE_PORT_5672_TCP_PORT'))
 
 DROPBOX_CONSUMER_KEY = get_var('DROPBOX_CONSUMER_KEY')
 DROPBOX_CONSUMER_SECRET = get_var('DROPBOX_CONSUMER_SECRET')
@@ -91,8 +105,20 @@ TUMBO_CORE_RECEIVER_PASSWORD = "h8h9h0h1h2h3"
 WORKER_RABBITMQ_HOST = os.environ.get('WORKER_RABBITMQ_HOST', None)
 WORKER_RABBITMQ_PORT = os.environ.get('WORKER_RABBITMQ_PORT', None)
 
-STORE_DB_HOST = os.environ.get('STORE_DB_HOST', None)
-STORE_DB_PORT = os.environ.get('STORE_DB_PORT', None)
+
+if os.environ.get("KUBERNETES_PORT", None):
+    STORE_DB_HOST = "store"
+    STORE_DB_PORT = 5432
+    STORE_DB_NAME = "store"
+    STORE_DB_USER = "store"
+    STORE_DB_PASSWORD = "storepw"
+else:
+    STORE_DB_HOST = os.environ.get('STORE_DB_HOST', None)
+    STORE_DB_PORT = int(os.environ.get('STORE_DB_PORT', 5432))
+
+    STORE_DB_NAME = get_var("STORE_ENV_DB_NAME")
+    STORE_DB_USER = get_var("STORE_ENV_DB_USER")
+    STORE_DB_PASSWORD = get_var("STORE_ENV_PASSWORD")
 
 # Direct set, needed at the moment on Rancher
 # TODO: Get them dynamically from API
@@ -102,8 +128,8 @@ if WORKER_RABBITMQ_HOST:
 else:
     WORKER_RABBITMQ_HOST = os.environ['QUEUE_PORT_5672_TCP_ADDR']
     WORKER_RABBITMQ_PORT = int(os.environ['QUEUE_PORT_5672_TCP_PORT'])
-    STORE_DB_HOST = os.environ['STORE_PORT_5432_TCP_ADDR']
-    STORE_DB_PORT = int(os.environ['STORE_PORT_5432_TCP_PORT'])
+    STORE_DB_HOST = STORE_DB_HOST
+    STORE_DB_PORT = int(STORE_DB_PORT) if STORE_DB_PORT else None
 
 # Client
 TUMBO_WORKER_THREADCOUNT = 30               # How many worker threads are started
@@ -159,10 +185,10 @@ TUMBO_PLUGINS_CONFIG = {
         'core.plugins.datastore': {
             'ENGINE': "django.db.backends.postgresql_psycopg2",
             'HOST': STORE_DB_HOST,
-            'PORT': int(STORE_DB_PORT),
-            'NAME': get_var("STORE_ENV_DB_NAME"),
-            'USER': get_var("STORE_ENV_DB_USER"),
-            'PASSWORD': get_var("STORE_ENV_PASSWORD")
+            'PORT': STORE_DB_PORT,
+            'NAME': STORE_DB_NAME,
+            'USER': STORE_DB_USER,
+            'PASSWORD': STORE_DB_PASSWORD
         }
 }
 
@@ -178,6 +204,11 @@ if os.environ.get('DIGITALOCEAN_CONFIG', None):
     )
 
 # redis-metrics
-REDIS_METRICS['HOST'] = CACHE_TCP_ADDR
-REDIS_METRICS['PORT'] = int(os.environ['CACHE_PORT_6379_TCP_PORT'])
-REDIS_METRICS['PASSWORD'] = os.environ['CACHE_ENV_REDIS_PASS']
+if os.environ.get("KUBERNETES_PORT", None):
+    REDIS_METRICS['HOST'] = CACHE_TCP_ADDR
+    REDIS_METRICS['PORT'] = 6379
+    REDIS_METRICS['PASSWORD'] = os.environ['REDIS_PASSWORD'].rstrip()
+else:
+    REDIS_METRICS['HOST'] = CACHE_TCP_ADDR
+    REDIS_METRICS['PORT'] = int(os.environ['CACHE_PORT_6379_TCP_PORT'])
+    REDIS_METRICS['PASSWORD'] = os.environ['CACHE_ENV_REDIS_PASS']

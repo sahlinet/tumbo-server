@@ -6,15 +6,15 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import admin
 
-from core.views import DjendBaseView, DjendBaseDeleteView, \
-        DjendBaseSaveView, \
-        DjendBaseCreateView, \
-        DjendExecDeleteView, \
-        DjendExecView, \
-        login_or_sharedkey, dropbox_auth_finish, dropbox_auth_start, dropbox_auth_disconnect, DjendView, \
-        DjendBaseRenameView, CockpitView, DropboxNotifyView, \
+from core.views import BaseView, BaseDeleteView, \
+        BaseSaveView, \
+        BaseCreateView, \
+        ExecDeleteView, \
+        ExecView, \
+        login_or_sharedkey, dropbox_auth_finish, dropbox_auth_start, dropbox_auth_disconnect, View, \
+        BaseRenameView, CockpitView, DropboxNotifyView, \
         change_password
-from core.views.static import DjendStaticView
+from core.views.static import StaticView
 
 from core.api_views import BaseViewSet, ApyViewSet
 
@@ -49,22 +49,22 @@ urlpatterns = patterns('',
     url(r'cockpit/$', login_required(never_cache(CockpitView.as_view(template_name="fastapp/cockpit.html"))), name='cockpit'),
 
     # base
-    url(r'(?P<base>[\w-]+)/index/$', login_required(DjendBaseView.as_view(template_name="fastapp/base.html"))),
-    url(r'(?P<base>[\w-]+)/sync/$', login_required(DjendBaseSaveView.as_view())),
-    url(r'(?P<base>[\w-]+)/new/$', login_required(DjendBaseCreateView.as_view())),
-    url(r'(?P<base>[\w-]+)/delete/$', login_required(DjendBaseDeleteView.as_view())),
-    url(r'(?P<base>[\w-]+)/rename/$', login_required(DjendBaseRenameView.as_view())),
+    url(r'(?P<base>[\w-]+)/index/$', login_required(BaseView.as_view(template_name="fastapp/base.html"))),
+    url(r'(?P<base>[\w-]+)/sync/$', login_required(BaseSaveView.as_view())),
+    url(r'(?P<base>[\w-]+)/new/$', login_required(BaseCreateView.as_view())),
+    url(r'(?P<base>[\w-]+)/delete/$', login_required(BaseDeleteView.as_view())),
+    url(r'(?P<base>[\w-]+)/rename/$', login_required(BaseRenameView.as_view())),
 
     # execs
     url(r'(?P<base>[\w-]+)/exec/(?P<id>\d+)/$', \
-                                            csrf_exempt(login_or_sharedkey(DjendExecView.as_view())), name='exec'),
+                                            csrf_exempt(login_or_sharedkey(ExecView.as_view())), name='exec'),
     url(r'(?P<base>[\w-]+)/delete/(?P<id>\w+)/$', \
-                                            login_required(DjendExecDeleteView.as_view())),
+                                            login_required(ExecDeleteView.as_view())),
 
     # static (userland)
     url(r'(?P<base>[\w-]+)/static/(?P<name>.+)$', \
-                                            login_or_sharedkey(DjendStaticView.as_view())),
+                                            login_or_sharedkey(StaticView.as_view())),
 
     # home
-    url(r'^dashboard/$', DjendView.as_view(template_name="fastapp/base_list.html"), name="console"),
+    url(r'^dashboard/$', View.as_view(template_name="fastapp/base_list.html"), name="console"),
 )

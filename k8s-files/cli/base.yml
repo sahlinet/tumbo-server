@@ -1,0 +1,356 @@
+apiVersion: v1
+kind: List
+items:
+-   apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: cache
+      name: cache
+      namespace: tumbo
+    spec:
+      replicas: 1
+      selector:
+        service: cache
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            service: cache
+        spec:
+          containers:
+          - image: tutum/redis
+            env:
+            - name: REDIS_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: redispw
+            imagePullPolicy: ""
+            name: cache
+            ports:
+            - containerPort: 6379
+            resources: {}
+          restartPolicy: Always
+          serviceAccountName: ""
+          volumes: null
+    status:
+      replicas: 0
+-   apiVersion: v1
+    kind: Service
+    metadata:
+      creationTimestamp: null
+      name: cache
+      namespace: tumbo
+    spec:
+      ports:
+      - name: ""
+        nodePort: 0
+        port: 6379
+        protocol: ""
+        targetPort: 0
+      selector:
+        service: cache
+    status:
+      loadBalancer: {}
+-   apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: db
+      name: db
+      namespace: tumbo
+    spec:
+      replicas: 1
+      selector:
+        service: db
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            service: db
+        spec:
+          containers:
+          - env:
+            - name: DB_NAME
+              value: planet
+            - name: DB_USER
+              value: planet
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: dbpw
+            image: philipsahli/postgresql-test
+            imagePullPolicy: ""
+            name: db
+            ports:
+            - containerPort: 5432
+            resources: {}
+  #            volumeMounts:
+  #            - mountPath: /var/lib/postgresql/
+  #              name: glusterfsvol
+            securityContext:
+                privileged: true
+          restartPolicy: Always
+          serviceAccountName: ""
+  #          volumes:
+  #          - name: glusterfsvol
+  #            glusterfs:
+  #              endpoints: glusterfs-cluster
+  #              path: volume2
+  #              readOnly: false
+    status:
+      replicas: 0
+-   apiVersion: v1
+    kind: Service
+    metadata:
+      creationTimestamp: null
+      name: db
+      namespace: tumbo
+    spec:
+      ports:
+      - name: ""
+        nodePort: 0
+        port: 5432
+        protocol: ""
+        targetPort: 0
+      selector:
+        service: db
+    status:
+      loadBalancer: {}
+-   apiVersion: v1
+    kind: Service
+    metadata:
+      creationTimestamp: null
+      name: store
+      namespace: tumbo
+    spec:
+      ports:
+      - name: ""
+        nodePort: 0
+        port: 5432
+        protocol: ""
+        targetPort: 0
+      selector:
+        service: store
+    status:
+      loadBalancer: {}
+-   apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: jobstoredb
+      name: jobstoredb
+      namespace: tumbo
+    spec:
+      replicas: 1
+      selector:
+        service: jobstoredb
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            service: jobstoredb
+        spec:
+          containers:
+          - env:
+            - name: DB_NAME
+              value: jobstore
+            - name: DB_USER
+              value: jobstore
+            - name: SUPERUSER
+              value: "true"
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: jobstoredbpw
+            image: philipsahli/postgresql-test
+            imagePullPolicy: ""
+            name: jobstoredb
+            ports:
+            - containerPort: 5432
+            resources: {}
+          restartPolicy: Always
+          serviceAccountName: ""
+          volumes: null
+    status:
+      replicas: 0
+-   apiVersion: v1
+    kind: Service
+    metadata:
+      creationTimestamp: null
+      name: jobstoredb
+      namespace: tumbo
+    spec:
+      ports:
+      - name: ""
+        nodePort: 0
+        port: 5432
+        protocol: ""
+        targetPort: 0
+      selector:
+        service: jobstoredb
+    status:
+      loadBalancer: {}
+-   apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: monitor
+      name: monitor
+      namespace: tumbo
+    spec:
+      replicas: 1
+      selector:
+        service: monitor
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            service: monitor
+        spec:
+          containers:
+          - env:
+            - name: NEWRELIC_LICENSE
+              value: bd80f971051885433a13f77eae8db909e0be6e98
+            - name: MODE
+              value: docker-postgresql-test
+            - name: DB_ENV_DB_NAME 
+              value: planet
+            - name: DB_ENV_DB_USER
+              value: planet
+            - name: DB_ENV_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: dbpw
+            - name: QUEUE_ENV_RABBITMQ_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: rabbitmqadminpw
+            - name: CACHE_ENV_REDIS_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: redispw
+            image: philipsahli/newrelic-plugin-agent
+            imagePullPolicy: ""
+            name: monitor
+            resources: {}
+          restartPolicy: Always
+          serviceAccountName: ""
+          volumes: null
+    status:
+      replicas: 0
+-   apiVersion: v1
+    kind: Namespace
+    metadata:
+          name: tumbo
+-   apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: queue
+      name: queue
+      namespace: tumbo
+    spec:
+      replicas: 1
+      selector:
+        service: queue
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            service: queue
+        spec:
+          containers:
+          - image: tutum/rabbitmq
+            env:
+            - name: RABBITMQ_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: rabbitmqadminpw
+            imagePullPolicy: ""
+            name: queue
+            ports:
+            - containerPort: 5672
+            - containerPort: 15672
+            resources: {}
+          restartPolicy: Always
+          serviceAccountName: ""
+          volumes: null
+    status:
+      replicas: 0
+-   apiVersion: v1
+    kind: Service
+    metadata:
+      creationTimestamp: null
+      name: queue
+      namespace: tumbo
+    spec:
+      ports:
+      - name: "communication"
+        nodePort: 0
+        port: 5672
+        protocol: ""
+        targetPort: 0
+      - name: "management"
+        nodePort: 0
+        port: 15672
+        protocol: ""
+        targetPort: 0
+      selector:
+        service: queue
+    status:
+      loadBalancer: {}
+-   apiVersion: v1
+    kind: ReplicationController
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: store
+      name: store
+      namespace: tumbo
+    spec:
+      replicas: 1
+      selector:
+        service: store
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            service: store
+        spec:
+          containers:
+          - env:
+            - name: DB_NAME
+              value: store
+            - name: DB_USER
+              value: store
+            - name: SUPERUSER
+              value: "true"
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: storepw
+            image: philipsahli/postgresql-test
+            imagePullPolicy: ""
+            name: store
+            ports:
+            - containerPort: 5432
+            resources: {}
+          restartPolicy: Always
+          serviceAccountName: ""
+          volumes: null
+    status:
+      replicas: 0

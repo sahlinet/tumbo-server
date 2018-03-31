@@ -3,7 +3,10 @@
 """Tumbo
 
 Usage:
-  tumbo-cli.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage]
+  tumbo-cli.py server dev run [--ngrok-hostname=host] [--ngrok-authtoken=token] [--autostart] [--coverage] [--settings=tumbo.dev]
+  tumbo-cli.py server kubernetes run [--context=context] [--ingress] [--ini=ini_file]
+  tumbo-cli.py server kubernetes delete [--context=context] [--partial] [--ini=ini_file]
+  tumbo-cli.py server kubernetes show [--context=context] [--ini=ini_file]
   tumbo-cli.py server docker run [--stop-after=<seconds>] [--ngrok-hostname=host] [--ngrok-authtoken=token]
   tumbo-cli.py server docker stop
   tumbo-cli.py server docker build
@@ -48,7 +51,10 @@ Options:
 """
 import sys
 import os
-import sh
+try:
+    import sh
+except ImportError:
+    import pbs as sh
 import time
 import signal
 import requests
@@ -59,7 +65,7 @@ import logging
 import tempfile
 
 from os.path import expanduser
-home = expanduser("~")
+HOME = expanduser("~")
 
 from pygments import highlight
 from pygments.lexers import JsonLexer
@@ -67,21 +73,34 @@ from pygments.formatters import Terminal256Formatter
 
 from docopt import docopt
 from tabulate import tabulate
+from ConfigParser import RawConfigParser
+from base64 import standard_b64encode
 
-bash = sh.Command("bash")
-python = sh.Command(sys.executable)
+BASH = sh.Command("bash")
+PYTHON = sh.Command(sys.executable)
 
 coverage_cmd = "coverage run --timid --source=tumbo --parallel-mode "
+
+# output
+if os.name == "nt":
+    STDOUT="CON"
+    STDERR="CON"
+else:
+    STDOUT="/dev/stdout"
+    STDERR="/dev/stderr"
+
 
 try:
     import tumbo
     tumbo_path = os.path.join(os.path.dirname(tumbo.__file__), "..")
     manage_py = "%s/tumbo/manage.py" % tumbo_path
     compose_files_path = sys.prefix+"/tumbo_server/compose-files"
+    k8s_files_path = sys.prefix+"/tumbo_server/k8s-files/cli"
 except ImportError:
     tumbo_path = os.path.abspath(".")
     manage_py = "tumbo/manage.py"
     compose_files_path = "compose-files"
+    k8s_files_path = "k8s-files/cli"
 
 compose_file = "%s/docker-compose-app-docker_socket_exec.yml" % compose_files_path
 compose_file_base = "%s/docker-compose-base.yml" % compose_files_path
@@ -396,17 +415,17 @@ class Env(object):
                 created = tolocaltime(log['created'])
                 level = int(log['level'])
                 if level == logging.DEBUG:
-                            level_s = "DEBUG"
+                    level_s = "DEBUG"
                 elif level == logging.INFO:
-                            level_s = "INFO"
+                    level_s = "INFO"
                 elif level == logging.WARNING:
-                            level_s = "WARNING"
+                    level_s = "WARNING"
                 elif level == logging.ERROR:
-                            level_s = "ERROR"
+                    level_s = "ERROR"
                 elif level == logging.CRITICAL:
-                            level_s = "CRITICAL"
+                    level_s = "CRITICAL"
                 else:
-                            level_s = "UNKNOWN"
+                    level_s = "UNKNOWN"
                 table.append([
                     "Log (%s)" % level_s, created, custom_format(log['msg'], cut, nocolor)
                 ])
@@ -485,7 +504,7 @@ def do_ngrok():
     else:
         port = 8000
     cmd = '-hostname=%s -authtoken=%s localhost:%s' % (ngrok_hostname, ngrok_authtoken, port)
-    ngrok(cmd.split(), _out="/dev/null", _err="/dev/stderr", _bg=True)
+    ngrok(cmd.split(), _out="/dev/null", _err=STDERR, _bg=True)
 
 
 def tolocaltime(dt):
@@ -503,7 +522,9 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.3")
+    arguments = docopt(__doc__, version="0.4.12")
+
+    ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
         try:
             ngrok = sh.Command("ngrok")
@@ -583,7 +604,12 @@ if __name__ == '__main__':
 
     if arguments['server']:
         if arguments['dev']:
+            # dev run
             if arguments['run']:
+
+                settings_module = "%s" % arguments.get('--settings')
+                if not settings_module or settings_module == "None":
+                    settings_module = "tumbo.dev"
 
                 def stop_handler(signum, frame):
                     stop()
@@ -601,7 +627,10 @@ if __name__ == '__main__':
                         for pid in sh.pgrep('-f', 'python.*worker.*').split():
                             os.killpg(int(pid), 9)
 
-                        sh.pkill("ngrok")
+                        if os.name == "nt":
+                            print "Sorry no pkill command available to kill remaining processes"
+                        else:
+                            sh.pkill("ngrok")
                     except sh.ErrorReturnCode_1:
                         pass
 
@@ -612,78 +641,79 @@ if __name__ == '__main__':
                     print "Starting postgresql"
                     cmd_args = '-u postgres /usr/bin/postgres -D /var/lib/pgsql/data'
                     sudo = sh.Command("sudo")
-                    cmd = sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                    cmd = sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                     print "Starting redis"
-                    cmd_args = "-u redis /usr/bin/redis-server /etc/redis.conf"
-                    sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                    cmd_args = "redis-server" # /etc/redis.conf"
+                    sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                     print "Starting rabbitmq"
-                    cmd_args = "-u rabbitmq /usr/sbin/rabbitmq-server"
-                    sudo(cmd_args.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                    cmd_args = "/usr/local/Cellar/rabbitmq/3.6.6/sbin/rabbitmq-server"
+                    sudo(cmd_args.split(), _out=STDOUT, _err=STDERR, _bg=True)
 
                 print "Starting Development Server"
                 env = {}
                 env.update(os.environ)
                 env.update({'PYTHONPATH': "fastapp", 'CACHE_ENV_REDIS_PASS': os.environ['CACHE_ENV_REDIS_PASS'],
-                                   'DROPBOX_CONSUMER_KEY': os.environ['DROPBOX_CONSUMER_KEY'],
-                                   'DROPBOX_CONSUMER_SECRET': os.environ['DROPBOX_CONSUMER_SECRET'],
-                                   'DROPBOX_REDIRECT_URL': os.environ['DROPBOX_REDIRECT_URL'],
+                            'DROPBOX_CONSUMER_KEY': os.environ['DROPBOX_CONSUMER_KEY'],
+                            'DROPBOX_CONSUMER_SECRET': os.environ['DROPBOX_CONSUMER_SECRET'],
+                            'DROPBOX_REDIRECT_URL': os.environ['DROPBOX_REDIRECT_URL'],
                            })
                 PROPAGATE_VARIABLES = os.environ.get("PROPAGATE_VARIABLES", None)
                 if PROPAGATE_VARIABLES:
                     env['PROPAGATE_VARIABLES'] = PROPAGATE_VARIABLES
 
-                cmd = "%s syncdb --noinput --settings=tumbo.dev" % manage_py
-                syncdb = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+
+                cmd = "%s syncdb --noinput --settings=%s" % (manage_py, settings_module)
+                syncdb = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                 syncdb.wait()
 
-                cmd = "%s makemigrations core --settings=tumbo.dev" % manage_py
+                cmd = "%s makemigrations core --settings=%s" % (manage_py, settings_module)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                migrate = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                 migrate.wait()
 
-                cmd = "%s migrate --noinput --settings=tumbo.dev" % manage_py
+                cmd = "%s migrate --noinput --settings=%s" % (manage_py, settings_module)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                migrate = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                 migrate.wait()
 
-                cmd = "%s  migrate aaa --noinput --settings=tumbo.dev" % manage_py
+                cmd = "%s  migrate aaa --noinput --settings=%s" % (manage_py, settings_module)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                migrate = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                migrate = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                 migrate.wait()
 
                 try:
-                    cmd = "%s create_admin --username=admin --password=adminpw --email=info@localhost --settings=tumbo.dev" % manage_py
-                    adminuser = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/null", _bg=True)
+                    cmd = "%s create_admin --username=admin --password=adminpw --email=info@localhost --settings=%s" % (manage_py, settings_module)
+                    adminuser = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                     adminuser.wait()
                 except Exception, e:
                     print e
                     print "adminuser already exists?"
 
-                cmd = "%s import_base --username=admin --file %s/examples/generics.zip  --name=generics --settings=tumbo.dev" % (manage_py, tumbo_path)
+                cmd = "%s import_base --username=admin --file %s/examples/generics.zip  --name=generics --settings=%s" % (manage_py, tumbo_path, settings_module)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
-                generics_import = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                generics_import = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
 
                 background_pids = []
 
                 #for mode in ["cleanup", "heartbeat", "async", "log", "scheduler"]:
                 for mode in ["all", ]:
-                    cmd = "%s heartbeat --mode=%s --settings=tumbo.dev" % (manage_py, mode)
+                    cmd = "%s heartbeat --mode=%s --settings=%s" % (manage_py, mode, settings_module)
                     if arguments['--coverage']:
                         cmd = coverage_cmd + cmd
-                    background = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _bg=True)
+                    background = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _bg=True)
                     background_pids.append(background.pid)
 
-                cmd = "%s runserver 0.0.0.0:8000 --settings=tumbo.dev" % manage_py
+                cmd = "%s runserver 0.0.0.0:8000 --settings=%s" % (manage_py, settings_module)
                 if arguments['--coverage']:
                     cmd = coverage_cmd + cmd
 
-                app = python(cmd.split(), _env=env, _out="/dev/stdout", _err="/dev/stderr", _tty_in=True, _in=sys.stdin, _bg=True, _cwd=home+"/workspace/tumbo-server")
+                app = PYTHON(cmd.split(), _env=env, _out=STDOUT, _err=STDERR, _tty_in=True, _in=sys.stdin, _bg=True, _cwd=HOME+"/workspace/tumbo-server")
 
                 if arguments['--ngrok-hostname'] and arguments['docker']:
                     if not ngrok:
@@ -720,43 +750,46 @@ if __name__ == '__main__':
             if arguments['pull']:
                 print "Docker images pull ..."
                 cmd = "-p tumboserver -f %s pull" % compose_file_base
-                docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
+
+                cmd = "-p tumboserver -f %s pull" % compose_file
+                docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 print "Docker images pull done."
 
             if arguments['build']:
                 print "Build docker images"
 
                 cmd = "bin/create_package.sh"
-                create_package = bash(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                create_package = BASH(cmd.split(), _out=STDOUT, _err=STDERR)
                 create_package.wait()
 
                 OPTS = ""
                 #if os.environ.get("CI", False):
                 #    print "Building images with --no-cache option"
                 #    OPTS += "--no-cache"
-                #cmd = "-p tumboserver -f %s build --pull %s" % (compose_file, OPTS)
                 cmd = "-p tumboserver -f %s build --pull %s" % (compose_file, OPTS)
-                build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                build = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 build.wait()
 
             if arguments['stop']:
                 print "Stop docker containers"
 
                 cmd = "-p tumboserver -f %s stop" % compose_file
-                build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                build = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 build.wait()
 
                 cmd = "-p tumboserver -f %s stop" % compose_file_base
-                build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                build = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 build.wait()
 
             if arguments['logs']:
                 print "Follow logs of docker containers"
 
                 cmd = "-p tumboserver -f %s logs -f" % compose_file
-                build = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                build = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                 build.wait()
 
+            # docker run
             if arguments['run']:
                 print "Starting Tumbo on Docker"
                 if arguments['--stop-after']:
@@ -764,11 +797,11 @@ if __name__ == '__main__':
 
                 try:
                     cmd = "-p tumboserver -f %s up -d --no-recreate" % compose_file_base
-                    base = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                    base = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
                     time.sleep(40)
 
-                    cmd = "-p tumboserver -f %s up" % compose_file
-                    app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr", _bg=True, _env=os.environ)
+                    cmd = "-p tumboserver -f %s up --no-recreate" % compose_file
+                    app = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR, _bg=True, _env=os.environ)
 
                     if arguments['--ngrok-hostname']:
                         time.sleep(10)
@@ -785,13 +818,13 @@ if __name__ == '__main__':
                     print e
                     # stop workers
                     cmd = "-p tumboserver -f %s kill" % compose_file
-                    app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                    app = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
 
                     cmd = "-p tumboserver -f %s rm -f" % compose_file
-                    app = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                    app = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
 
                     cmd = "-p tumboserver -f %s kill" % compose_file
-                    base = docker_compose(cmd.split(), _out="/dev/stdout", _err="/dev/stderr")
+                    base = docker_compose(cmd.split(), _out=STDOUT, _err=STDERR)
 
                     try:
                         sh.pkill("ngrok")
@@ -801,6 +834,95 @@ if __name__ == '__main__':
                     except sh.ErrorReturnCode_1:
                         pass
 
+        if arguments['kubernetes']:
+            kubectl = sh.Command("kubectl")
+            j2 = sh.Command("j2")
+            context = arguments["--context"]
+            is_minikube = context == "minikube"
+
+            cmd = "config use-context %s" % arguments["--context"]
+            kubectl(cmd.split())
+            # kubernetes run
+            cmd_list = [
+                os.path.join(k8s_files_path, "config.yml"),
+                os.path.join(k8s_files_path, "passwords.yml"),
+                os.path.join(k8s_files_path, "base.yml"),
+                os.path.join(k8s_files_path, "core.yml"),
+                os.path.join(k8s_files_path, "rp.yml")
+                ]
+
+            
+            conf = RawConfigParser()
+            conf.read(ini)
+            
+            ini_dict = {}
+            #print conf.sections()
+            for each_section in conf.sections():
+                for (each_key, each_val) in conf.items(each_section):
+                    #print each_val
+                    #if each_val.startswith('b64:'):
+                    #    import pdb; pdb.set_trace()
+                    #    each_val = standard_b64encode(each_val)
+                    ini_dict[each_key.upper()] = each_val
+
+            #pprint.pprint(ini_dict)
+
+            env = ini_dict
+
+            #print env['HOST']
+
+            if arguments['show']:
+                print "Show Kubernetes Resources\n"
+
+                print kubectl("get pods --namespace=tumbo".split())
+            if arguments['run']:
+                print "Starting Tumbo on Kubernetes"
+                try:
+                    base = kubectl("create namespace tumbo".split(), _out=STDOUT, _err=STDERR)
+                except sh.ErrorReturnCode_1:
+                    pass
+                try:
+                    base = kubectl("create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=tumbo:default".split(), _out=STDOUT, _err=STDERR)
+                except sh.ErrorReturnCode_1:
+                    pass
+
+                if arguments["--ingress"]:
+                    cmd_list.append("./k8s-files/cli/ingress.yml")
+
+                for cmd in cmd_list:
+                    base = kubectl(j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
+                    
+                time.sleep(5)
+                print kubectl("delete pods -l service=app --namespace=tumbo".split())
+                print kubectl("delete pods -l service=background --namespace=tumbo".split())
+                print kubectl("delete pods -l service=rp --namespace=tumbo".split())
+
+                if is_minikube:
+                    print "Waiting to launch UI"
+                    minikube = sh.Command("minikube")
+                    minikube("service rp  --namespace tumbo".split())
+
+            # kubernetes delete
+            if arguments['delete']:
+                if arguments['--partial']:
+
+                    cmd_list = [
+                        "./k8s-files/cli/rp.yml",
+                        #"./k8s-files/cli/core.yml",
+                        ]
+                    for cmd in cmd_list:
+                        base = kubectl(["delete", "-f"] + cmd.split(), _out=STDOUT, _err=STDERR)
+                else:
+                    print "Deleting Tumbo on Kubernetes"
+                    for cmd in cmd_list:
+                        base = kubectl(["delete", "-f"] + cmd.split(), _out=STDOUT, _err=STDERR)
+                        print base
+                    try:
+                        base = kubectl("delete namespace tumbo".split(), _out=STDOUT, _err=STDERR)
+                    except sh.ErrorReturnCode_1:
+                        pass
+
     if arguments['docker'] and arguments['url']:
-        port = docker_compose("-p", "tumboserver", "-f", compose_file, "port", "app", "80").split(":")[1]
-        print("http://%s:%s" % ("localhost", port))
+        #port = docker_compose("-p", "tumboserver", "-f", compose_file,
+        #                      "port", "app", "80").split(":")[1]
+        print ("http://%s:%s" % ("127.0.0.1", str(8000)))

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+   name: tumbo-config
+   namespace: tumbo
+data:
+   log_level: INFO
+   DROPBOX_CONSUMER_KEY: a
+   DROPBOX_CONSUMER_SECRET: a
+   DROPBOX_REDIRECT_URL: a
+   DB_HOST: db
+   DB_NAME: planet
+   DB_PORT: "5432"
+   DB_USER: planet
+   JOBSTOREDB_NAME: jobstore
+   JOBSTOREDB_USER: jobstore
+   JOBSTOREDB_PORT: "5432"
+   JOBSTOREDB_HOST: jobstoredb
+   TUMBO_WORKER_IMPLEMENTATION: core.executors.worker_engines.kube.KubernetesExecutor
+   RABBITMQ_ADMIN_USER: admin
+   RABBITMQ_HOST: queue
+   TUMBO_DOCKER_MEM_LIMIT: 128m
+   TUMBO_DOCKER_IMAGE: "philipsahli/tumbo-worker:v0.4.12"
+   TUMBO_SOCIAL_AUTH: "True"
+   ALLOWED_HOSTS: "*"
+   FRONTEND_HOST: "{{ HOST }}"

@@ -76,3 +76,7 @@ history
 
 output
 MANIFEST.in
+secrets/*
+*.retry
+
+*.ini

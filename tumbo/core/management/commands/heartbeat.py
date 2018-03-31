@@ -75,12 +75,12 @@ class Command(BaseCommand):
         RECEIVER_PERMISSIONS = load_setting("RECEIVER_PERMISSIONS")
 
         service = RabbitmqAdmin.factory("HTTP_API")
-        CORE_VHOST = load_setting("CORE_VHOST")
-        service.add_vhost(CORE_VHOST)
+        core_vhost = load_setting("CORE_VHOST")
+        service.add_vhost(core_vhost)
         service.add_user(CORE_SENDER_USERNAME, SENDER_PASSWORD)
         service.add_user(CORE_RECEIVER_USERNAME, RECEIVER_PASSWORD)
-        service.set_perms(CORE_VHOST, CORE_SENDER_USERNAME, SENDER_PERMISSIONS)
-        service.set_perms(CORE_VHOST, CORE_RECEIVER_USERNAME, RECEIVER_PERMISSIONS)
+        service.set_perms(core_vhost, CORE_SENDER_USERNAME, SENDER_PERMISSIONS)
+        service.set_perms(core_vhost, CORE_RECEIVER_USERNAME, RECEIVER_PERMISSIONS)
 
         if mode in  ["heartbeat", "all"]:
             # heartbeat
@@ -89,7 +89,7 @@ class Command(BaseCommand):
             for c in range(0, HEARTBEAT_THREAD_COUNT):
                 name = "HeartbeatThread-%s" % c
 
-                thread = HeartbeatThread(name, host, port, CORE_VHOST, CORE_RECEIVER_USERNAME, RECEIVER_PASSWORD, queues_consume=queues_consume, ttl=3000)
+                thread = HeartbeatThread(name, host, port, core_vhost, CORE_RECEIVER_USERNAME, RECEIVER_PASSWORD, queues_consume=queues_consume, ttl=3000)
                 heartbeat_threads.append(thread)
                 thread.daemon = True
                 thread.start()
@@ -105,7 +105,7 @@ class Command(BaseCommand):
             queues_consume_async = [[async_queue_name, True]]
             for c in range(0, ASYNC_THREAD_COUNT):
                 name = "AsyncResponseThread-%s" % c
-                thread = AsyncResponseThread(name, host, port, CORE_VHOST, CORE_RECEIVER_USERNAME, RECEIVER_PASSWORD, queues_consume=queues_consume_async, ttl=3000)
+                thread = AsyncResponseThread(name, host, port, core_vhost, CORE_RECEIVER_USERNAME, RECEIVER_PASSWORD, queues_consume=queues_consume_async, ttl=3000)
                 async_threads.append(thread)
                 thread.daemon = True
                 thread.start()
@@ -122,7 +122,7 @@ class Command(BaseCommand):
             queues_consume_log = [[log_queue_name, True]]
             for c in range(0, LOG_THREAD_COUNT):
                 name = "LogReceiverThread-%s" % c
-                thread = LogReceiverThread(name, host, port, CORE_VHOST, CORE_RECEIVER_USERNAME, RECEIVER_PASSWORD, queues_consume=queues_consume_log, ttl=10000)
+                thread = LogReceiverThread(name, host, port, core_vhost, CORE_RECEIVER_USERNAME, RECEIVER_PASSWORD, queues_consume=queues_consume_log, ttl=10000)
                 log_threads.append(thread)
                 thread.daemon = True
                 thread.start()

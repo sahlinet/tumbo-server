@@ -257,8 +257,8 @@ def call_apy(base_name, apy_name):
         request.user = get_user_model().objects.get(username='admin')
         request.META['HTTP_ACCEPT'] = "text/html"
 
-        from core.views import DjendExecView
-        view = DjendExecView()
+        from core.views import ExecView
+        view = ExecView()
         response = view.get(request, base=apy.base.name, id=apy.id)
         logger.info("method called for base %s, response_code: %s" % (apy.base.name, response.status_code))
         logger.info("END call_apy %s" % apy.name)
