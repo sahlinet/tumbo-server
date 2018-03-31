@@ -71,7 +71,7 @@ class DNSNamePlugin(Plugin):
         domain = plugin_settings['zone']
         return {'DIGITALOCEAN_ZONE': domain}
 
-    def on_start_base(self, base, **kwargs):
+    def on_start_base(self, base):
         logger.info(str(self.__class__.name) + " " + inspect.stack()[0][3])
 
         plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.dnsname']

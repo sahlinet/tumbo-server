@@ -125,7 +125,7 @@ class Base(models.Model):
         config.write(config_string)
         return config_string.getvalue()
 
-    def refresh(self, put=False):
+    def refresh(self):
         connection = Connection(self.user.authprofile.dropbox_access_token)
         template_name = "%s/index.html" % self.name
         template_content = connection.get_file_content(template_name)
@@ -170,8 +170,8 @@ class Base(models.Model):
 
     def export(self):
         # create in-memory zipfile
-        buffer = StringIO.StringIO()
-        zf = zipfile.ZipFile(buffer, mode='w')
+        file_buffer = StringIO.StringIO()
+        zf = zipfile.ZipFile(file_buffer, mode='w')
 
         # add modules
         for apy in self.apys.all():
@@ -203,7 +203,7 @@ class Base(models.Model):
         # close zip
         zf.close()
 
-        return buffer
+        return file_buffer
 
     def template(self, context):
         t = Template(self.content)
@@ -311,7 +311,7 @@ class Base(models.Model):
     def __str__(self):
         return "<Base: %s>" % self.name
 
-    def save_and_sync(self, **kwargs):
+    def save_and_sync(self):
         ready_to_sync.send(self.__class__, instance=self)
 
     #def save(self, **kwargs):
@@ -358,7 +358,7 @@ class Apy(models.Model):
     def get_exec_url(self):
         return reverse("userland-apy-public-exec", args=[self.base.user.username, self.base.name, self.name]) + "?json="
 
-    def sync(self, **kwargs):
+    def sync(self):
         ready_to_sync.send(self.__class__, instance=self)
 
     def __str__(self):
@@ -737,9 +737,6 @@ def synchronize_to_storage(sender, *args, **kwargs):
         result = connection.put_file("%s/%s/%s.py" % (instance.base.user.username, instance.base.name,
                                                    instance.name),
                                      instance.module)
-        queryset = Apy.objects.all()
-        #print result['rev']
-        #queryset.get(pk=instance.pk).update(rev=result['rev'])
         instance.rev=result['rev']
         instance.save()
 
