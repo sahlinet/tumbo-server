@@ -18,8 +18,16 @@ logger = logging.getLogger(__name__)
 
 
 def cas_login(function):
+    """Wrapper Function for CAS Authentication.
+    
+    Arguments:
+        function {function} -- function to protect.
+    
+    Returns:
+        function -- inner function.
+    """
+
     def wrapper(request, *args, **kwargs):
-        # logger.debug("authenticate %s" % request.user)
         user = request.user
 
         # if logged in
