@@ -585,6 +585,23 @@ class BaseView(TemplateView, ContextMixin):
 
         return HttpResponse(rs)
 
+class View(TemplateView):
+
+    def get_context_data(self, **kwargs):
+        context = super(View, self).get_context_data(**kwargs)
+        context['bases'] = Base.objects.filter(user=self.request.user).order_by('name')
+        context['public_bases'] = Base.objects.filter(public=True).order_by('name')
+
+        #try:
+        #    token = self.request.user.auth_token
+        #except Token.DoesNotExist:
+        #    token = Token.objects.create(user=self.request.user)
+        #context['TOKEN'] = token
+        return context
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(View, self).dispatch(*args, **kwargs)
 
 def get_dropbox_auth_flow(web_app_session):
     redirect_uri = "%s/fastapp/dropbox_auth_finish" % settings.DROPBOX_REDIRECT_URL
