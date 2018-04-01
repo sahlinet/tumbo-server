@@ -12,6 +12,15 @@ logger = logging.getLogger(__name__)
 class AsyncResponseThread(CommunicationThread):
 
     def on_message(self, ch, method, props, body):
+        """Triggered when response message arrives from worker.
+        
+        Arguments:
+            ch {Channel} -- Pika Channel
+            method {Method} -- Method Frame
+            props {Header} -- Header Informations
+            body {Body} -- Message Body
+        """
+
         try:
             logger.debug(self.name + ": " + sys._getframe().f_code.co_name)
             data = json.loads(body)

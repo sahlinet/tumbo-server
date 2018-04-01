@@ -49,32 +49,33 @@ Options:
   --env=env         Use different environment than active.
   --cut=cut         Cut output after n character.
 """
-import sys
+import getpass
+import json
+import logging
 import os
+import pprint
+import signal
+import sys
+import tempfile
+import time
+from base64 import standard_b64encode
+from ConfigParser import RawConfigParser
+from os.path import expanduser
+
+import requests
+from docopt import docopt
+from pygments import highlight
+from pygments.formatters import Terminal256Formatter
+from pygments.lexers import JsonLexer
+from tabulate import tabulate
+
 try:
     import sh
 except ImportError:
     import pbs as sh
-import time
-import signal
-import requests
-import getpass
-import json
-import pprint
-import logging
-import tempfile
 
-from os.path import expanduser
 HOME = expanduser("~")
 
-from pygments import highlight
-from pygments.lexers import JsonLexer
-from pygments.formatters import Terminal256Formatter
-
-from docopt import docopt
-from tabulate import tabulate
-from ConfigParser import RawConfigParser
-from base64 import standard_b64encode
 
 BASH = sh.Command("bash")
 PYTHON = sh.Command(sys.executable)

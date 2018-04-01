@@ -69,6 +69,12 @@ def inactivate():
 
 
 def _recreate(base):
+    """Internal function to recreate a Worker
+    
+    Arguments:
+        base {Base} -- Base to recreate.
+    """
+
     base.destroy()
     base.start()
     logger.info("'%s' recreated" % base)
