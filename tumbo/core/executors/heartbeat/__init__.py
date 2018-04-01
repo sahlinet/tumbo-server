@@ -1,35 +1,31 @@
-import pika
-import logging
-import time
 import json
+import logging
 import os
 import socket
 import subprocess
-import pytz
-import gevent
+import time
 from datetime import datetime, timedelta
 
-from django.core.urlresolvers import reverse
-from django.core.exceptions import MultipleObjectsReturned
-from django.test import RequestFactory
+import gevent
+import pika
+import psutil
+import pytz
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import serializers
-from django.conf import settings
+from django.core.exceptions import MultipleObjectsReturned
+from django.core.urlresolvers import reverse
 from django.db import DatabaseError, transaction
-
-from core.executors.remote import distribute
-from core.models import Base, Instance, Process, Thread, Apy, Setting
-from core.communication import CommunicationThread
-
-from core.plugins import call_plugin_func
-from core import __VERSION__
-from core.utils import load_setting
-#from core.utils import profileit
-
-from gevent import Greenlet
+from django.test import RequestFactory
 from gevent import pool as gevent_pool
+from gevent import Greenlet
 
-import psutil
+from core import __VERSION__
+from core.communication import CommunicationThread
+from core.executors.remote import distribute
+from core.models import Apy, Base, Instance, Process, Setting, Thread
+from core.plugins import call_plugin_func
+from core.utils import load_setting
 
 logger = logging.getLogger(__name__)
 
@@ -41,37 +37,7 @@ SETTING_QUEUE = "setting"
 PLUGIN_CONFIG_QUEUE = "pluginconfig"
 
 
-def log_mem(**kwargs):
-
-    name = kwargs['name']
-
-    p = psutil.Process(os.getpid())
-
-    from redis_metrics import set_metric
-    try:
-        while True:
-            m = p.memory_info()
-
-            try:
-                slug = "Background %s %s rss" % (socket.gethostname(), name)
-                set_metric(slug, float(m.rss) /
-                           (1024 * 1024) + 50, expire=86400)
-                slug = "Background %s %s vms" % (socket.gethostname(), name)
-                set_metric(slug, float(m.vms) /
-                           (1024 * 1024) + 50, expire=86400)
-
-                logger.debug(
-                    "Saving rss/vms for background process '%s'" % name)
-            except Exception, e:
-                logger.error(e)
-
-            time.sleep(30)
-    except Exception, e:
-        logger.exception(e)
-
-
 def inactivate():
-
     try:
         while True:
             logger.debug("Inactivate Thread run")

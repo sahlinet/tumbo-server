@@ -18,7 +18,6 @@ from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.template import Template
 from django_extensions.db.fields import UUIDField, ShortUUIDField, RandomCharField
-from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver, Signal
 from django.db.models import F
 from django.conf import settings
@@ -41,10 +40,14 @@ index_template = """{% extends "fastapp/base.html" %}
 {% endblock %}
 """
 
+MODULE_DEFAULT_CONTENT = """def func(self):\n    pass"""
+
 
 class AuthProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="authprofile")
-    dropbox_access_token = models.CharField(max_length=72, help_text="Access token for dropbox-auth")
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name="authprofile")
+    dropbox_access_token = models.CharField(
+        max_length=72, help_text="Access token for dropbox-auth")
     internalid = RandomCharField(length=12, include_alpha=False)
     dropbox_userid = models.CharField(max_length=32,
                                       help_text="Userid on dropbox",
@@ -71,8 +74,8 @@ class Base(models.Model):
     foreign_apys = models.ManyToManyField("Apy", related_name="foreign_base")
 
     frontend_host = models.CharField(max_length=40,
-                               blank=True, null=True,
-                               default=None)
+                                     blank=True, null=True,
+                                     default=None)
 
     class Meta:
         app_label = "core"
@@ -102,7 +105,7 @@ class Base(models.Model):
         config['modules'] = {}
         for texec in self.apys.all():
             config['modules'][texec.name] = {}
-            config['modules'][texec.name]['module'] = texec.name+".py"
+            config['modules'][texec.name]['module'] = texec.name + ".py"
             config['modules'][texec.name]['public'] = texec.public
             if texec.description:
                 config['modules'][texec.name]['description'] = texec.description
@@ -131,43 +134,6 @@ class Base(models.Model):
         template_content = connection.get_file_content(template_name)
         self.content = template_content
 
-#    def refresh_execs(self, exec_name=None, put=False):
-#        from core.utils import Connection, NotFound
-#        # execs
-#        connection = Connection(self.user.authprofile.dropbox_access_token)
-#        app_config = "%s/app.config" % self.name
-#        config = ConfigParser.RawConfigParser()
-#        config.readfp(io.BytesIO(connection.get_file_content(app_config)))
-#        if put:
-#            if exec_name:
-#                connection.put_file("%s/%s.py" % (self.name, exec_name),
-#                                self.execs.get(name=exec_name).module)
-#                connection.put_file(app_config, self.config)
-#            else:
-#                raise Exception("exec_name not specified")
-#        else:
-#            for name in config.sections():
-#                module_name = config.get(name, "module")
-#                try:
-#                    module_content = connection.get_file_content("%s/%s" % (self.name, module_name))
-#                except NotFound:
-#                    try:
-#                        Exec.objects.get(name=module_name, base=self).delete()
-#                    except Exec.DoesNotExist, e:
-#                        self.save()
-#
-#                # save new exec
-#                app_exec_model, created = Apy.objects.get_or_create(base=self, name=name)
-#                app_exec_model.module = module_content
-#                app_exec_model.save()
-#
-#            # delete old exec
-#            for local_exec in Apy.objects.filter(base=self).values('name'):
-#                if local_exec['name'] in config.sections():
-#                    logger.warn()
-#                else:
-#                    Apy.objects.get(base=self, name=local_exec['name']).delete()
-
     def export(self):
         # create in-memory zipfile
         file_buffer = StringIO.StringIO()
@@ -184,10 +150,10 @@ class Base(models.Model):
 
             try:
                 zf = dropbox_connection.directory_zip(
-                            "%s/%s/static" % (self.user.username, self.name), zf
+                    "%s/%s/static" % (self.user.username, self.name), zf
                 )
             except Exception, e:
-               logger.warn(e)
+                logger.warn(e)
         except AuthProfile.DoesNotExist, e:
             logger.warn(e)
         except Exception, e:
@@ -265,24 +231,6 @@ class Base(models.Model):
             logger.exception(e)
             return []
 
-    # def update(self):
-    #     try:
-    #         self.executor
-    #     except Executor.DoesNotExist:
-    #         logger.debug("update executor for base %s" % self)
-    #         executor = Executor(base=self)
-    #         executor.save()
-    #     if not self.executor.is_running():
-    #         r = self.executor.update()
-
-    #         # call plugin
-    #         logger.info("on_start_base starting...")
-    #         call_plugin_func(self, "on_start_base")
-    #         logger.info("on_start_base done...")
-
-    #         return r
-    #     return None
-
     def start(self):
         try:
             self.executor
@@ -314,16 +262,6 @@ class Base(models.Model):
     def save_and_sync(self):
         ready_to_sync.send(self.__class__, instance=self)
 
-    #def save(self, **kwargs):
-    #    logger.debug("create executor for base %s" % self)
-    #    print self.__dict__
-    #    if not hasattr(self, 'executor'):
-    #        executor = Executor(base=self)
-    #        executor.save()
-    #    self.save(**kwargs)
-
-MODULE_DEFAULT_CONTENT = """def func(self):\n    pass"""
-
 
 class Apy(models.Model):
     name = models.CharField(max_length=64)
@@ -345,14 +283,14 @@ class Apy(models.Model):
         if not hasattr(self, "counter"):
             self.counter = Counter(apy=self)
             self.counter.save()
-        self.counter.executed = F('executed')+1
+        self.counter.executed = F('executed') + 1
         self.counter.save()
 
     def mark_failed(self):
         if not hasattr(self, "counter"):
             self.counter = Counter(apy=self)
             self.counter.save()
-        self.counter.failed = F('failed')+1
+        self.counter.failed = F('failed') + 1
         self.counter.save()
 
     def get_exec_url(self):
@@ -374,6 +312,7 @@ class Counter(models.Model):
         app_label = "core"
         db_table = "fastapp_counter"
 
+
 RUNNING = "R"
 FINISHED = "F"
 TIMEOUT = "T"
@@ -390,11 +329,11 @@ def create_random():
     return rand
 
 
-
 class Transaction(models.Model):
     rid = models.IntegerField(primary_key=True, default=create_random)
     apy = models.ForeignKey(Apy, related_name="transactions")
-    status = models.CharField(max_length=1, choices=TRANSACTION_STATE_CHOICES, default=RUNNING)
+    status = models.CharField(
+        max_length=1, choices=TRANSACTION_STATE_CHOICES, default=RUNNING)
     created = models.DateTimeField(default=timezone.now, null=True)
     modified = models.DateTimeField(auto_now=True, null=True)
     tin = JSONField(blank=True, null=True)
@@ -408,7 +347,7 @@ class Transaction(models.Model):
     @property
     def duration(self):
         td = self.modified - self.created
-        return td.days*86400000 + td.seconds*1000 + td.microseconds/1000
+        return td.days * 86400000 + td.seconds * 1000 + td.microseconds / 1000
 
     def log(self, level, msg):
         logentry = LogEntry(transaction=self)
@@ -426,6 +365,7 @@ class Transaction(models.Model):
     @property
     def base_name(self):
         return self.apy.base.name
+
 
 LOG_LEVELS = (
     ("10", 'DEBUG'),
@@ -468,9 +408,11 @@ class Setting(models.Model):
         app_label = "core"
         db_table = "fastapp_setting"
 
+
 """
 Threads -> Processes -> Instances -> Executor -> Base
-""" 
+"""
+
 
 class Instance(models.Model):
     is_alive = models.BooleanField(default=False)
@@ -481,7 +423,6 @@ class Instance(models.Model):
     class Meta:
         app_label = "core"
         db_table = "fastapp_instance"
-
 
     def mark_down(self):
         self.is_alive = False
@@ -504,14 +445,15 @@ class Process(models.Model):
     name = models.CharField(max_length=64, null=True)
     rss = models.IntegerField(default=0)
     version = models.CharField(max_length=7, default=0)
-    instance = models.OneToOneField(Instance, related_name="process", null=True)
+    instance = models.OneToOneField(
+        Instance, related_name="process", null=True)
 
     class Meta:
         app_label = "core"
         db_table = "fastapp_process"
 
     def is_up(self):
-        now = datetime.utcnow().replace(tzinfo = pytz.utc)
+        now = datetime.utcnow().replace(tzinfo=pytz.utc)
         delta = now - self.running
         return (delta < timedelta(seconds=10))
 
@@ -524,17 +466,18 @@ class Thread(models.Model):
         (STARTED, "Started"),
         (STOPPED, "Stopped"),
         (NOT_CONNECTED, "Not connected")
-        )
+    )
 
     class Meta:
         app_label = "core"
         db_table = "fastapp_thread"
 
     name = models.CharField(max_length=64, null=True)
-    parent = models.ForeignKey(Process, related_name="threads", blank=True, null=True)
+    parent = models.ForeignKey(
+        Process, related_name="threads", blank=True, null=True)
     health = models.CharField(max_length=2,
-                            choices=HEALTH_STATE_CHOICES,
-                            default=STOPPED)
+                              choices=HEALTH_STATE_CHOICES,
+                              default=STOPPED)
     updated = models.DateTimeField(auto_now=True, null=True)
 
     def started(self):
@@ -572,7 +515,7 @@ class Executor(models.Model):
         db_table = "fastapp_executor"
 
     def __init__(self, *args, **kwargs):
-        super(Executor, self ).__init__(*args, **kwargs)
+        super(Executor, self).__init__(*args, **kwargs)
         self.attach_plugins()
 
     def attach_plugins(self):
@@ -581,9 +524,11 @@ class Executor(models.Model):
         if not hasattr(self, "plugins"):
             self.plugins = {}
         for plugin in plugins:
-            logger.debug("Attach %s.return_to_executor to executor instance '%s'" % (plugin.name, self.base.name))
+            logger.debug("Attach %s.return_to_executor to executor instance '%s'" % (
+                plugin.name, self.base.name))
             if hasattr(plugin, "return_to_executor"):
-                self.plugins[plugin.name.lower()] = plugin.return_to_executor(self)
+                self.plugins[plugin.name.lower(
+                )] = plugin.return_to_executor(self)
 
     @property
     def vhost(self):
@@ -608,7 +553,7 @@ class Executor(models.Model):
                 password=self.password,
                 secret=self.secret,
                 executor=self
-                )
+            )
         except KeyError, e:
             logger.error("Could not load %s" % s_exec)
             raise e
@@ -623,16 +568,19 @@ class Executor(models.Model):
         except Instance.DoesNotExist, e:
             instance = Instance(executor=self)
             instance.save()
-            logger.info("Instance for '%s' created with id %s" % (self, instance.id))
+            logger.info("Instance for '%s' created with id %s" %
+                        (self, instance.id))
 
         kwargs = {}
         if self.port:
             kwargs['service_ports'] = [self.port]
 
         try:
-            logger.info("START Start with implementation %s" % self.implementation)
+            logger.info("START Start with implementation %s" %
+                        self.implementation)
             self.pid = self.implementation.start(self.pid, **kwargs)
-            logger.info("END Start with implementation %s" % self.implementation)
+            logger.info("END Start with implementation %s" %
+                        self.implementation)
         except Exception, e:
             raise e
 
@@ -685,7 +633,7 @@ class Executor(models.Model):
         return self.implementation.state(self.pid)
 
     def is_alive(self):
-        return self.instances.count()>1
+        return self.instances.count() > 1
 
     def __str__(self):
         return "Executor %s-%s" % (self.base.user.username, self.base.name)
@@ -702,96 +650,8 @@ class TransportEndpoint(models.Model):
         app_label = "core"
         db_table = "fastapp_transportendpoint"
 
+
 ready_to_sync = Signal()
-
-
-@receiver(ready_to_sync, sender=Base)
-def initialize_on_storage(sender, *args, **kwargs):
-    instance = kwargs['instance']
-    # TODO: If a user connects his dropbox after creating a base, it should be initialized anyway.
-
-    connection = Connection(instance.user.authprofile.dropbox_access_token)
-    #if not kwargs.get('created'):
-    #    connection.put_file("%s/index.html" % (instance.name), instance.content)
-    #    return
-    logger.info("initialize_on_storage for Base '%s'" % instance.name)
-    logger.info(kwargs)
-    try:
-        connection.create_folder("%s/%s" % (instance.user.username, instance.name))
-    except Exception:
-        pass
-        #if "already exists" in e['body']['error']:
-        #    pass
-        #else:
-        #    logger.exception(e)
-
-    connection.put_file("%s/%s/app.config" % (instance.user.username, instance.name), instance.config)
-    connection.put_file("%s/%s/index.html" % (instance.user.username, instance.name), instance.content)
-
-
-@receiver(ready_to_sync, sender=Apy)
-def synchronize_to_storage(sender, *args, **kwargs):
-    instance = kwargs['instance']
-    try:
-        connection = Connection(instance.base.user.authprofile.dropbox_access_token)
-        result = connection.put_file("%s/%s/%s.py" % (instance.base.user.username, instance.base.name,
-                                                   instance.name),
-                                     instance.module)
-        instance.rev=result['rev']
-        instance.save()
-
-        # update app.config for saving description
-        result = connection.put_file("%s/%s/app.config" % (instance.base.user.username,
-                                     instance.base.name),
-                                     instance.base.config)
-    except Exception, e:
-        logger.exception(e)
-
-    if instance.base.state:
-        distribute(CONFIGURATION_EVENT, serializers.serialize("json",
-                                                              [instance, ]),
-                   generate_vhost_configuration(instance.base.user.username,
-                                                instance.base.name),
-                   instance.base.name,
-                   instance.base.executor.password
-                   )
-
-
-# Distribute signals
-@receiver(post_save, sender=Setting)
-def send_to_workers(sender, *args, **kwargs):
-    instance = kwargs['instance']
-    if instance.base.state:
-        distribute(SETTINGS_EVENT, json.dumps({instance.key: instance.value}),
-                   generate_vhost_configuration(instance.base.user.username,
-                                                instance.base.name),
-                   instance.base.name,
-                   instance.base.executor.password
-                   )
-
-
-@receiver(post_save, sender=Base)
-def setup_base(sender, *args, **kwargs):
-    instance = kwargs['instance']
-
-    # create executor instance if none
-    try:
-        instance.executor
-    except Executor.DoesNotExist:
-        logger.debug("create executor for base %s" % instance)
-        executor = Executor(base=instance)
-        executor.save()
-
-
-@receiver(post_delete, sender=Base)
-def base_to_storage_on_delete(sender, *args, **kwargs):
-    instance = kwargs['instance']
-    try:
-        connection = Connection(instance.user.authprofile.dropbox_access_token)
-        gevent.spawn(connection.delete_file("%s/%s" % (instance.user.username, instance.name)))
-    except Exception, e:
-        logger.error("error in base_to_storage_on_delete")
-        logger.exception(e)
 
 
 class StaticFile(models.Model):
@@ -799,7 +659,7 @@ class StaticFile(models.Model):
     class Meta:
         app_label = "core"
 
-    STORAGE= (
+    STORAGE = (
         ("FS", 'filesystem'),
         ("DR", 'dropbox'),
         ("MO", 'module'),
@@ -814,25 +674,3 @@ class StaticFile(models.Model):
 
     def __str__(self):
         return "%s://%s" % (self.get_storage_display(), self.name)
-
-
-@receiver(post_delete, sender=Apy)
-def synchronize_to_storage_on_delete(sender, *args, **kwargs):
-    instance = kwargs['instance']
-    from utils import NotFound
-    try:
-        connection = Connection(instance.base.user.authprofile.dropbox_access_token)
-        gevent.spawn(connection.put_file("%s/%s/app.config" % (
-                                         instance.base.user.username,
-                                         instance.base.name),
-                                         instance.base.config))
-        gevent.spawn(connection.delete_file("%s/%s.py" % (instance.base.name,
-                                            instance.name)))
-    except NotFound:
-        logger.exception("error in synchronize_to_storage_on_delete")
-    except Base.DoesNotExist:
-        # if post_delete is triggered from base.delete()
-        logger.debug("post_delete signal triggered by base.delete(), can be ignored")
-    except Exception, e:
-        logger.error("error in synchronize_to_storage_on_delete")
-        logger.exception(e)

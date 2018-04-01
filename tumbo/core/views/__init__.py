@@ -453,7 +453,7 @@ class ExecDeleteView(View):
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
-        return super(ExecRenameView, self).dispatch(*args, **kwargs)
+        return super(ExecDeleteView, self).dispatch(*args, **kwargs)
 
 
 class BaseRenameView(View):
@@ -567,7 +567,6 @@ class BaseView(TemplateView, ContextMixin):
                 context['LAST_EXEC'] = request.GET.get('done')
                 context['transaction_list'] = Transaction.objects.filter(apy__base__name=base).filter(
                     created__gte=datetime.now() - timedelta(minutes=30)).order_by('created')
-                #rs = base_model.template(context)
 
             except ErrorResponse, e:
                 if e.__dict__['status'] == 404:
@@ -583,24 +582,8 @@ class BaseView(TemplateView, ContextMixin):
             message(request, logging.WARNING, "No bases found")
 
         rs = render_to_string("fastapp/base.html", context_instance=context)
-        #rs = render_to_string("fastapp/base.html", context_instance=context)
 
         return HttpResponse(rs)
-
-
-class View(TemplateView):
-
-    def get_context_data(self, **kwargs):
-        context = super(View, self).get_context_data(**kwargs)
-        context['bases'] = Base.objects.filter(
-            user=self.request.user).order_by('name')
-        context['public_bases'] = Base.objects.filter(
-            public=True).order_by('name')
-        return context
-
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super(View, self).dispatch(*args, **kwargs)
 
 
 def get_dropbox_auth_flow(web_app_session):
