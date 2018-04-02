@@ -15,6 +15,8 @@ jobs:
       - run: pip install Markdown==2.6.6
       - run: pip install codacy-coverage
       #
+      - run: pip install selenium==3.11.0
+      #
       - run: sudo apt-get update && sudo apt-get install libpq-dev
       #
       - run: pip install selenium-3.11.0
