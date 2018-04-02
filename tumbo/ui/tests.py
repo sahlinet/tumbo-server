@@ -1,12 +1,12 @@
 from django.contrib.auth import get_user_model
-from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 User = get_user_model()
 
 
-class AccountTestCase(LiveServerTestCase):
+class AccountTestCase(StaticLiveServerTestCase):
 
     def setUp(self):
         self.selenium = webdriver.Chrome()
