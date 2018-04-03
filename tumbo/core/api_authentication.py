@@ -7,11 +7,13 @@ from django.middleware.csrf import CsrfViewMiddleware
 
 # From https://github.com/tomchristie/django-rest-framework/issues/2982
 
+
 class CustomCSRFCheck(CorsMiddleware, CsrfViewMiddleware,
-                              CorsPostCsrfMiddleware):
+                      CorsPostCsrfMiddleware):
     def _reject(self, request, reason):
         # Return the failure reason instead of an HttpResponse
         return reason
+
 
 class CustomSessionAuthentication(SessionAuthentication):
 
@@ -21,6 +23,5 @@ class CustomSessionAuthentication(SessionAuthentication):
         """
         reason = CustomCSRFCheck().process_view(request, None, (), {})
         if reason:
-                # CSRF failed, bail with explicit error message
-                raise exceptions.PermissionDenied('CSRF Failed: %s' % reason)
-
+            # CSRF failed, bail with explicit error message
+            raise exceptions.PermissionDenied('CSRF Failed: %s' % reason)

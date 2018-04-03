@@ -30,14 +30,13 @@ class Command(BaseCommand):
                     dest='email',
                     default=None,
                     help='Email address')
-        )
+    )
 
     def handle(self, *args, **options):
 
         username = options['username']
         password = options['password']
         email = options['email']
-
 
         from django.contrib.auth.models import User
 
@@ -54,4 +53,3 @@ class Command(BaseCommand):
                 print "Adminuser '%s' updated." % username
         except Exception, e:
             print e
-                    

@@ -14,6 +14,7 @@ class CounterSerializer(serializers.ModelSerializer):
         model = Counter
         fields = ('executed', 'failed')
 
+
 class LogSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -26,7 +27,8 @@ class TransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ('rid', 'tin', 'tout', 'status', 'created', 'modified', 'async', 'logs', )
+        fields = ('rid', 'tin', 'tout', 'status',
+                  'created', 'modified', 'async', 'logs', )
 
 
 class ApySerializer(serializers.ModelSerializer):
@@ -38,7 +40,8 @@ class ApySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Apy
-        fields = ('name', 'module', 'counter', 'description', 'public', 'schedule', 'everyone')
+        fields = ('name', 'module', 'counter', 'description',
+                  'public', 'schedule', 'everyone')
 
     def save(self, *args, **kwargs):
         obj = super(ApySerializer, self).save(*args, **kwargs)
@@ -105,6 +108,6 @@ class BaseSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'full_name', 'state', 'uuid',
                   'executors', 'content', 'foreign_apys', 'public', 'static_public', 'apys')
 
-    #def save(self, obj, **kwargs):
+    # def save(self, obj, **kwargs):
         #super(BaseSerializer, self).save(obj, *args, **kwargs)
-        #obj.save_and_sync(**kwargs)
+        # obj.save_and_sync(**kwargs)

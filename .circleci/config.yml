@@ -15,6 +15,8 @@ jobs:
       - run: pip install Markdown==2.6.6
       - run: pip install codacy-coverage
       #
+      - run: pip install selenium==3.11.0
+      #
       - run: sudo apt-get update && sudo apt-get install libpq-dev
       #
       - run: pip install -r requirements.txt
@@ -23,8 +25,7 @@ jobs:
       - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
       - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
       - run: coverage xml
-      - run: python-codacy-coverage -r coverage.xml
-
+      - run: python-codacy-coverage -v -r coverage.xml
       - run: pip install -r requirements-cli.txt
       #
       - run: sed -i 's|/var/run/docker.sock|/run/docker.sock|g' compose-files/docker-compose-app-docker_socket_exec.yml
@@ -49,9 +50,10 @@ jobs:
       # Tests
       - run: sudo mkdir shared
       - run: sudo chown 1000:1000 shared
-      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test core --settings=tumbo.dev"
-      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test aaa --settings=tumbo.dev"
-      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test ui --settings=tumbo.dev"
+      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.xml -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test core --settings=tumbo.dev"
+      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.xml -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test aaa --settings=tumbo.dev"
+      # Don't run ui tests in docker (chromedriver not installed)
+      #- run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.xml -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test ui --settings=tumbo.dev"
       #
       - run: sh -x bin/build-worker.sh
       #
@@ -92,6 +94,7 @@ workflows:
                 - master
                 - /feature.*/
                 - /hotfix.*/
+                - /.*/
   snapshot-release:
     jobs:
       - build_test:
