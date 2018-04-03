@@ -15,17 +15,12 @@ jobs:
       - run: pip install Markdown==2.6.6
       - run: pip install codacy-coverage
       #
-      - run: pip install selenium==3.11.0
-      #
       - run: sudo apt-get update && sudo apt-get install libpq-dev
       #
-      - run: pip install -r requirements-tox.txt
       - run: tox
       - run: pip install -r requirements.txt
       # TODO: coverage should be run in cotainer and data directory for output should be added as volume
-      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
-      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
-      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
+      - run: tox
       - run: coverage xml
       - run: python-codacy-coverage -v -r coverage.xml
       - run: pip install -r requirements-cli.txt
