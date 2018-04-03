@@ -30,7 +30,6 @@ jobs:
       - run: tox
       - run: coverage xml
       - run: python-codacy-coverage -v -r coverage.xml
-      - run: pip install -r requirements-cli.txt
       #
       - run: sed -i 's|/var/run/docker.sock|/run/docker.sock|g' compose-files/docker-compose-app-docker_socket_exec.yml
       - run: egrep sock compose-files/docker-compose-app-docker_socket_exec.yml
