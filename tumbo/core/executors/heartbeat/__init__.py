@@ -162,8 +162,7 @@ def update_status(parent_name, thread_count, threads):
 class HeartbeatThread(CommunicationThread):
 
     def send_message(self):
-        """
-        Client-side functionality for heartbeating and sending metrics.
+        """Client-side functionality for heartbeating and sending metrics.
         """
         logger.debug("send heartbeat to %s:%s" % (self.vhost, HEARTBEAT_QUEUE))
         pid = os.getpid()
@@ -211,8 +210,7 @@ class HeartbeatThread(CommunicationThread):
         self.schedule_next_message()
 
     def on_message(self, ch, method, props, body):
-        """
-        Server functionality for storing received status and metrics.
+        """Server functionality for storing received status and metrics.
         """
         try:
             data = json.loads(body)

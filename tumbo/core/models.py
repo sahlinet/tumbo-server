@@ -231,6 +231,24 @@ class Base(models.Model):
             logger.exception(e)
             return []
 
+    # def update(self):
+    #     try:
+    #         self.executor
+    #     except Executor.DoesNotExist:
+    #         logger.debug("update executor for base %s" % self)
+    #         executor = Executor(base=self)
+    #         executor.save()
+    #     if not self.executor.is_running():
+    #         r = self.executor.update()
+
+    #         # call plugin
+    #         logger.info("on_start_base starting...")
+    #         call_plugin_func(self, "on_start_base")
+    #         logger.info("on_start_base done...")
+
+    #         return r
+    #     return None
+
     def start(self):
         try:
             self.executor
@@ -408,6 +426,9 @@ class Setting(models.Model):
         app_label = "core"
         db_table = "fastapp_setting"
 
+"""
+Threads -> Processes -> Instances -> Executor -> Base
+""" 
 
 """
 Threads -> Processes -> Instances -> Executor -> Base
