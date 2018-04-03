@@ -8,17 +8,20 @@ from core.plugins.models import PluginUserConfig
 
 #@unittest.skipIf(hasattr(os.environ, "CIRCLECI"), "Running on CI")
 #@unittest.skip
+
+
 class PluginTests(BaseTestCase):
 
     #@override_settings(DATABASES=db_settings)
-    #def setUp(self):
+    # def setUp(self):
     #    super(BaseTestCase, self).setUp()
 
     def test_config(self):
 
         obj = self.base1
         config = {'password': "ASDF"}
-        a = PluginUserConfig(plugin_name="DataStorePlugin", base=obj, config=config)
+        a = PluginUserConfig(plugin_name="DataStorePlugin",
+                             base=obj, config=config)
         a.save()
 
         success, failed = call_plugin_func(obj, "get_persistent_config")

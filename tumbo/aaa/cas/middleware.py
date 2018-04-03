@@ -10,6 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class CasSessionMiddleware(SessionMiddleware):
     """
     Middleware to handle cookie path.
@@ -28,7 +29,8 @@ class CasSessionMiddleware(SessionMiddleware):
         except AttributeError:
             logger.error("cookie_path missing")
 
-        logger.info("CasSessionMiddleware: _get_cookie_path for URI %s returned SESSION_COOKIE_PATH %s" % (request.path_info, cookie_path))
+        logger.info("CasSessionMiddleware: _get_cookie_path for URI %s returned SESSION_COOKIE_PATH %s" % (
+            request.path_info, cookie_path))
 
         return cookie_path or settings.SESSION_COOKIE_PATH
 
@@ -48,7 +50,8 @@ class CasSessionMiddleware(SessionMiddleware):
             # First check if we need to delete this cookie.
             # The session should be deleted only if the session is entirely empty
             if settings.SESSION_COOKIE_NAME in request.COOKIES and empty:
-                response.delete_cookie(settings.SESSION_COOKIE_NAME, domain=settings.SESSION_COOKIE_DOMAIN)
+                response.delete_cookie(
+                    settings.SESSION_COOKIE_NAME, domain=settings.SESSION_COOKIE_DOMAIN)
             else:
                 if accessed:
                     patch_vary_headers(response, ('Cookie',))
@@ -65,7 +68,7 @@ class CasSessionMiddleware(SessionMiddleware):
                     if response.status_code != 500:
                         try:
                             request.session.save()
-                        #except UpdateError:
+                        # except UpdateError:
                         except Exception:
                             # The user is now logged out; redirecting to same
                             # page will result in a redirect to the login page
@@ -79,5 +82,6 @@ class CasSessionMiddleware(SessionMiddleware):
                             secure=settings.SESSION_COOKIE_SECURE or None,
                             httponly=settings.SESSION_COOKIE_HTTPONLY or None,
                         )
-                        logger.info("Create session %s for path: %s" % (request.session.session_key, self._get_cookie_path(request)))
+                        logger.info("Create session %s for path: %s" % (
+                            request.session.session_key, self._get_cookie_path(request)))
         return response

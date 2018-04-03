@@ -25,7 +25,8 @@ def create_ticket(backend, user, response, *args, **kwargs):
         logger.info("Create ticket for user %s" % user.username)
 
         # attach the ticket to the next URL
-        backend.strategy.session['next'] = "%s?ticket=%s" % (next, ticket.ticket)
+        backend.strategy.session['next'] = "%s?ticket=%s" % (
+            next, ticket.ticket)
         logger.info("Setting next URL: %s" % backend.strategy.session['next'])
     else:
         logger.info("Next missing")

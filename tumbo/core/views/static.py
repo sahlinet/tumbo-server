@@ -1,19 +1,18 @@
 import logging
-
 from datetime import datetime
 
-from django.contrib.auth import get_user_model
-from django.views.generic import View
-from django.http import HttpResponseNotFound, HttpResponse, HttpResponseServerError, HttpResponseNotModified
 from django.conf import settings
-from django.template import Template, RequestContext
+from django.contrib.auth import get_user_model
+from django.http import (HttpResponse, HttpResponseNotFound,
+                         HttpResponseNotModified, HttpResponseServerError)
+from django.template import RequestContext, Template
+from django.views.generic import View
 
-from core.utils import totimestamp
 from core.models import Base
 from core.plugins.datastore import PsqlDataStore
+from core.staticfiles import NotFound, StaticfileFactory
+from core.utils import totimestamp
 from core.views import ResponseUnavailableViewMixing
-from core.staticfiles import StaticfileFactory, NotFound
-
 
 User = get_user_model()
 

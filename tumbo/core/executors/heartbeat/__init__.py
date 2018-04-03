@@ -1,35 +1,40 @@
-import pika
-import logging
-import time
 import json
+import logging
 import os
 import socket
 import subprocess
-import pytz
-import gevent
+import time
 from datetime import datetime, timedelta
 
-from django.core.urlresolvers import reverse
-from django.core.exceptions import MultipleObjectsReturned
-from django.test import RequestFactory
+import gevent
+import pika
+import psutil
+import pytz
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import serializers
-from django.conf import settings
+from django.core.exceptions import MultipleObjectsReturned
+from django.core.urlresolvers import reverse
 from django.db import DatabaseError, transaction
+from django.test import RequestFactory
+from gevent import pool as gevent_pool
+from gevent import Greenlet
 
-from core.executors.remote import distribute
-from core.models import Base, Instance, Process, Thread, Apy, Setting
-from core.communication import CommunicationThread
-
-from core.plugins import call_plugin_func
 from core import __VERSION__
+from core.communication import CommunicationThread
+from core.executors.remote import distribute
+from core.models import Apy, Base, Instance, Process, Setting, Thread
+from core.plugins import call_plugin_func
 from core.utils import load_setting
+<<<<<<< HEAD:tumbo/core/executors/heartbeat.py
 #from core.utils import profileit
 
 from gevent import Greenlet
 from gevent import pool as gevent_pool
 
 import psutil
+=======
+>>>>>>> develop:tumbo/core/executors/heartbeat/__init__.py
 
 logger = logging.getLogger(__name__)
 
@@ -40,40 +45,58 @@ FOREIGN_CONFIGURATION_QUEUE = "fconfiguration"
 SETTING_QUEUE = "setting"
 PLUGIN_CONFIG_QUEUE = "pluginconfig"
 
-def log_mem(**kwargs):
-
-    name = kwargs['name']
-
-    p = psutil.Process(os.getpid())
-
-    from redis_metrics import set_metric
-    try:
-        while True:
-            m = p.memory_info()
-
-            try:
-                slug = "Background %s %s rss" % (socket.gethostname(), name)
-                set_metric(slug, float(m.rss)/(1024*1024)+50, expire=86400)
-                slug = "Background %s %s vms" % (socket.gethostname(), name)
-                set_metric(slug, float(m.vms)/(1024*1024)+50, expire=86400)
-
-                logger.debug("Saving rss/vms for background process '%s'" % name)
-            except Exception, e:
-                logger.error(e)
-
-            time.sleep(30)
-    except Exception, e:
-        logger.exception(e)
-
 
 def inactivate():
-
     try:
         while True:
             logger.debug("Inactivate Thread run")
 
             time.sleep(0.1)
             now = datetime.now().replace(tzinfo=pytz.UTC)
+            with transaction.atomic():
+                try:
+                    for instance in Instance.objects.filter(last_beat__lte=now - timedelta(minutes=1), is_alive=True):
+                        logger.info(
+                            "inactive instance '%s' detected, mark stopped" % instance)
+                        instance.mark_down()
+                        instance.save()
+                        # start if is_started and not running
+
+                        for base in Base.objects.select_for_update(nowait=True).filter(executor__started=True):
+                            # for executor in Executor.objects.select_for_update(nowait=True).filter(started=True):
+                            if not base.executor.is_running():
+                                # log start with last beat datetime
+                                logger.error(
+                                    "Start worker for not running base: %s" % base.name)
+                                base.executor.start()
+                except DatabaseError, e:
+                    logger.exception(
+                        "Executor(s) was locked with select_for_update")
+            time.sleep(10)
+    except Exception, e:
+        logger.exception(e)
+
+
+def _recreate(base):
+    """Internal function to recreate a Worker
+    
+    Arguments:
+        base {Base} -- Base to recreate.
+    """
+
+    base.destroy()
+    base.start()
+    logger.info("'%s' recreated" % base)
+
+
+def updater():
+    try:
+        while True:
+            logger.debug("UpdaterThread run")
+
+            time.sleep(0.1)
+            now = datetime.now().replace(tzinfo=pytz.UTC)
+<<<<<<< HEAD:tumbo/core/executors/heartbeat.py
             with transaction.atomic():
                 try:
                     for instance in Instance.objects.filter(last_beat__lte=now-timedelta(minutes=1), is_alive=True):
@@ -91,11 +114,31 @@ def inactivate():
                                 base.executor.start()
                 except DatabaseError, e:
                     logger.exception("Executor(s) was locked with select_for_update")
+=======
+            # with transaction.atomic():
+
+            pool = gevent_pool.Pool(10)
+            qs = Instance.objects.filter(last_beat__gte=now - timedelta(
+                minutes=1), is_alive=True).exclude(process__version=__VERSION__)
+            if len(qs) > 0:
+                logger.info("%s running with old version" % str(len(qs)))
+            else:
+                logger.debug("No instances with old version found")
+
+            for instance in qs:
+                logger.info("Instance '%s' with old version detected (%s->%s)" %
+                            (instance, instance.process.version, __VERSION__))
+                worker = Greenlet.spawn(_recreate, instance.executor.base)
+                pool.add(gevent.spawn(worker.run))
+            pool.join()
+
+>>>>>>> develop:tumbo/core/executors/heartbeat/__init__.py
             time.sleep(10)
     except Exception, e:
         logger.exception(e)
 
 
+<<<<<<< HEAD:tumbo/core/executors/heartbeat.py
 def _recreate(base):
     base.destroy()
     base.start()
@@ -127,6 +170,8 @@ def updater():
     except Exception, e:
         logger.exception(e)
 
+=======
+>>>>>>> develop:tumbo/core/executors/heartbeat/__init__.py
 def update_status(parent_name, thread_count, threads):
     try:
         while True:
@@ -145,20 +190,22 @@ def update_status(parent_name, thread_count, threads):
 
             # threads
             for t in threads:
-                logger.debug(t.name+": "+str(t.isAlive()))
+                logger.debug(t.name + ": " + str(t.isAlive()))
 
                 # store in db
-                thread_model, created = Thread.objects.get_or_create(name=t.name, parent=process)
+                thread_model, created = Thread.objects.get_or_create(
+                    name=t.name, parent=process)
                 if t.isAlive():
                     logger.debug("Thread '%s' is alive." % t.name)
                     thread_model.started()
-                    alive_thread_count=alive_thread_count+1
+                    alive_thread_count = alive_thread_count + 1
                 elif hasattr(t, "health") and t.health():
                     logger.debug("Thread '%s' is healthy." % t.name)
                     thread_model.started()
-                    alive_thread_count=alive_thread_count+1
+                    alive_thread_count = alive_thread_count + 1
                 else:
-                    logger.warn("Thread '%s' is not alive or healthy." % t.name)
+                    logger.warn(
+                        "Thread '%s' is not alive or healthy." % t.name)
                     thread_model.not_connected()
                 thread_model.save()
 
@@ -167,7 +214,8 @@ def update_status(parent_name, thread_count, threads):
                 process.save()
                 logger.debug("Process '%s' is healthy." % parent_name)
             else:
-                logger.error("Process '%s' is not healthy. Threads: %s / %s" % (parent_name, alive_thread_count, thread_count))
+                logger.error("Process '%s' is not healthy. Threads: %s / %s" %
+                             (parent_name, alive_thread_count, thread_count))
             time.sleep(10)
 
     except Exception, e:
@@ -177,7 +225,11 @@ def update_status(parent_name, thread_count, threads):
 class HeartbeatThread(CommunicationThread):
 
     def send_message(self):
+<<<<<<< HEAD:tumbo/core/executors/heartbeat.py
     	"""
+=======
+        """
+>>>>>>> develop:tumbo/core/executors/heartbeat/__init__.py
         Client-side functionality for heartbeating and sending metrics.
         """
         logger.debug("send heartbeat to %s:%s" % (self.vhost, HEARTBEAT_QUEUE))
@@ -213,7 +265,7 @@ class HeartbeatThread(CommunicationThread):
                                    routing_key=HEARTBEAT_QUEUE,
                                    properties=pika.BasicProperties(
                                             expiration=str(2000)
-                                       ),
+                                   ),
                                    body=json.dumps(payload)
                                    )
 
@@ -226,14 +278,21 @@ class HeartbeatThread(CommunicationThread):
         self.schedule_next_message()
 
     def on_message(self, ch, method, props, body):
+<<<<<<< HEAD:tumbo/core/executors/heartbeat.py
     	"""
         Server functionality for storing received status and metrics.
         """
+=======
+        """
+        Server functionality for storing received status and metrics.
+        """
+>>>>>>> develop:tumbo/core/executors/heartbeat/__init__.py
         try:
             data = json.loads(body)
             vhost = data['vhost']
             base = vhost.split("-", 1)[1]
-            logger.debug("** '%s' Heartbeat received from '%s'" % (self.name, vhost))
+            logger.debug("** '%s' Heartbeat received from '%s'" %
+                         (self.name, vhost))
 
             # store timestamp in DB
             try:
@@ -245,34 +304,55 @@ class HeartbeatThread(CommunicationThread):
             instance.last_beat = datetime.now().replace(tzinfo=pytz.UTC)
             instance.save()
 
+<<<<<<< HEAD:tumbo/core/executors/heartbeat.py
             process, created = Process.objects.get_or_create(name=vhost, instance=instance)
+=======
+            process, created = Process.objects.get_or_create(
+                name=vhost, instance=instance)
+>>>>>>> develop:tumbo/core/executors/heartbeat/__init__.py
             process.rss = int(data['rss'])
             if data.has_key('version'):
                 process.version = data['version']
                 if process.version != __VERSION__:
+<<<<<<< HEAD:tumbo/core/executors/heartbeat.py
                     logger.info("Heartbeat detected old version: %s->%s" % (process.version, __VERSION__))
             process.save()
 
             slug = vhost.replace("/", "")+"-rss"
             
+=======
+                    logger.info("Heartbeat detected old version: %s->%s" %
+                                (process.version, __VERSION__))
+            process.save()
+
+            slug = vhost.replace("/", "") + "-rss"
+
+>>>>>>> develop:tumbo/core/executors/heartbeat/__init__.py
             from redis_metrics import set_metric
 
             try:
-                set_metric(slug, int(process.rss)/1024, expire=86400)
+                set_metric(slug, int(process.rss) / 1024, expire=86400)
             except Exception, e:
                 logger.warn(e)
 
+<<<<<<< HEAD:tumbo/core/executors/heartbeat.py
             logger.debug("Sync status: " + str(data['ready_for_init']), str(data['in_sync']))
+=======
+            logger.debug("Sync status: " +
+                         str(data['ready_for_init']), str(data['in_sync']))
+>>>>>>> develop:tumbo/core/executors/heartbeat/__init__.py
 
             # verify and warn for incomplete threads
             try:
                 base_obj = Base.objects.get(name=base)
             except MultipleObjectsReturned, e:
-                logger.error("Lookup for '%s' returned more than one result" % base)
+                logger.error(
+                    "Lookup for '%s' returned more than one result" % base)
                 raise e
             for thread in data['threads']['list']:
                 try:
-                    thread_obj, created = Thread.objects.get_or_create(name=thread['name'], parent=process)
+                    thread_obj, created = Thread.objects.get_or_create(
+                        name=thread['name'], parent=process)
                     if thread['connected']:
                         thread_obj.health = Thread.STARTED
                     else:
@@ -285,55 +365,61 @@ class HeartbeatThread(CommunicationThread):
             if not data['in_sync']:
                 instances = list(Apy.objects.filter(base__name=base))
                 for instance in instances:
-                    distribute(CONFIGURATION_QUEUE, serializers.serialize("json", [instance,]),
-                        vhost,
-                        instance.base.name,
-                        instance.base.executor.password
-                        )
+                    distribute(CONFIGURATION_QUEUE, serializers.serialize("json", [instance, ]),
+                               vhost,
+                               instance.base.name,
+                               instance.base.executor.password
+                               )
                 instances = base_obj.foreign_apys.all()
                 logger.info("Foreigns to sync: %s" % str(list(instances)))
                 for instance in instances:
-                    distribute(FOREIGN_CONFIGURATION_QUEUE, serializers.serialize("json", [instance,]),
-                        vhost,
-                        base_obj.name,
-                        base_obj.executor.password
-                        )
+                    distribute(FOREIGN_CONFIGURATION_QUEUE, serializers.serialize("json", [instance, ]),
+                               vhost,
+                               base_obj.name,
+                               base_obj.executor.password
+                               )
                 for instance in Setting.objects.filter(base__name=base):
                     distribute(SETTING_QUEUE, json.dumps({
                         instance.key: instance.value
-                        }),
+                    }),
                         vhost,
                         instance.base.name,
                         instance.base.executor.password
                     )
 
                 # Plugin config
-                success, failed = call_plugin_func(base_obj, "config_for_workers")
-                logger.info("Plugin to sync - success: "+str(success))
-                logger.info("Plugin to sync - failed: "+str(failed))
+                success, failed = call_plugin_func(
+                    base_obj, "config_for_workers")
+                logger.info("Plugin to sync - success: " + str(success))
+                logger.info("Plugin to sync - failed: " + str(failed))
                 for plugin, config in success.items():
-                    logger.info("Send '%s' config '%s' to %s" % (plugin, config, base_obj.name))
+                    logger.info("Send '%s' config '%s' to %s" %
+                                (plugin, config, base_obj.name))
                     distribute(PLUGIN_CONFIG_QUEUE, json.dumps({plugin: config}),
-                            vhost,
-                            base_obj.name,
-                            base_obj.executor.password
-                    )
+                               vhost,
+                               base_obj.name,
+                               base_obj.executor.password
+                               )
 
             if data.has_key('ready_for_init') and data['ready_for_init']:
 
-                ## execute init exec
+                # execute init exec
                 try:
                     init = base_obj.apys.get(name='init')
-                    url = reverse('exec', kwargs={'base': base_obj.name, 'id': init.id})
+                    url = reverse('exec', kwargs={
+                                  'base': base_obj.name, 'id': init.id})
 
                     request_factory = RequestFactory()
-                    request = request_factory.get(url, data={'base': base_obj.name, 'id': init.id})
+                    request = request_factory.get(
+                        url, data={'base': base_obj.name, 'id': init.id})
                     request.user = get_user_model().objects.get(username='admin')
 
                     from core.views import ExecView
                     view = ExecView()
-                    response = view.get(request, base=base_obj.name, id=init.id)
-                    logger.info("Init method called for base %s, response_code: %s" % (base_obj.name, response.status_code))
+                    response = view.get(
+                        request, base=base_obj.name, id=init.id)
+                    logger.info("Init method called for base %s, response_code: %s" % (
+                        base_obj.name, response.status_code))
 
                 except Apy.DoesNotExist, e:
                     logger.info("No init exec for base '%s'" % base_obj.name)
@@ -344,14 +430,12 @@ class HeartbeatThread(CommunicationThread):
 
             del ch, method, body, data
 
-
         except Exception, e:
             logger.exception(e)
         time.sleep(0.1)
 
-
     def schedule_next_message(self):
-        #logger.info('Next beat in %0.1f seconds',
-                    #self.PUBLISH_INTERVAL)
+        # logger.info('Next beat in %0.1f seconds',
+                    # self.PUBLISH_INTERVAL)
         self._connection.add_timeout(settings.TUMBO_PUBLISH_INTERVAL,
                                      self.send_message)
