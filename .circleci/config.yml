@@ -17,6 +17,7 @@ jobs:
       #
       - run: sudo apt-get update && sudo apt-get install libpq-dev
       #
+      - run: pip install tox
       - run: tox
       - run: pip install -r requirements.txt
       # TODO: coverage should be run in cotainer and data directory for output should be added as volume
