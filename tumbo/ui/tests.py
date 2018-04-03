@@ -10,7 +10,8 @@ class AccountTestCase(StaticLiveServerTestCase):
 
     def setUp(self):
         options = webdriver.ChromeOptions()
-        options.add_argument('headless')
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
         self.selenium = webdriver.Chrome(chrome_options=options)
         super(AccountTestCase, self).setUp()
 

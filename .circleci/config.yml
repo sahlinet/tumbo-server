@@ -17,6 +17,10 @@ jobs:
       #
       - run: sudo apt-get update && sudo apt-get install libpq-dev
       #
+      - run: wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      - run: sudo dpkg -i ./google-chrome*.deb
+      - run: rm google-chrome*deb
+      #
       - run: bash bin/create_package.sh > /dev/null
       - run: pip install tox
       - run: tox
