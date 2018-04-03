@@ -9,7 +9,9 @@ User = get_user_model()
 class AccountTestCase(StaticLiveServerTestCase):
 
     def setUp(self):
-        self.selenium = webdriver.Chrome()
+        options = webdriver.ChromeOptions()
+        options.add_argument('headless')
+        self.selenium = webdriver.Chrome(chrome_options=options)
         super(AccountTestCase, self).setUp()
 
         self.admin_pw = 'mypassword'
