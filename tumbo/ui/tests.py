@@ -41,5 +41,4 @@ class AccountTestCase(StaticLiveServerTestCase):
         submit.send_keys(Keys.RETURN)
 
         # check the returned result
-        print selenium.page_source
         assert 'My Bases' in selenium.page_source
