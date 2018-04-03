@@ -79,5 +79,4 @@ MANIFEST.in
 secrets/*
 *.retry
 
-*.ini
 .vscode
