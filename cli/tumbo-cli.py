@@ -991,8 +991,4 @@ if __name__ == '__main__':
     if arguments['docker'] and arguments['url']:
         # port = docker_compose("-p", "tumboserver", "-f", compose_file,
         #                      "port", "app", "80").split(":")[1]
-<<<<<<< HEAD
-        print ("http://%s:%s" % ("127.0.0.1", str(8000)))
-=======
         print "http://%s:%s" % ("127.0.0.1", str(8000))
->>>>>>> develop
