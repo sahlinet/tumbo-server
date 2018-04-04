@@ -77,6 +77,10 @@ def log_mem(**kwargs):
 
 def inactivate(**kwargs):
     try:
+
+        if kwargs.get("connections_override", None):
+            patch_thread(kwargs.get("connections_override"))
+
         while True:
             logger.debug("Inactivate Thread run")
 

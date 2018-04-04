@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.management import call_command
-from django.db import DEFAULT_DB_ALIAS, connection, connections, transaction
+from django.db import connection
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
@@ -44,9 +44,6 @@ class AccountTestCase(StaticLiveServerTestCase):
         settings.RABBITMQ_ADMIN_USER = "admin"
         settings.RABBITMQ_ADMIN_PASSWORD = "rabbitmq"
 
-        # call_command('migrate', interactive=False, verbosity=3)
-
-        
         connections_override = cls.server_thread.connections_override
         try:
             # import pdb; pdb.set_trace()
@@ -124,14 +121,13 @@ class AccountTestCase(StaticLiveServerTestCase):
         submit.send_keys(Keys.RETURN)
         #print selenium.page_source
 
-        from core.models import Base, Instance, Apy
-        assert Base.objects.get(name="testbase")
+       
+        assert models.Base.objects.get(name="testbase")
         #print Instance.objects.all()
 
     def test_background_running(self):
         import time
         time.sleep(2)
-        #import pdb; pdb.set_trace()
-        print models.Process.objects.count()
+    
         assert models.Process.objects.count() == 6
         assert models.Process.objects.get(name="HeartbeatThread")

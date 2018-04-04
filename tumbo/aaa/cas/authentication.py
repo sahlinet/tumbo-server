@@ -11,7 +11,6 @@ from django.contrib.auth import login as auth_login
 
 from core.models import Base
 from core.utils import read_jwt
-import django.contrib.sessions.backends.cache
 
 User = get_user_model()
 

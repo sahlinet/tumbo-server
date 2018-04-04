@@ -12,7 +12,6 @@ from django.contrib.auth import logout as auth_logout
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
 
 from core.utils import create_jwt
 from core.models import Base

@@ -40,7 +40,6 @@ class CasLoginTestCase(BaseTestCase):
         self.client1.login(username='user1', password='pass')
         self.client1.logout()
         response = self.client1.get(reverse('console'))
-        
         self.assertEqual(200, response.status_code)
 
     def test_step0_login_to_service_redirects_to_cas_loginpage(self):
@@ -55,14 +54,15 @@ class CasLoginTestCase(BaseTestCase):
         response = self.client1.post(self.cas_login_url, {
                                      'username': 'user1', 'password': 'pass', 'service': self.userland_home})
         self.assertEqual(302, response.status_code)
-        self.assertTrue(("http://testserver/userland/user1/base1/static/index.html?ticket=" in response['Location']))
+        self.assertTrue(
+            ("http://testserver/userland/user1/base1/static/index.html?ticket=" in response['Location']))
         return response['Location']
 
     def test_step2_service_calls_cas_url_to_verify_ticket(self):
-        #self._setup()
+        # self._setup()
         self.url = self.test_step1_login_to_cas_with_service_redirects_to_service_with_ticket()
         qs = urlparse(self.url).query
-        self.cas_ticketverify+="?%s&service=%s" % (qs, self.userland_home)
+        self.cas_ticketverify += "?%s&service=%s" % (qs, self.userland_home)
 
     def test_step2_service_calls_cas_url_to_verify_ticket(self):
         # self._setup()
@@ -90,4 +90,3 @@ class CasLoginTestCase(BaseTestCase):
 
         # if successfull, we receive a Set-Cookie Header
         #import pdb; pdb.set_trace()
-
