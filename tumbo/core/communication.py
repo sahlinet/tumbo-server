@@ -1,15 +1,18 @@
+import json
 import logging
-import pika
-import sys
 import subprocess
+import sys
 import threading
 import time
-import requests
-import json
 import urllib
+
+import pika
+import requests
 from django.conf import settings
 
-from core.defaults import WORKER_VHOST_PERMISSIONS, RABBITMQ_SERVER_USER, SERVER_VHOST_PERMISSIONS, CORE_RECEIVER_USERNAME
+from core.defaults import (CORE_RECEIVER_USERNAME, RABBITMQ_SERVER_USER,
+                           SERVER_VHOST_PERMISSIONS, WORKER_VHOST_PERMISSIONS)
+from core.executors import patch_thread
 
 logger = logging.getLogger(__name__)
 
@@ -246,6 +249,9 @@ class CommunicationThread(threading.Thread):
         self.ttl = ttl
 
         self.kwargs = kwargs
+
+        if kwargs.get("connections_override", None):
+            patch_thread(kwargs.get("connections_override"))
 
     @property
     def state(self):

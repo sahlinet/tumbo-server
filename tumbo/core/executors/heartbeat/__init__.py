@@ -15,7 +15,7 @@ from django.contrib.auth import get_user_model
 from django.core import serializers
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.urlresolvers import reverse
-from django.db import DatabaseError, transaction
+from django.db import DatabaseError, connections, transaction
 from django.test import RequestFactory
 from gevent import pool as gevent_pool
 from gevent import Greenlet
@@ -36,6 +36,16 @@ FOREIGN_CONFIGURATION_QUEUE = "fconfiguration"
 SETTING_QUEUE = "setting"
 PLUGIN_CONFIG_QUEUE = "pluginconfig"
 
+
+
+def patch_thread(connections_override):
+    if connections_override:
+        # Override this thread's database connections with the ones
+        # provided by the main thread.
+        for alias, conn in connections_override.items():
+            connections[alias] = conn
+            #import pprint;pprint.pprint(conn.__dict__)
+            #print conn.connection.__dict__
 def log_mem(**kwargs):
 
     if kwargs.get("connections_override", None):
@@ -65,7 +75,7 @@ def log_mem(**kwargs):
         logger.exception(e)
 
 
-def inactivate():
+def inactivate(**kwargs):
     try:
         while True:
             logger.debug("Inactivate Thread run")
@@ -107,8 +117,9 @@ def _recreate(base):
     base.start()
     logger.info("'%s' recreated" % base)
 
-
-def updater():
+def updater(**kwargs):
+    if kwargs.get("connections_override", None):
+        patch_thread(kwargs.get("connections_override"))
     try:
         while True:
             logger.debug("UpdaterThread run")
@@ -137,7 +148,9 @@ def updater():
         logger.exception(e)
 
 
-def update_status(parent_name, thread_count, threads):
+def update_status(parent_name, thread_count, threads, **kwargs):
+    if kwargs.get("connections_override", None):
+        patch_thread(kwargs.get("connections_override"))
     try:
         while True:
             time.sleep(0.1)

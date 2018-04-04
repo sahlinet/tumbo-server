@@ -1,19 +1,21 @@
 import logging
 import sys
 import threading
+from optparse import make_option
 
-from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.core.management.base import BaseCommand
+from django.db import DEFAULT_DB_ALIAS, connection, connections, transaction
 
-from core.executors.heartbeat import HeartbeatThread, inactivate, updater, log_mem, update_status, HEARTBEAT_QUEUE
-from core.executors.async import AsyncResponseThread
-from core.log import LogReceiverThread
 from core.communication import RabbitmqAdmin
+from core.executors.async import AsyncResponseThread
+from core.executors.heartbeat import (HEARTBEAT_QUEUE, HeartbeatThread,
+                                      inactivate, log_mem, update_status,
+                                      updater)
+from core.log import LogReceiverThread
 from core.utils import load_setting
 
 logger = logging.getLogger("core.executors.remote")
-
-from optparse import make_option
 
 
 class Command(BaseCommand):
@@ -30,6 +32,13 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
+
+        connections_override = options.get("connections_override", None)
+        if connections_override:
+            # Override this thread's database connections with the ones
+            # provided by the main thread.
+            for alias, conn in connections_override.items():
+                connections[alias] = conn
 
         heartbeat_threads = []
         async_threads = []
@@ -49,13 +58,13 @@ class Command(BaseCommand):
             if "Kubernetes" not in settings.TUMBO_WORKER_IMPLEMENTATION:
                 # On Kubernetes we should not have orphaned processes
                 inactivate_thread = threading.Thread(
-                    target=inactivate, name="InactivateThread")
+                    target=inactivate, name="InactivateThread", kwargs={'connections_override': connections_override})
                 inactivate_thread.daemon = True
                 inactivate_thread.start()
                 core_threads.append(inactivate_thread)
 
                 update_status_thread = threading.Thread(
-                    target=update_status, args=["InactiveThread", 1, [inactivate_thread]])
+                    target=update_status, args=["InactiveThread", 1, [inactivate_thread]], kwargs={'connections_override': connections_override})
                 update_status_thread.daemon = True
                 update_status_thread.start()
 
@@ -65,12 +74,12 @@ class Command(BaseCommand):
             updater_thread.start()
             core_threads.append(updater_thread)
             update_status_thread = threading.Thread(
-                target=update_status, args=["UpdaterThread", 1, [updater_thread]])
+                target=update_status, args=["UpdaterThread", 1, [updater_thread]], kwargs={'connections_override': connections_override})
             update_status_thread.daemon = True
             update_status_thread.start()
 
         log_mem_thread = threading.Thread(
-            target=log_mem, kwargs={'name': "Background-%s" % mode})
+            target=log_mem, kwargs={'name': "Background-%s" % mode, 'connections_override': connections_override})
         log_mem_thread.daemon = True
         log_mem_thread.start()
         core_threads.append(log_mem_thread)
@@ -104,13 +113,13 @@ class Command(BaseCommand):
                 name = "HeartbeatThread-%s" % c
 
                 thread = HeartbeatThread(name, host, port, core_vhost, CORE_RECEIVER_USERNAME,
-                                         RECEIVER_PASSWORD, queues_consume=queues_consume, ttl=3000)
+                                         RECEIVER_PASSWORD, queues_consume=queues_consume, ttl=3000, connections_override=connections_override)
                 heartbeat_threads.append(thread)
                 thread.daemon = True
                 thread.start()
 
             update_status_thread = threading.Thread(target=update_status, args=[
-                                                    "HeartbeatThread", HEARTBEAT_THREAD_COUNT, heartbeat_threads])
+                                                    "HeartbeatThread", HEARTBEAT_THREAD_COUNT, heartbeat_threads], kwargs={'connections_override': connections_override})
             update_status_thread.daemon = True
             update_status_thread.start()
 
