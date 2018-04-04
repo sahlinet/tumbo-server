@@ -36,6 +36,34 @@ FOREIGN_CONFIGURATION_QUEUE = "fconfiguration"
 SETTING_QUEUE = "setting"
 PLUGIN_CONFIG_QUEUE = "pluginconfig"
 
+def log_mem(**kwargs):
+
+    if kwargs.get("connections_override", None):
+        patch_thread(kwargs.get("connections_override"))
+
+    name = kwargs['name']
+
+    p = psutil.Process(os.getpid())
+
+    from redis_metrics import set_metric
+    try:
+        while True:
+            m = p.memory_info()
+
+            try:
+                slug = "Background %s %s rss" % (socket.gethostname(), name)
+                set_metric(slug, float(m.rss)/(1024*1024)+50, expire=86400)
+                slug = "Background %s %s vms" % (socket.gethostname(), name)
+                set_metric(slug, float(m.vms)/(1024*1024)+50, expire=86400)
+
+                logger.debug("Saving rss/vms for background process '%s'" % name)
+            except Exception, e:
+                logger.error(e)
+
+            time.sleep(30)
+    except Exception, e:
+        logger.exception(e)
+
 
 def inactivate():
     try:
