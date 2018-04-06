@@ -269,7 +269,7 @@ class HeartbeatThread(CommunicationThread):
                 instance = Instance.objects.get(executor__base__name=base)
             except Instance.DoesNotExist, e:
                 logger.error("Instance for base '%s' does not exist" % base)
-                raise Exception()
+                return
             instance.is_alive = True
             instance.last_beat = datetime.now().replace(tzinfo=pytz.UTC)
             instance.save()
