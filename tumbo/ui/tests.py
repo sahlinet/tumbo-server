@@ -126,24 +126,24 @@ class AccountTestCase(StaticLiveServerTestCase):
         self.test_login()
         selenium = self.selenium
         selenium.get(self.live_server_url + "/core/dashboard/")
-        selenium.get_screenshot_as_file("b.png")
+        selenium.get_screenshot_as_file("bb.png")
         base_name = selenium.find_element_by_id('inputBaseName')
         base_name.send_keys("testbase")
         submit = selenium.find_element_by_name('create_new_base')
         submit.send_keys(Keys.RETURN)
 
         selenium.implicitly_wait(5)
-        selenium.get_screenshot_as_file("c.png")
+        selenium.get_screenshot_as_file("cc.png")
 
         base_obj = models.Base.objects.get(name="testbase")
         assert base_obj
-        selenium.get_screenshot_as_file("d.png")
+        selenium.get_screenshot_as_file("dd.png")
 
         selenium = self.selenium
         link = selenium.find_elements_by_xpath("//a[@href='/core/dashboard/testbase/index/']")[0]
         link.send_keys(Keys.RETURN)
         assert 'Runtime Information' in selenium.page_source
-        selenium.get_screenshot_as_file("e.png")
+        selenium.get_screenshot_as_file("ee.png")
 
         button = selenium.find_element_by_name('state_cycle')
         button.send_keys(Keys.RETURN)
@@ -154,7 +154,7 @@ class AccountTestCase(StaticLiveServerTestCase):
         assert base_obj.state == True
         selenium.refresh()
         time.sleep(3)
-        selenium.get_screenshot_as_file("f.png")
+        selenium.get_screenshot_as_file("ff.png")
 
     def test_background_running(self):
         time.sleep(2)
