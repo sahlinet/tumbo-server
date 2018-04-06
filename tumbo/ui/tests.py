@@ -1,16 +1,16 @@
 import threading
 import time
-from unittest import skip
+# from unittest import skip
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.management import call_command
 from django.db import connection
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 
 from core import models
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
 User = get_user_model()
 
@@ -133,14 +133,17 @@ class AccountTestCase(StaticLiveServerTestCase):
         submit.send_keys(Keys.RETURN)
 
         selenium.implicitly_wait(5)
+        selenium.get_screenshot_as_file("c.png")
 
         base_obj = models.Base.objects.get(name="testbase")
         assert base_obj
+        selenium.get_screenshot_as_file("d.png")
 
         selenium = self.selenium
         link = selenium.find_elements_by_xpath("//a[@href='/core/dashboard/testbase/index/']")[0]
         link.send_keys(Keys.RETURN)
         assert 'Runtime Information' in selenium.page_source
+        selenium.get_screenshot_as_file("e.png")
 
         button = selenium.find_element_by_name('state_cycle')
         button.send_keys(Keys.RETURN)
@@ -149,9 +152,11 @@ class AccountTestCase(StaticLiveServerTestCase):
 
         base_obj = models.Base.objects.get(name="testbase")
         assert base_obj.state == True
+        selenium.refresh()
+        time.sleep(3)
+        selenium.get_screenshot_as_file("f.png")
 
     def test_background_running(self):
-        import time
         time.sleep(2)
     
         assert models.Process.objects.count() == 6

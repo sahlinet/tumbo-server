@@ -216,7 +216,7 @@ class Base(models.Model):
     @property
     def executors(self):
         try:
-            if self.executor is None or self.executor.pid is None:
+            if self.executor.pid is None:
                 return []
             return [
                 {
@@ -227,6 +227,9 @@ class Base(models.Model):
                     'plugins': self.executor.plugins
                 }
             ]
+        except Base.executor.RelatedObjectDoesNotExist, e:
+            logger.warn("Executor does not exist")
+            return []
         except Exception, e:
             logger.exception(e)
             return []

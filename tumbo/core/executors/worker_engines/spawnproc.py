@@ -21,6 +21,7 @@ class SpawnExecutor(BaseExecutor):
         self._pre_start()
 
         python_path = sys.executable
+        # python_path = "coverage run -ap"
         try:
             MODELSPY = os.path.join(settings.PROJECT_ROOT, "../../worker")
             default_env = self.get_default_env()
@@ -58,7 +59,6 @@ class SpawnExecutor(BaseExecutor):
                 pass
 
             logger.info(env['PYTHONPATH'])
-            print(env['PYTHONPATH'])
             settings.SETTINGS_MODULE = "app_worker.settings"
             p = subprocess.Popen("%s %s/manage.py start_worker --settings=%s --vhost=%s --base=%s --username=%s --password=%s" % (
                 python_path, MODELSPY, settings.SETTINGS_MODULE, self.vhost, self.base_name, self.base_name, self.password),

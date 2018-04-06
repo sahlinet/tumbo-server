@@ -5,7 +5,7 @@ from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import connection, connections, transaction
+from django.db import connections, transaction
 
 from core.communication import RabbitmqAdmin
 from core.executors.async import AsyncResponseThread

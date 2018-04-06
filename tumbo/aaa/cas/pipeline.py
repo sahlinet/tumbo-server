@@ -15,7 +15,7 @@ def create_ticket(backend, user, response, *args, **kwargs):
     logger.info("create_ticket pipeline for user %s started" % user.username)
 
     # workaround for creating internalid
-    auth, created = AuthProfile.objects.get_or_create(user=user)
+    auth, _ = AuthProfile.objects.get_or_create(user=user)
     user.authprofile = auth
     user.authprofile.internalid = user.authprofile.internalid
     user.authprofile.save()
