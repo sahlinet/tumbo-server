@@ -216,7 +216,7 @@ class Base(models.Model):
     @property
     def executors(self):
         try:
-            if self.executor.pid is None:
+            if self.executor is None or self.executor.pid is None:
                 return []
             return [
                 {

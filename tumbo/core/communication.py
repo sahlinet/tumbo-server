@@ -100,6 +100,8 @@ class RabbitmqHttpApi(RabbitmqAdmin):
                 url + uri, data=data, headers={'content-type': "application/json"}, auth=(user, password))
         if r.status_code not in [204, 201]:
             logger.error(str((r.url, r.status_code, r.content, data)))
+            if r.status_code == 401:
+                logger.error("Login failed with user '%s'" % user)
             raise Exception("%s: %s" % (r.status_code, r.content))
 
     def add_vhost(self, name):

@@ -1,3 +1,5 @@
+import threading
+import time
 from unittest import skip
 
 from django.conf import settings
@@ -15,7 +17,7 @@ User = get_user_model()
 
 def heartbeat_process(connections_override):
 
-    import time
+    
     time.sleep(0.2)
     call_command("heartbeat", mode="all", verbosity=3, connections_override=connections_override)
 
@@ -24,9 +26,6 @@ class AccountTestCase(StaticLiveServerTestCase):
 
     @classmethod
     def _start_heartbeat(cls, connections_override):
-        import threading
-        print connections_override
-
         cls.t = threading.Thread(target=heartbeat_process, args=(connections_override,))
         cls.t.setDaemon(True)
         cls.t.start()
@@ -57,8 +56,8 @@ class AccountTestCase(StaticLiveServerTestCase):
 
     def setUp(self):
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
-        options.add_argument('--no-sandbox')
+        #options.add_argument('--headless')
+        #options.add_argument('--no-sandbox')
         self.selenium = webdriver.Chrome(chrome_options=options)
         super(AccountTestCase, self).setUp()
 
@@ -99,7 +98,6 @@ class AccountTestCase(StaticLiveServerTestCase):
         # check the returned result
         assert 'My Bases' in selenium.page_source
 
-    @skip("try")
     def test_logout(self):
         self.test_login()
         selenium = self.selenium
@@ -109,21 +107,48 @@ class AccountTestCase(StaticLiveServerTestCase):
 
         assert 'Sign in' in selenium.page_source
 
-    @skip("try")
     def test_create_base(self):
         self.test_login()
         selenium = self.selenium
         selenium.get(self.live_server_url + "/core/dashboard/")
         selenium.get_screenshot_as_file("b.png")
         base_name = selenium.find_element_by_id('inputBaseName')
-        base_name.send_keys('testbase')
+        base_name.send_keys("testbase")
         submit = selenium.find_element_by_name('create_new_base')
         submit.send_keys(Keys.RETURN)
-        #print selenium.page_source
 
-       
-        assert models.Base.objects.get(name="testbase")
-        #print Instance.objects.all()
+        selenium.implicitly_wait(5)
+
+        base_obj = models.Base.objects.get(name="testbase")
+        assert base_obj
+        
+    def test_start_base(self):
+        self.test_login()
+        selenium = self.selenium
+        selenium.get(self.live_server_url + "/core/dashboard/")
+        selenium.get_screenshot_as_file("b.png")
+        base_name = selenium.find_element_by_id('inputBaseName')
+        base_name.send_keys("testbase")
+        submit = selenium.find_element_by_name('create_new_base')
+        submit.send_keys(Keys.RETURN)
+
+        selenium.implicitly_wait(5)
+
+        base_obj = models.Base.objects.get(name="testbase")
+        assert base_obj
+
+        selenium = self.selenium
+        link = selenium.find_elements_by_xpath("//a[@href='/core/dashboard/testbase/index/']")[0]
+        link.send_keys(Keys.RETURN)
+        assert 'Runtime Information' in selenium.page_source
+
+        button = selenium.find_element_by_name('state_cycle')
+        button.send_keys(Keys.RETURN)
+
+        time.sleep(10)
+
+        base_obj = models.Base.objects.get(name="testbase")
+        assert base_obj.state == True
 
     def test_background_running(self):
         import time
