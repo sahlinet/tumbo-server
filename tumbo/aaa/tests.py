@@ -74,7 +74,7 @@ class CasLoginTestCase(BaseTestCase):
         self.assertEqual(200, self.response.status_code)
 
     def test_step2_verify_ticket_returns_readable_token(self):
-        self.test_step2_service_calls_cas_url_to_verify_ticket()
+        self.test_step3_service_calls_cas_url_to_verify_ticket()
         username, _ = read_jwt(self.response.content, settings.SECRET_KEY)
         User.objects.get(username=username)
 
