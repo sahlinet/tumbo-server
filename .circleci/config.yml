@@ -31,7 +31,7 @@ jobs:
       - run: 
           command: |
             cp *.png /tmp/artifacts
-          when: on_fail
+          when: always
       - store_artifacts:
           path: /tmp/artifacts
       - run: coverage xml
