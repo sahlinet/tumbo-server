@@ -365,7 +365,7 @@ class CommunicationThread(threading.Thread):
                 queue=queue[0], callback=self.produce_on_queue_declared)
 
         # topic receiver
-        for topic in self.topic_receiver:
+        for _ in self.topic_receiver:
             channel.exchange_declare(
                 exchange="configuration", exchange_type='fanout', callback=self.on_exchange_declare)
 

@@ -330,7 +330,6 @@ class ApyExecutionTestCase(BaseTestCase):
 class SettingTestCase(BaseTestCase):
 
     def test_create_and_change_setting_for_base(self, distribute_mock):
-        distribute_mock.return_value
         self.client1.login(username='user1', password='pass')
         json_data = {u'key': u'key', 'value': 'value'}
         response = self.client1.post(

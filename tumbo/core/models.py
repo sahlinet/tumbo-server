@@ -377,7 +377,7 @@ class Transaction(models.Model):
         logentry.save()
 
     def save(self, *args, **kwargs):
-        super(self.__class__, self).save(*args, **kwargs)
+        super(Transaction, self).save(*args, **kwargs)
 
     @property
     def apy_name(self):
