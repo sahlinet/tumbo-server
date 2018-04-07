@@ -119,6 +119,7 @@ class AccountTestCase(StaticLiveServerTestCase):
 
         selenium.implicitly_wait(5)
 
+        selenium.get_screenshot_as_file("c.png")
         base_obj = models.Base.objects.get(name="testbase")
         assert base_obj
         
