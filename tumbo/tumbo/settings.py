@@ -261,7 +261,7 @@ LOGGING = {
             'propagate': True
         },
         'aaa.cas': {
-            'handlers': ['console', 'cas_logfile'],
+            'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True
         }
