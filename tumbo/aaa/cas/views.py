@@ -27,9 +27,9 @@ def loginpage(request):
     """
     If a user wants to login, he opens the url named `cas-login`, which renders the cas_loginpage.html.
     """
-
-    logging.info("Start login for accessing a base")
+    
     if request.method == "GET":
+        logger.info("step:cas-3:start CAS login, GET -> return login form")
         service = request.GET['service']
         m = re.match(
             r".*/userland/(?P<username>.*?)/(?P<basename>.*?)/", service)
@@ -45,16 +45,18 @@ def loginpage(request):
             base = Base.objects.get(frontend_host=host)
             username = base.user.username
             basename = base.name
-            request.session['next'] = "https://%s" % host
+            # TODO: make https configurable
+            request.session['next'] = "http://%s" % host
 
         if request.user.is_authenticated:
             user = request.user
 
-        logger.info("Next: " + request.session['next'])
+        #logger.info("Next: " + request.session['next'])
 
         return render(request, 'aaa/cas_loginpage.html', {'user': user, 'userland': username, 'basename': basename, 'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS)})
 
     elif request.method == "POST":
+        logger.info("step:cas-3:start CAS login, POST -> authenticate")
         username = request.POST['username']
         password = request.POST['password']
         service = request.POST['service']
@@ -62,10 +64,13 @@ def loginpage(request):
                             password=password, redirect_uri="/cas/login/")
         if user is not None:
             if user.is_active:
+                logger.info("step:cas-4:start CAS login, POST -> authenticate -> is_active")
                 auth_login(request, user)
                 ticket = Ticket.objects.create_ticket(user=user)
+                logger.info("step:cas-5:start CAS login, POST -> authenticate -> is_active ->return 301 with ticket")
                 return redirect(service + "?ticket=%s" % ticket.ticket)
             else:
+                logger.info("step:cas-4:start CAS login, POST -> authenticate -> is_inactive")
                 return redirect('/disabled')
         else:
             # Return an 'invalid login' error message.
@@ -86,6 +91,7 @@ def verify(request):
         token = create_jwt(ticket.user, secret)
 
         ticket.user.backend = 'django.contrib.auth.backends.ModelBackend'
+    logger.info("step:cas-7.1:ticket verified -> response with token")
     return HttpResponse(token)
 
 

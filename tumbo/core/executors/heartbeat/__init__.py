@@ -163,9 +163,9 @@ def update_status(parent_name, thread_count, threads, **kwargs):
             pid = os.getpid()
             args = ["ps", "-p", str(pid), "-o", "rss="]
             proc = subprocess.Popen(args, stdout=subprocess.PIPE)
-            (out, err) = proc.communicate()
+            (out, _) = proc.communicate()
             rss = str(out).rstrip().strip().lstrip()
-            process, created = Process.objects.get_or_create(name=parent_name)
+            process, _ = Process.objects.get_or_create(name=parent_name)
             process.rss = int(rss)
             process.version = __VERSION__
             process.save()

@@ -64,7 +64,7 @@ class CasLoginTestCase(BaseTestCase):
         qs = urlparse(self.url).query
         self.cas_ticketverify += "?%s&service=%s" % (qs, self.userland_home)
 
-    def test_step2_service_calls_cas_url_to_verify_ticket(self):
+    def test_step3_service_calls_cas_url_to_verify_ticket(self):
         # self._setup()
         url = self.test_step1_login_to_cas_with_service_redirects_to_service_with_ticket()
         qs = urlparse(url).query
@@ -74,8 +74,8 @@ class CasLoginTestCase(BaseTestCase):
         self.assertEqual(200, self.response.status_code)
 
     def test_step2_verify_ticket_returns_readable_token(self):
-        self.test_step2_service_calls_cas_url_to_verify_ticket()
-        username, data = read_jwt(self.response.content, settings.SECRET_KEY)
+        self.test_step3_service_calls_cas_url_to_verify_ticket()
+        username, _ = read_jwt(self.response.content, settings.SECRET_KEY)
         User.objects.get(username=username)
 
     def test_call_service_with_ticket(self):

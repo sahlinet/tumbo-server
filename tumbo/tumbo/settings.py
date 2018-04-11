@@ -51,7 +51,7 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'aaa.cas.middleware.CasSessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'aaa.cas.middleware.CasCsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -134,10 +134,16 @@ LOGGING = {
             'datefmt' : "%d/%b/%Y %H:%M:%S"
         },
         'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': '[%(name)s:%(lineno)s] %(levelname)s %(message)s'
         },
     },
     'handlers': {
+        'cas_logfile': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'cas.log',
+            'formatter': 'verbose'
+        },
         'null': {
             'level': 'DEBUG',
             'class': 'logging.NullHandler',
@@ -253,6 +259,11 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True
+        },
+        'aaa.cas': {
+            'handlers': ['console', 'cas_logfile'],
+            'level': 'DEBUG',
+            'propagate': True
         }
     }
 }
@@ -320,7 +331,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 PROPAGATE_VARIABLES = os.environ.get("PROPAGATE_VARIABLES", "").split("|")
 
 # social auth
-if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
+if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "true").lower():
 
     INSTALLED_APPS += (
         'social.apps.django_app.default',
@@ -347,7 +358,8 @@ if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
         'social.pipeline.user.get_username',
         'social.pipeline.social_auth.associate_by_email',
         'social.pipeline.user.create_user',
-        'aaa.pipeline.restrict_user',
+        # TODO: fix and add again, document this.
+        #'aaa.pipeline.restrict_user',
         'social.pipeline.social_auth.associate_user',
         'social.pipeline.social_auth.load_extra_data',
         'social.pipeline.user.user_details',
@@ -364,3 +376,5 @@ SESSION_COOKIE_PATH = reverse_lazy('root')
 CSRF_COOKIE_PATH = "/core/"
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+SOCIAL_AUTH_USERNAME_FORM_HTML = 'login_form.html'
