@@ -155,6 +155,8 @@ class StaticView(ResponseUnavailableViewMixing, View):
             data['is_authenticated'] = request.user.is_authenticated()
         except KeyError:
             logger.error("Setup datastore for context failed")
+        data['is_authenticated'] = request.user.is_authenticated()
+        data['username'] = request.user.get_username()
         updated = request.GET.copy()
         query_params = {}
         for k, v in updated.iteritems():
