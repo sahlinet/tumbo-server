@@ -292,10 +292,11 @@ class CommunicationThread(threading.Thread):
             except KeyboardInterrupt:
                 self.stop()
             except Exception, e:
-                logger.warn(str(self.parameters.__dict__))
                 logger.warn(self.name)
                 logger.warn(self.vhost)
                 logger.warn(self.queues_consume)
+                if hasattr(self.parameters, "__dict__"):
+                    logger.warn(str(self.parameters.__dict__))
                 raise e
 
     def stop(self):
