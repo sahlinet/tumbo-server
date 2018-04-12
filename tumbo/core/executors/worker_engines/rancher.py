@@ -222,7 +222,7 @@ class RancherApiExecutor(BaseExecutor):
 
     def stop(self, id, *args, **kwargs):
         if self._container_exists(id):
-            _, response = self._call_rancher(
+            self._call_rancher(
                 "/%s?action=deactivate" % id, force_post=True)
         return True
 

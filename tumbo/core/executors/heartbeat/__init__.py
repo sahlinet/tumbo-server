@@ -175,7 +175,7 @@ def update_status(parent_name, thread_count, threads, **kwargs):
                 logger.debug(t.name + ": " + str(t.isAlive()))
 
                 # store in db
-                thread_model, created = Thread.objects.get_or_create(
+                thread_model, _ = Thread.objects.get_or_create(
                     name=t.name, parent=process)
                 if t.isAlive():
                     logger.debug("Thread '%s' is alive." % t.name)

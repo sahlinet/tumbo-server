@@ -1,6 +1,6 @@
-from django.conf import settings
-from django.http import HttpResponse
-from django.http.shortcuts import redirect
+# from django.conf import settings
+# from django.http import HttpResponse
+# from django.http.shortcuts import redirect
 
 
 def _is_member(user, group):
@@ -9,7 +9,18 @@ def _is_member(user, group):
     return user.groups.filter(name=group).exists()
 
 
-def restrict_user(backend, username, response, *args):
+def restrict_user(backend, username, response):
+    """Pipeline function to restrict Base usage for users
+    
+    Arguments:
+        backend {Backend} -- Used Authentication BAckend
+        username {String} -- Username
+        response {Response} -- Response
+    
+    Returns:
+        [type] -- [description]
+    """
+
     if username.is_superuser:
         return
 

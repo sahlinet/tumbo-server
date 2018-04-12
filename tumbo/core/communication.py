@@ -1,3 +1,5 @@
+"""Module for communication over RabbitMQ using pika.
+"""
 import json
 import logging
 import subprocess

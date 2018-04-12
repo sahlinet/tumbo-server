@@ -77,7 +77,8 @@ class CasSessionMiddleware(SessionMiddleware):
                             # if required.
                             return redirect(request.path)
                         cookie_path = self._get_cookie_path(request)
-                        logger.info("step:cas-7.4:set cookie-path to %s" % cookie_path)
+                        logger.info(
+                            "step:cas-7.4:set cookie-path to %s" % cookie_path)
 
                         response.set_cookie(
                             settings.SESSION_COOKIE_NAME,
@@ -90,13 +91,15 @@ class CasSessionMiddleware(SessionMiddleware):
                         )
                         logger.info("Create session %s for path: %s" % (
                             request.session.session_key, cookie_path))
-                        print response.cookies
-                        
+
                         if response.has_header('set-cookie'):
-                            logger.info("step:cas-7.4: Set-Cookie response Header set to: %s" % response['Set-Cookie'])
+                            logger.info(
+                                "step:cas-7.4: Set-Cookie response Header set to: %s" % response['Set-Cookie'])
         return response
 
+
 CSRF_SESSION_KEY = '_csrftoken'
+
 
 class CasCsrfViewMiddleware(CsrfViewMiddleware):
     """
@@ -107,7 +110,7 @@ class CasCsrfViewMiddleware(CsrfViewMiddleware):
     """
     # The _accept and _reject methods currently only exist for the sake of the
     # requires_csrf_token decorator.
-    
+
     def _get_cookie_path(self, request):
         cookie_path = None
         if "cas/" in request.path_info:
@@ -128,7 +131,8 @@ class CasCsrfViewMiddleware(CsrfViewMiddleware):
         return cookie_path or settings.SESSION_COOKIE_PATH
 
     def _set_token(self, request, response):
-        import pdb; pdb.set_trace()
+        import pdb
+        pdb.set_trace()
         if settings.CSRF_USE_SESSIONS:
             request.session[CSRF_SESSION_KEY] = request.META['CSRF_COOKIE']
         else:

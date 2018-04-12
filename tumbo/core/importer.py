@@ -21,7 +21,7 @@ def _handle_settings(settings, base_obj, override_public=False, override_private
     # get settings
     print settings.items()
     for k, v in settings.items():
-        setting_obj, created = Setting.objects.get_or_create(
+        setting_obj, _ = Setting.objects.get_or_create(
             base=base_obj, key=k)
         # set if empty
         if not setting_obj.value:

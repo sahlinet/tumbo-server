@@ -6,7 +6,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.management import call_command
-from django.db import connection
 
 from core import models
 from selenium import webdriver
@@ -17,16 +16,17 @@ User = get_user_model()
 
 def heartbeat_process(connections_override):
 
-    
     time.sleep(0.2)
-    call_command("heartbeat", mode="all", verbosity=3, connections_override=connections_override)
+    call_command("heartbeat", mode="all", verbosity=3,
+                 connections_override=connections_override)
 
 
 class AccountTestCase(StaticLiveServerTestCase):
 
     @classmethod
     def _start_heartbeat(cls, connections_override):
-        cls.t = threading.Thread(target=heartbeat_process, args=(connections_override,))
+        cls.t = threading.Thread(
+            target=heartbeat_process, args=(connections_override,))
         cls.t.setDaemon(True)
         cls.t.start()
 
@@ -47,7 +47,7 @@ class AccountTestCase(StaticLiveServerTestCase):
         try:
             # import pdb; pdb.set_trace()
             cls._start_heartbeat(connections_override)
-        except:
+        except Exception, e:
             pass
 
     # @classmethod
@@ -122,7 +122,7 @@ class AccountTestCase(StaticLiveServerTestCase):
         selenium.get_screenshot_as_file("c.png")
         base_obj = models.Base.objects.get(name="testbase")
         assert base_obj
-        
+
     def test_start_base(self):
         self.test_login()
         selenium = self.selenium
@@ -141,7 +141,8 @@ class AccountTestCase(StaticLiveServerTestCase):
         selenium.get_screenshot_as_file("dd.png")
 
         selenium = self.selenium
-        link = selenium.find_elements_by_xpath("//a[@href='/core/dashboard/testbase/index/']")[0]
+        link = selenium.find_elements_by_xpath(
+            "//a[@href='/core/dashboard/testbase/index/']")[0]
         link.send_keys(Keys.RETURN)
         assert 'Runtime Information' in selenium.page_source
         selenium.get_screenshot_as_file("ee.png")
@@ -159,6 +160,6 @@ class AccountTestCase(StaticLiveServerTestCase):
 
     def test_background_running(self):
         time.sleep(2)
-    
+
         assert models.Process.objects.count() == 6
         assert models.Process.objects.get(name="HeartbeatThread")
