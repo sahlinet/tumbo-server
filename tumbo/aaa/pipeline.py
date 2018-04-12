@@ -9,9 +9,9 @@ def _is_member(user, group):
     return user.groups.filter(name=group).exists()
 
 
-def restrict_user(backend, username, response):
+def restrict_user(backend, username):
     """Pipeline function to restrict Base usage for users
-    
+
     Arguments:
         backend {Backend} -- Used Authentication BAckend
         username {String} -- Username

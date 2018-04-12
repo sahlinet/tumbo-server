@@ -47,7 +47,7 @@ class AccountTestCase(StaticLiveServerTestCase):
         try:
             # import pdb; pdb.set_trace()
             cls._start_heartbeat(connections_override)
-        except Exception, e:
+        except Exception:
             pass
 
     # @classmethod
