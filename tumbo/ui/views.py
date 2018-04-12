@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth import logout as auth_logout
 from django.shortcuts import redirect
 from rest_framework.authtoken.models import Token
-from social.backends.utils import load_backends
+from social_core.backends.utils import load_backends
 
 from core.models import AuthProfile
 from tumbo import __VERSION__ as TUMBO_VERSION

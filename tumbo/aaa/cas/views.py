@@ -4,7 +4,7 @@ import logging
 
 from urlparse import urlparse
 
-from social.backends.utils import load_backends
+from social_core.backends.utils import load_backends
 
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth import login as auth_login
@@ -27,7 +27,7 @@ def loginpage(request):
     """
     If a user wants to login, he opens the url named `cas-login`, which renders the cas_loginpage.html.
     """
-    
+
     if request.method == "GET":
         logger.info("step:cas-3:start CAS login, GET -> return login form")
         service = request.GET['service']

@@ -152,7 +152,6 @@ class StaticView(ResponseUnavailableViewMixing, View):
             data['datastore'] = PsqlDataStore(schema=base_obj.name, keep=False, **plugin_settings)
             logger.debug("Setup datastore for context done")
             logger.debug("Datastore-Size: %s" % data['datastore'].count())
-            data['is_authenticated'] = request.user.is_authenticated()
         except KeyError:
             logger.error("Setup datastore for context failed")
         data['is_authenticated'] = request.user.is_authenticated()

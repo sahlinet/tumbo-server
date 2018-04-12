@@ -78,11 +78,7 @@ class CasSessionMiddleware(SessionMiddleware):
                             return redirect(request.path)
                         cookie_path = self._get_cookie_path(request)
                         logger.info("step:cas-7.4:set cookie-path to %s" % cookie_path)
-                        
-                        #import pdb; pdb.set_trace()
-                        #if "userland" in self._get_cookie_path(request):
-                        #    logger.info("step:cas-7.4: Setting Userland Cookie: %s" % response.cookies)
-                        #    #import pdb; pdb.set_trace()
+
                         response.set_cookie(
                             settings.SESSION_COOKIE_NAME,
                             request.session.session_key, max_age=max_age,
