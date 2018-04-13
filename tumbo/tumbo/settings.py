@@ -57,7 +57,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware'
-    #'core.middleware.PrettifyMiddleware'
+    # 'core.middleware.PrettifyMiddleware'
 )
 
 ROOT_URLCONF = 'tumbo.urls'
@@ -71,30 +71,36 @@ WSGI_APPLICATION = 'tumbo.wsgi.application'
 if os.environ.get('CI', None):
     DATABASES = {
         'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        'TEST': {
-            'NAME': ":memory:?cache=shared"
-        }
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'TEST': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': 'test',
+                'USER': 'tumbo',
+                'PASSWORD': 'tumbodbpw',
+                'HOST': 'localhost',
+                'PORT': '55432'
+            }
         }
     }
 
 else:
     DATABASES = {
         'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "tumbo",
-        'HOST': "localhost",
-        'PORT': 5432,
-        'USER': "store",
-        'PASSWORD': "tumbodev123"
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': "tumbo",
+            'HOST': "localhost",
+            'PORT': 5432,
+            'USER': "store",
+            'PASSWORD': "tumbodev123"
         }
     }
 
 # If tumbo is run from an egg, use db in $HOME/.tumbo
 print BASE_DIR
 if "site-packages" in BASE_DIR:
-    DATABASES['default']['NAME'] = os.path.join(os.path.expanduser('~'), ".tumbo", "db.sqlite3")
+    DATABASES['default']['NAME'] = os.path.join(
+        os.path.expanduser('~'), ".tumbo", "db.sqlite3")
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
@@ -130,8 +136,8 @@ LOGGING = {
             'format': '%(levelname)s %(asctime)s %(name)s %(module)s %(lineno)s %(process)d %(threadName)s %(message)s'
         },
         'standard': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
         },
         'simple': {
             'format': '[%(name)s:%(lineno)s] %(levelname)s %(message)s'
@@ -180,7 +186,7 @@ LOGGING = {
             'propagate': False,
         },
         'core.executors.remote': {
-            #'handlers': ['console'],
+            # 'handlers': ['console'],
             'handlers': [],
             'level': 'INFO',
             'propagate': False,
@@ -315,15 +321,15 @@ STATICFILES_FINDERS = (
 
 # redis-metrics
 REDIS_METRICS = {
-   'MIN_GRANULARITY': 'minutes',
-   'MAX_GRANULARITY': 'monthly',
-   'MONDAY_FIRST_DAY_OF_WEEK': True
+    'MIN_GRANULARITY': 'minutes',
+    'MAX_GRANULARITY': 'monthly',
+    'MONDAY_FIRST_DAY_OF_WEEK': True
 }
 
 TEMPLATE_LOADERS = (
-     'django.template.loaders.filesystem.Loader',
-     'django.template.loaders.app_directories.Loader',
-     'core.loader.FastappLoader',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'core.loader.FastappLoader',
 )
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -359,7 +365,7 @@ if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "true").lower():
         'social_core.pipeline.social_auth.associate_by_email',
         'social_core.pipeline.user.create_user',
         # TODO: fix and add again, document this.
-        #'aaa.pipeline.restrict_user',
+        # 'aaa.pipeline.restrict_user',
         'social_core.pipeline.social_auth.associate_user',
         'social_core.pipeline.social_auth.load_extra_data',
         'social_core.pipeline.user.user_details',
@@ -367,7 +373,8 @@ if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "true").lower():
     )
 
     SOCIAL_AUTH_GITHUB_KEY = os.environ.get('SOCIAL_AUTH_GITHUB_KEY', None)
-    SOCIAL_AUTH_GITHUB_SECRET = os.environ.get('SOCIAL_AUTH_GITHUB_SECRET', None)
+    SOCIAL_AUTH_GITHUB_SECRET = os.environ.get(
+        'SOCIAL_AUTH_GITHUB_SECRET', None)
 
     SOCIAL_AUTH_SANITIZE_REDIRECTS = False
 

@@ -10,6 +10,7 @@ from django.core.management import call_command
 from core import models
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import ElementNotVisibleException
 
 User = get_user_model()
 
@@ -157,6 +158,45 @@ class AccountTestCase(StaticLiveServerTestCase):
         selenium.refresh()
         time.sleep(3)
         selenium.get_screenshot_as_file("ff.png")
+
+    def test_cas_login(self):
+        # self.test_login()
+        driver = self.selenium
+        driver.get(self.live_server_url + "/")
+        driver.find_element_by_id("inputUsername").clear()
+        driver.find_element_by_id("inputUsername").send_keys("admin")
+        driver.find_element_by_id("inputPassword").clear()
+        driver.find_element_by_id("inputPassword").send_keys(self.admin_pw)
+        driver.find_element_by_id("login_form").submit()
+
+        driver.implicitly_wait(5)
+        driver.find_element_by_id("inputBaseName").click()
+        driver.find_element_by_id("inputBaseName").clear()
+        driver.find_element_by_id("inputBaseName").send_keys("cccc")
+        driver.find_element_by_name("create_new_base").click()
+        driver.find_element_by_link_text("admin/cccc").click()
+        driver.get_screenshot_as_file("test_cas_login_base_created.png")
+        try:
+            driver.find_element_by_xpath("//button[@name='state_cycle']").click()
+        except ElementNotVisibleException:
+            driver.find_element_by_xpath("//button[@name='state_cycle']").click()
+        driver.get_screenshot_as_file("test_cas_login_base_started.png")
+        time.sleep(10)
+        base_obj = models.Base.objects.get(name="cccc")
+        driver.get_screenshot_as_file("test_cas_login_base_started.png")
+        assert base_obj.state == True
+        # driver.find_element_by_link_text("/userland/admin/cccc/static/index.html").click()
+        # driver.find_element_by_id("username").clear()
+        # driver.find_element_by_id("username").send_keys("admin")
+        # driver.find_element_by_id("password").clear()
+        # driver.find_element_by_id("password").send_keys("adminpw")
+        # driver.find_element_by_id("login_form").submit()
+
+        # assert 'Not found' in driver.page_source
+
+    # @skip("TODO: implement")
+    # def test_cas_logout(self):
+    #     pass
 
     def test_background_running(self):
         time.sleep(2)
