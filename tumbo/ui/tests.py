@@ -201,5 +201,5 @@ class AccountTestCase(StaticLiveServerTestCase):
     def test_background_running(self):
         time.sleep(2)
 
-        assert models.Process.objects.count() == 6
+        self.assertEqual(models.Process.objects.count(), 6)
         assert models.Process.objects.get(name="HeartbeatThread")
