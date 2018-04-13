@@ -132,7 +132,6 @@ class CasCsrfViewMiddleware(CsrfViewMiddleware):
 
     def _set_token(self, request, response):
         import pdb
-        pdb.set_trace()
         if settings.CSRF_USE_SESSIONS:
             request.session[CSRF_SESSION_KEY] = request.META['CSRF_COOKIE']
         else:
