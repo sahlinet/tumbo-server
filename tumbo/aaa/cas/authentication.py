@@ -71,7 +71,6 @@ def cas_login(function):
             host = urlparse(request.build_absolute_uri()).netloc
             # TODO: normally with https
             logger.info("step:cas-7:verify ticket -> request")
-            #import pdb; pdb.set_trace()
             response = requests.get("http://%s%s" % (host, cas_ticketverify))
             logger.info("Response from verify: " + str(response.status_code))
             logger.info("Response from verify: " + response.text)

@@ -98,6 +98,11 @@ def verify(request):
 def logout(request):
     """Logs out user"""
     auth_logout(request)
+    if request.user.is_authenticated():
+        username = request.user.username
+        print "Logging out %s" % username
+    else:
+        print "Not logged in"
     next = request.GET.get("next", "/")
     if "next" in request.session:
         del request.session['next']

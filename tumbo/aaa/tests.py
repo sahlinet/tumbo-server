@@ -89,4 +89,3 @@ class CasLoginTestCase(BaseTestCase):
         #self.assertContains("asdf", self.response.content)
 
         # if successfull, we receive a Set-Cookie Header
-        #import pdb; pdb.set_trace()

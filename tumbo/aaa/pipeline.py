@@ -2,6 +2,9 @@
 # from django.http import HttpResponse
 # from django.http.shortcuts import redirect
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def _is_member(user, group):
     print user, group
@@ -20,6 +23,8 @@ def restrict_user(backend, username):
     Returns:
         [type] -- [description]
     """
+
+    logger.info("restrict_user for %s with backend %s" % (backend, username))
 
     if username.is_superuser:
         return

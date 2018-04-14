@@ -27,7 +27,6 @@ class CasSessionMiddleware(SessionMiddleware):
             if "cookie_path" in request.session:
                 cookie_path = request.session.pop('cookie_path')
                 logger.info("Got cookie_path %s to use" % cookie_path)
-                # import pdb; pdb.set_trace()
         except AttributeError:
             logger.error("cookie_path missing")
 
@@ -120,18 +119,17 @@ class CasCsrfViewMiddleware(CsrfViewMiddleware):
         try:
             if "cookie_path" in request.session:
                 cookie_path = request.session.pop('cookie_path')
-                logger.info("Got cookie_path %s to use" % cookie_path)
+                logger.info("Got cookie_path %s to use for CSRF Cookie" % cookie_path)
         except AttributeError, e:
             logger.error("cookie_path missing")
             raise e
 
-        logger.info("CasSessionMiddleware: _get_cookie_path for URI %s returned SESSION_COOKIE_PATH %s" % (
+        logger.info("CasCsrfViewMiddleware: _get_cookie_path for URI %s returned SESSION_COOKIE_PATH %s" % (
             request.path_info, cookie_path))
 
         return cookie_path or settings.SESSION_COOKIE_PATH
 
     def _set_token(self, request, response):
-        import pdb
         if settings.CSRF_USE_SESSIONS:
             request.session[CSRF_SESSION_KEY] = request.META['CSRF_COOKIE']
         else:

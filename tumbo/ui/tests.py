@@ -1,16 +1,20 @@
 import threading
 import time
-# from unittest import skip
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.management import call_command
+from selenium import webdriver
+from selenium.common.exceptions import ElementNotVisibleException
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.common.keys import Keys
 
 from core import models
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import ElementNotVisibleException
+
+# from unittest import skip
+
+
 
 User = get_user_model()
 
@@ -46,7 +50,6 @@ class AccountTestCase(StaticLiveServerTestCase):
 
         connections_override = cls.server_thread.connections_override
         try:
-            # import pdb; pdb.set_trace()
             cls._start_heartbeat(connections_override)
         except Exception:
             pass
@@ -57,9 +60,15 @@ class AccountTestCase(StaticLiveServerTestCase):
 
     def setUp(self):
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
-        options.add_argument('--no-sandbox')
-        self.selenium = webdriver.Chrome(chrome_options=options)
+
+
+        dc = DesiredCapabilities.CHROME
+        dc['loggingPrefs'] = {'browser': 'ALL'}
+
+
+        # options.add_argument('--headless')
+        # options.add_argument('--no-sandbox')
+        self.selenium = webdriver.Chrome(chrome_options=options, desired_capabilities=dc)
         super(AccountTestCase, self).setUp()
 
         self.admin_pw = 'mypassword'
@@ -191,6 +200,7 @@ class AccountTestCase(StaticLiveServerTestCase):
         # driver.find_element_by_id("password").clear()
         # driver.find_element_by_id("password").send_keys("adminpw")
         # driver.find_element_by_id("login_form").submit()
+        base_obj.stop()
 
         # assert 'Not found' in driver.page_source
 
