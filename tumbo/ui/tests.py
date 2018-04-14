@@ -66,8 +66,8 @@ class AccountTestCase(StaticLiveServerTestCase):
         dc['loggingPrefs'] = {'browser': 'ALL'}
 
 
-        # options.add_argument('--headless')
-        # options.add_argument('--no-sandbox')
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
         self.selenium = webdriver.Chrome(chrome_options=options, desired_capabilities=dc)
         super(AccountTestCase, self).setUp()
 
