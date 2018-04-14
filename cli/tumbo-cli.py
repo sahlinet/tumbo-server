@@ -552,7 +552,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.18-dev")
+    arguments = docopt(__doc__, version="0.4.19-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
