@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 with open('requirements.txt') as f:
     install_reqs = f.read().splitlines()
 
-__VERSION__ = "0.4.19-dev"
+__VERSION__ = "0.4.20-dev"
 
 # http://stackoverflow.com/questions/14399534/how-can-i-reference-requirements-txt-for-the-install-requires-kwarg-in-setuptool
 reqs = [str(ir) for ir in install_reqs if not "github" in str(ir)]
