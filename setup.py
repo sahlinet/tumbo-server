@@ -2,13 +2,16 @@ from setuptools import setup, find_packages
 import glob
 import os
 
+import os
+from setuptools import setup
+
+with open('requirements.txt') as f:
+    install_reqs = f.read().splitlines()
+
 __VERSION__ = "0.4.19-dev"
 
-
 # http://stackoverflow.com/questions/14399534/how-can-i-reference-requirements-txt-for-the-install-requires-kwarg-in-setuptool
-from pip.req import parse_requirements
-install_reqs = parse_requirements("./requirements.txt", session=False)
-reqs = [str(ir.req) for ir in install_reqs if not "github" in str(ir.link)]
+reqs = [str(ir) for ir in install_reqs if not "github" in str(ir)]
 
 data_files = []
 directories = glob.glob('compose-files/')
