@@ -80,3 +80,7 @@ secrets/*
 *.retry
 
 .vscode
+k8s-files/ansible
+.docker/
+
+*.png

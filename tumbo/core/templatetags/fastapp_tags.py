@@ -24,7 +24,6 @@ def iflist(value):
 
 @register.filter
 def replacer(value, arg):
-    args = arg.split(",")
     return value.replace(arg[0], arg[1])
 
 @register.filter

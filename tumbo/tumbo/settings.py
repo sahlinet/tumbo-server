@@ -51,13 +51,13 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'aaa.cas.middleware.CasSessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'aaa.cas.middleware.CasCsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware'
-    #'core.middleware.PrettifyMiddleware'
+    # 'core.middleware.PrettifyMiddleware'
 )
 
 ROOT_URLCONF = 'tumbo.urls'
@@ -71,27 +71,36 @@ WSGI_APPLICATION = 'tumbo.wsgi.application'
 if os.environ.get('CI', None):
     DATABASES = {
         'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'TEST': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': 'test',
+                'USER': 'tumbo',
+                'PASSWORD': 'tumbodbpw',
+                'HOST': 'localhost',
+                'PORT': '55432'
+            }
         }
     }
 
 else:
     DATABASES = {
         'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "tumbo",
-        'HOST': "localhost",
-        'PORT': 5432,
-        'USER': "store",
-        'PASSWORD': "tumbodev123"
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': "tumbo",
+            'HOST': "localhost",
+            'PORT': 5432,
+            'USER': "store",
+            'PASSWORD': "tumbodev123"
         }
     }
 
 # If tumbo is run from an egg, use db in $HOME/.tumbo
 print BASE_DIR
 if "site-packages" in BASE_DIR:
-    DATABASES['default']['NAME'] = os.path.join(os.path.expanduser('~'), ".tumbo", "db.sqlite3")
+    DATABASES['default']['NAME'] = os.path.join(
+        os.path.expanduser('~'), ".tumbo", "db.sqlite3")
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
@@ -127,14 +136,20 @@ LOGGING = {
             'format': '%(levelname)s %(asctime)s %(name)s %(module)s %(lineno)s %(process)d %(threadName)s %(message)s'
         },
         'standard': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
         },
         'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': '[%(name)s:%(lineno)s] %(levelname)s %(message)s'
         },
     },
     'handlers': {
+        # 'cas_logfile': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.FileHandler',
+        #     'filename': 'cas.log',
+        #     'formatter': 'verbose'
+        # },
         'null': {
             'level': 'DEBUG',
             'class': 'logging.NullHandler',
@@ -171,7 +186,7 @@ LOGGING = {
             'propagate': False,
         },
         'core.executors.remote': {
-            #'handlers': ['console'],
+            # 'handlers': ['console'],
             'handlers': [],
             'level': 'INFO',
             'propagate': False,
@@ -250,6 +265,11 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True
+        },
+        'aaa.cas': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True
         }
     }
 }
@@ -301,15 +321,15 @@ STATICFILES_FINDERS = (
 
 # redis-metrics
 REDIS_METRICS = {
-   'MIN_GRANULARITY': 'minutes',
-   'MAX_GRANULARITY': 'monthly',
-   'MONDAY_FIRST_DAY_OF_WEEK': True
+    'MIN_GRANULARITY': 'minutes',
+    'MAX_GRANULARITY': 'monthly',
+    'MONDAY_FIRST_DAY_OF_WEEK': True
 }
 
 TEMPLATE_LOADERS = (
-     'django.template.loaders.filesystem.Loader',
-     'django.template.loaders.app_directories.Loader',
-     'core.loader.FastappLoader',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'core.loader.FastappLoader',
 )
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -317,42 +337,44 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 PROPAGATE_VARIABLES = os.environ.get("PROPAGATE_VARIABLES", "").split("|")
 
 # social auth
-if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "").lower():
+if "true" in os.environ.get("TUMBO_SOCIAL_AUTH", "true").lower():
 
     INSTALLED_APPS += (
-        'social.apps.django_app.default',
+        'social_django',
     )
 
     AUTHENTICATION_BACKENDS = (
-        'social.backends.github.GithubOAuth2',
-        'social.backends.username.UsernameAuth',
+        'social_core.backends.github.GithubOAuth2',
+        'social_core.backends.username.UsernameAuth',
         'django.contrib.auth.backends.ModelBackend',
     )
 
     TEMPLATE_CONTEXT_PROCESSORS += (
-        'social.apps.django_app.context_processors.backends',
-        'social.apps.django_app.context_processors.login_redirect',
+        'social_django.context_processors.backends',
+        'social_django.context_processors.login_redirect',
     )
 
     LOGIN_REDIRECT_URL = '/core/profile/'
 
     SOCIAL_AUTH_PIPELINE = (
-        'social.pipeline.social_auth.social_details',
-        'social.pipeline.social_auth.social_uid',
-        'social.pipeline.social_auth.auth_allowed',
-        'social.pipeline.social_auth.social_user',
-        'social.pipeline.user.get_username',
-        'social.pipeline.social_auth.associate_by_email',
-        'social.pipeline.user.create_user',
-        'aaa.pipeline.restrict_user',
-        'social.pipeline.social_auth.associate_user',
-        'social.pipeline.social_auth.load_extra_data',
-        'social.pipeline.user.user_details',
+        'social_core.pipeline.social_auth.social_details',
+        'social_core.pipeline.social_auth.social_uid',
+        'social_core.pipeline.social_auth.auth_allowed',
+        'social_core.pipeline.social_auth.social_user',
+        'social_core.pipeline.user.get_username',
+        'social_core.pipeline.social_auth.associate_by_email',
+        'social_core.pipeline.user.create_user',
+        # TODO: fix and add again, document this.
+        # 'aaa.pipeline.restrict_user',
+        'social_core.pipeline.social_auth.associate_user',
+        'social_core.pipeline.social_auth.load_extra_data',
+        'social_core.pipeline.user.user_details',
         'aaa.cas.pipeline.create_ticket',
     )
 
     SOCIAL_AUTH_GITHUB_KEY = os.environ.get('SOCIAL_AUTH_GITHUB_KEY', None)
-    SOCIAL_AUTH_GITHUB_SECRET = os.environ.get('SOCIAL_AUTH_GITHUB_SECRET', None)
+    SOCIAL_AUTH_GITHUB_SECRET = os.environ.get(
+        'SOCIAL_AUTH_GITHUB_SECRET', None)
 
     SOCIAL_AUTH_SANITIZE_REDIRECTS = False
 
@@ -361,3 +383,5 @@ SESSION_COOKIE_PATH = reverse_lazy('root')
 CSRF_COOKIE_PATH = "/core/"
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+SOCIAL_AUTH_USERNAME_FORM_HTML = 'login_form.html'

@@ -15,7 +15,7 @@ from django.contrib.auth import get_user_model
 from django.core import serializers
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.urlresolvers import reverse
-from django.db import DatabaseError, transaction
+from django.db import DatabaseError, connections, transaction
 from django.test import RequestFactory
 from gevent import pool as gevent_pool
 from gevent import Greenlet
@@ -37,8 +37,50 @@ SETTING_QUEUE = "setting"
 PLUGIN_CONFIG_QUEUE = "pluginconfig"
 
 
-def inactivate():
+
+def patch_thread(connections_override):
+    if connections_override:
+        # Override this thread's database connections with the ones
+        # provided by the main thread.
+        for alias, conn in connections_override.items():
+            connections[alias] = conn
+            #import pprint;pprint.pprint(conn.__dict__)
+            #print conn.connection.__dict__
+def log_mem(**kwargs):
+
+    if kwargs.get("connections_override", None):
+        patch_thread(kwargs.get("connections_override"))
+
+    name = kwargs['name']
+
+    p = psutil.Process(os.getpid())
+
+    from redis_metrics import set_metric
     try:
+        while True:
+            m = p.memory_info()
+
+            try:
+                slug = "Background %s %s rss" % (socket.gethostname(), name)
+                set_metric(slug, float(m.rss)/(1024*1024)+50, expire=86400)
+                slug = "Background %s %s vms" % (socket.gethostname(), name)
+                set_metric(slug, float(m.vms)/(1024*1024)+50, expire=86400)
+
+                logger.debug("Saving rss/vms for background process '%s'" % name)
+            except Exception, e:
+                logger.error(e)
+
+            time.sleep(30)
+    except Exception, e:
+        logger.exception(e)
+
+
+def inactivate(**kwargs):
+    try:
+
+        if kwargs.get("connections_override", None):
+            patch_thread(kwargs.get("connections_override"))
+
         while True:
             logger.debug("Inactivate Thread run")
 
@@ -79,8 +121,9 @@ def _recreate(base):
     base.start()
     logger.info("'%s' recreated" % base)
 
-
-def updater():
+def updater(**kwargs):
+    if kwargs.get("connections_override", None):
+        patch_thread(kwargs.get("connections_override"))
     try:
         while True:
             logger.debug("UpdaterThread run")
@@ -109,7 +152,9 @@ def updater():
         logger.exception(e)
 
 
-def update_status(parent_name, thread_count, threads):
+def update_status(parent_name, thread_count, threads, **kwargs):
+    if kwargs.get("connections_override", None):
+        patch_thread(kwargs.get("connections_override"))
     try:
         while True:
             time.sleep(0.1)
@@ -118,9 +163,9 @@ def update_status(parent_name, thread_count, threads):
             pid = os.getpid()
             args = ["ps", "-p", str(pid), "-o", "rss="]
             proc = subprocess.Popen(args, stdout=subprocess.PIPE)
-            (out, err) = proc.communicate()
+            (out, _) = proc.communicate()
             rss = str(out).rstrip().strip().lstrip()
-            process, created = Process.objects.get_or_create(name=parent_name)
+            process, _ = Process.objects.get_or_create(name=parent_name)
             process.rss = int(rss)
             process.version = __VERSION__
             process.save()
@@ -130,7 +175,7 @@ def update_status(parent_name, thread_count, threads):
                 logger.debug(t.name + ": " + str(t.isAlive()))
 
                 # store in db
-                thread_model, created = Thread.objects.get_or_create(
+                thread_model, _ = Thread.objects.get_or_create(
                     name=t.name, parent=process)
                 if t.isAlive():
                     logger.debug("Thread '%s' is alive." % t.name)
@@ -224,7 +269,7 @@ class HeartbeatThread(CommunicationThread):
                 instance = Instance.objects.get(executor__base__name=base)
             except Instance.DoesNotExist, e:
                 logger.error("Instance for base '%s' does not exist" % base)
-                raise Exception()
+                return
             instance.is_alive = True
             instance.last_beat = datetime.now().replace(tzinfo=pytz.UTC)
             instance.save()

@@ -324,7 +324,7 @@ class Env(object):
         print tabulate(table, headers=["Projectname", "State"])
 
     def project_create(self, name):
-        status_code, response = self._call_api(
+        status_code, _ = self._call_api(
             "/core/api/base/", method="POST", json={"name": name})
         if status_code == 201:
             print "Project %s created" % (name)
@@ -332,7 +332,7 @@ class Env(object):
             print status_code
 
     def project_stop(self, name):
-        status_code, projects = self._call_api(
+        status_code, _ = self._call_api(
             "/core/api/base/%s/stop/" % name, method="POST")
         if status_code == 200:
             print "Project %s stopped" % name
@@ -921,7 +921,6 @@ if __name__ == '__main__':
                 for (each_key, each_val) in conf.items(each_section):
                     # print each_val
                     # if each_val.startswith('b64:'):
-                    #    import pdb; pdb.set_trace()
                     #    each_val = standard_b64encode(each_val)
                     ini_dict[each_key.upper()] = each_val
 

@@ -21,6 +21,7 @@ class SpawnExecutor(BaseExecutor):
         self._pre_start()
 
         python_path = sys.executable
+        # python_path = "coverage run -ap"
         try:
             MODELSPY = os.path.join(settings.PROJECT_ROOT, "../../worker")
             default_env = self.get_default_env()
@@ -46,6 +47,8 @@ class SpawnExecutor(BaseExecutor):
                             settings.PROJECT_ROOT, "../../tumbo"))
             except KeyError:
                 pass
+            if not python_paths:
+                python_paths = os.path.abspath(os.path.join(settings.PROJECT_ROOT, "../../tumbo"))
             env['PYTHONPATH'] = python_paths
 
             try:

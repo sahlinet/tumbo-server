@@ -221,7 +221,6 @@ class KubernetesExecutor(BaseExecutor):
 
     def _wait_for_pod_deletion(self, id):
         while True:
-            print "check..."
             time.sleep(2)
             if self.get_replication_controller(id).items[0].status.available_replicas is None:
                 break

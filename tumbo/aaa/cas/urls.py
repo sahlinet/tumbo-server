@@ -7,5 +7,5 @@ urlpatterns = patterns('',
                        url(r'verify/$', 'aaa.cas.views.verify',
                            name='cas-ticketverify'),
                        url(r'^', include(
-                           'social.apps.django_app.urls', namespace='social'))
+                           'social_django.urls', namespace='social'))
                        )

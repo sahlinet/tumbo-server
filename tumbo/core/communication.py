@@ -1,15 +1,20 @@
+"""Module for communication over RabbitMQ using pika.
+"""
+import json
 import logging
-import pika
-import sys
 import subprocess
+import sys
 import threading
 import time
-import requests
-import json
 import urllib
+
+import pika
+import requests
 from django.conf import settings
 
-from core.defaults import WORKER_VHOST_PERMISSIONS, RABBITMQ_SERVER_USER, SERVER_VHOST_PERMISSIONS, CORE_RECEIVER_USERNAME
+from core.defaults import (CORE_RECEIVER_USERNAME, RABBITMQ_SERVER_USER,
+                           SERVER_VHOST_PERMISSIONS, WORKER_VHOST_PERMISSIONS)
+from core.executors import patch_thread
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +102,8 @@ class RabbitmqHttpApi(RabbitmqAdmin):
                 url + uri, data=data, headers={'content-type': "application/json"}, auth=(user, password))
         if r.status_code not in [204, 201]:
             logger.error(str((r.url, r.status_code, r.content, data)))
+            if r.status_code == 401:
+                logger.error("Login failed with user '%s'" % user)
             raise Exception("%s: %s" % (r.status_code, r.content))
 
     def add_vhost(self, name):
@@ -247,6 +254,9 @@ class CommunicationThread(threading.Thread):
 
         self.kwargs = kwargs
 
+        if kwargs.get("connections_override", None):
+            patch_thread(kwargs.get("connections_override"))
+
     @property
     def state(self):
         return self.name
@@ -282,10 +292,11 @@ class CommunicationThread(threading.Thread):
             except KeyboardInterrupt:
                 self.stop()
             except Exception, e:
-                logger.warn(str(self.parameters.__dict__))
                 logger.warn(self.name)
                 logger.warn(self.vhost)
                 logger.warn(self.queues_consume)
+                if hasattr(self.parameters, "__dict__"):
+                    logger.warn(str(self.parameters.__dict__))
                 raise e
 
     def stop(self):
@@ -357,7 +368,7 @@ class CommunicationThread(threading.Thread):
                 queue=queue[0], callback=self.produce_on_queue_declared)
 
         # topic receiver
-        for topic in self.topic_receiver:
+        for _ in self.topic_receiver:
             channel.exchange_declare(
                 exchange="configuration", exchange_type='fanout', callback=self.on_exchange_declare)
 

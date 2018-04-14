@@ -78,6 +78,10 @@ class BaseTestCase(TransactionTestCase):
         setting.value = "setting2_value"
         setting.save()
 
+        #self.client1 = Client(enforce_csrf_checks=True)  # logged in with objects
+        #self.client2 = Client(enforce_csrf_checks=True)  # logged in without objects
+        #self.client3 = Client(enforce_csrf_checks=True)  # not logged in
+
         self.client1 = Client()  # logged in with objects
         self.client2 = Client()  # logged in without objects
         self.client3 = Client()  # not logged in
@@ -326,7 +330,6 @@ class ApyExecutionTestCase(BaseTestCase):
 class SettingTestCase(BaseTestCase):
 
     def test_create_and_change_setting_for_base(self, distribute_mock):
-        distribute_mock.return_value
         self.client1.login(username='user1', password='pass')
         json_data = {u'key': u'key', 'value': 'value'}
         response = self.client1.post(

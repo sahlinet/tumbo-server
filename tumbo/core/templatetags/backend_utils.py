@@ -2,7 +2,7 @@ import re
 
 from django import template
 
-from social.backends.oauth import OAuthAuth
+from social_core.backends.oauth import OAuthAuth
 
 
 register = template.Library()

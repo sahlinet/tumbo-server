@@ -201,7 +201,7 @@ class RancherApiExecutor(BaseExecutor):
                 "fqdn": None
             }
             logger.debug(json_data)
-            status_code, response = self._call_rancher("/", json_data)
+            _, response = self._call_rancher("/", json_data)
             id = response['id']
         time.sleep(3)
         status_code, response = self._call_rancher(
@@ -222,13 +222,13 @@ class RancherApiExecutor(BaseExecutor):
 
     def stop(self, id, *args, **kwargs):
         if self._container_exists(id):
-            status_code, response = self._call_rancher(
+            self._call_rancher(
                 "/%s?action=deactivate" % id, force_post=True)
         return True
 
     def destroy(self, id, *args, **kwargs):
         if self._container_exists(id):
-            status_code, response = self._call_rancher(
+            self._call_rancher(
                 "/%s?action=remove" % id, force_post=True)
         return True
 

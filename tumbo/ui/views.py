@@ -1,15 +1,12 @@
-from django.shortcuts import redirect
-from django.contrib.auth import logout as auth_logout
-
-from ui.decorators import render_to
-
 from django.conf import settings
-
-from tumbo import __VERSION__ as TUMBO_VERSION
-
+from django.contrib.auth import logout as auth_logout
+from django.shortcuts import redirect
 from rest_framework.authtoken.models import Token
-from social.backends.utils import load_backends
+from social_core.backends.utils import load_backends
+
 from core.models import AuthProfile
+from tumbo import __VERSION__ as TUMBO_VERSION
+from ui.decorators import render_to
 
 
 def context(**extra):
@@ -38,6 +35,7 @@ def home(request):
 def profile(request):
     """Home view, displays login mechanism"""
     auth, created = AuthProfile.objects.get_or_create(user=request.user)
+    print auth, created
     if not request.user.is_authenticated():
         raise Exception("Not Logged in")
 

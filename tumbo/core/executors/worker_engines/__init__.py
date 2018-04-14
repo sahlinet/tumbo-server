@@ -68,7 +68,7 @@ class BaseExecutor(object):
         logger.debug("Executor does not support 'destroy'")
 
     def _pre_start(self):
-        success, failed = call_plugin_func(self.executor.base, "on_start_base")
+        _, failed = call_plugin_func(self.executor.base, "on_start_base")
         if len(failed.keys()) > 0:
             logger.warning(
                 "Problem with on_start_base for plugin (%s)" % str(failed))

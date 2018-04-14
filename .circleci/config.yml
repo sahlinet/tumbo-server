@@ -24,10 +24,16 @@ jobs:
       #
       - run: bash bin/create_package.sh > /dev/null
       - run: pip install tox
+      - run: mkdir /tmp/artifacts
       - run: tox
       - run: pip install -r requirements.txt
       # TODO: coverage should be run in cotainer and data directory for output should be added as volume
-      - run: tox
+      - run: 
+          command: |
+            cp *.png /tmp/artifacts
+          when: always
+      - store_artifacts:
+          path: /tmp/artifacts
       - run: coverage xml
       - run: python-codacy-coverage -v -r coverage.xml
       #

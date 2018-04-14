@@ -1,16 +1,18 @@
 import logging
-
 from distutils.util import strtobool
+
 from configobj import ConfigObj
 
-from core.models import Base, Setting, Apy
+from core.models import Apy, Base, Setting
 from core.utils import Connection
 
 logger = logging.getLogger(__name__)
 
+
 def _read_config(app_config):
     appconfig = ConfigObj(app_config)
     return appconfig
+
 
 def _handle_settings(settings, base_obj, override_public=False, override_private=False):
     """
@@ -19,7 +21,8 @@ def _handle_settings(settings, base_obj, override_public=False, override_private
     # get settings
     print settings.items()
     for k, v in settings.items():
-        setting_obj, created = Setting.objects.get_or_create(base=base_obj, key=k)
+        setting_obj, _ = Setting.objects.get_or_create(
+            base=base_obj, key=k)
         # set if empty
         if not setting_obj.value:
             setting_obj.value = v['value']
@@ -31,6 +34,7 @@ def _handle_settings(settings, base_obj, override_public=False, override_private
             setting_obj.value = v['value']
         setting_obj.public = strtobool(v['public'])
         setting_obj.save()
+
 
 def _handle_apy(filename, content, base_obj, appconfig):
     name = filename.replace(".py", "")
@@ -57,7 +61,6 @@ def import_base(zf, user_obj, name, override_public, override_private):
         logger.exception("Error on Connectin to Dropbx")
 
     # app.config
-    print zf.open("app.config")
     appconfig = _read_config(zf.open("app.config"))
 
     # Apy

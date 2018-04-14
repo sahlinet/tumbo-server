@@ -11,7 +11,7 @@ from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
-from social.backends.utils import load_backends
+from social_core.backends.utils import load_backends
 
 from core.models import Base
 
