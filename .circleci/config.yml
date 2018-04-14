@@ -23,7 +23,7 @@ jobs:
       - run: wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/2.37/chromedriver_linux64.zip && sudo unzip -o /tmp/chromedriver.zip chromedriver -d /usr/local/bin/;
       #
       - run: bash bin/create_package.sh > /dev/null
-      - run: pip install tox==2.9.1 pip==9.0.3
+      - run: pip install --upgrade tox==2.9.1 pip==9.0.3
       - run: mkdir /tmp/artifacts
       - run: tox
       - run: pip install -r requirements.txt
