@@ -81,6 +81,6 @@ secrets/*
 
 .vscode
 k8s-files/ansible
-.docker/
+.docker/*
 
 *.png
