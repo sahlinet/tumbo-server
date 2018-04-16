@@ -26,8 +26,11 @@ items:
             - name: SERVERNAME
               value: "{{ HOST }}"
             - name: FIX_FRONTEND_PORT
-            #  value: ":31999"
+            {% if FIX_FRONTEND_PORT is defined %}
+              value: ":{{ FIX_FRONTEND_PORT }}"
+            {% else %}
               value: ""
+            {% endif %}
             - name: FIX_SCHEME
               value: "https"
             - name: VHOST_1_SERVERNAME
