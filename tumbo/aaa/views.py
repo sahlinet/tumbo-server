@@ -1,20 +1,15 @@
 import logging
 
-from django.shortcuts import render
-from django.shortcuts import redirect
-
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout as auth_logout
-from django.contrib.auth import login as auth_login
-from django.contrib.auth import authenticate
-from django.shortcuts import render, get_object_or_404
 from django.conf import settings
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-
+from django.shortcuts import get_object_or_404, redirect, render
 from social_core.backends.utils import load_backends
 
 from core.models import Base
-
 from ui.decorators import render_to
 from ui.views import context
 
