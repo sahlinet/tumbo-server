@@ -161,12 +161,13 @@ class AccountTestCase(StaticLiveServerTestCase):
         button.send_keys(Keys.RETURN)
 
         time.sleep(10)
+        selenium.get_screenshot_as_file("ff.png")
+        selenium.refresh()
+        time.sleep(5)
+        selenium.get_screenshot_as_file("fff.png")
 
         base_obj = models.Base.objects.get(name="testbase")
         assert base_obj.state == True
-        selenium.refresh()
-        time.sleep(3)
-        selenium.get_screenshot_as_file("ff.png")
 
     def test_cas_login(self):
         # self.test_login()
