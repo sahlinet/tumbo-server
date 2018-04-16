@@ -45,7 +45,7 @@ class ApySerializer(serializers.ModelSerializer):
 
     def save(self, *args, **kwargs):
         obj = super(ApySerializer, self).save(*args, **kwargs)
-        obj.sync(**kwargs)
+        obj.sync()
 
 
 class PublicApySerializer(serializers.ModelSerializer):
