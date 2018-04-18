@@ -61,7 +61,8 @@ class DataStore(object):
         DataObject.__table__.schema = self.schema
 
         # create session with engine
-        self.engine = create_engine(self.__class__.ENGINE % kwargs, echo=False, poolclass=NullPool)
+        self.engine = create_engine(
+            self.__class__.ENGINE % kwargs, echo=False, poolclass=NullPool)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
@@ -97,15 +98,19 @@ class DataStore(object):
             # User
             try:
                 self._execute("CREATE USER %s WITH PASSWORD '%s'" % (self.schema,
-                    self.password))
+                                                                     self.password))
             except Exception, e:
                 self.session.rollback()
                 if "already exists" in repr(e):
-                    logger.info("Could not create user '%s', already exists." % self.schema)
-                    logger.info("Update password anyway for user '%s'" % self.schema)
-                    self._execute("ALTER USER %s WITH PASSWORD '%s'" % (self.schema, self.password))
+                    logger.info(
+                        "Could not create user '%s', already exists." % self.schema)
+                    logger.info(
+                        "Update password anyway for user '%s'" % self.schema)
+                    self._execute("ALTER USER %s WITH PASSWORD '%s'" %
+                                  (self.schema, self.password))
                 else:
-                    logger.exception("Could not create user '%s'." % self.schema)
+                    logger.exception(
+                        "Could not create user '%s'." % self.schema)
 
             # Schema
             try:
@@ -114,14 +119,19 @@ class DataStore(object):
             except Exception, e:
                 self.session.rollback()
                 if "already exists" in repr(e):
-                    logger.info("Could not create schema '%s', already exists." % self.schema)
+                    logger.info(
+                        "Could not create schema '%s', already exists." % self.schema)
                 else:
-                    logger.exception("Could not create schema '%s'." % self.schema)
+                    logger.exception(
+                        "Could not create schema '%s'." % self.schema)
 
             # Permissions
-            self._execute("GRANT USAGE ON SCHEMA %s to %s;" % (self.schema, self.schema))
-            self._execute("GRANT ALL ON ALL TABLES IN  SCHEMA %s to %s;" % (self.schema, self.schema))
-            self._execute("GRANT ALL ON ALL SEQUENCES IN  SCHEMA %s to %s;" % (self.schema, self.schema))
+            self._execute("GRANT USAGE ON SCHEMA %s to %s;" %
+                          (self.schema, self.schema))
+            self._execute("GRANT ALL ON ALL TABLES IN  SCHEMA %s to %s;" % (
+                self.schema, self.schema))
+            self._execute("GRANT ALL ON ALL SEQUENCES IN  SCHEMA %s to %s;" % (
+                self.schema, self.schema))
             self._commit()
         else:
             logger.warn("No schema specified")
@@ -154,7 +164,7 @@ class DataStore(object):
     def all(self, lock=False, nowait=False, read=False, skip_locked=False):
         if lock:
             self.session.autocommit = False
-            #self.session.begin()
+            # self.session.begin()
             try:
                 return self.session.query(DataObject).with_for_update(nowait=nowait, skip_locked=skip_locked, read=read).all()
             except Exception, e:
@@ -172,7 +182,8 @@ class DataStore(object):
     def filter(self, k, v, lock=False, nowait=True, skip_locked=False, read=False):
         if lock:
             try:
-                qs = self.session.query(DataObject).filter(text("data->>'"+k+"' = '"+v+"'")).with_for_update(nowait=nowait, skip_locked=skip_locked, read=read).all()
+                qs = self.session.query(DataObject).filter(text(
+                    "data->>'"+k+"' = '"+v+"'")).with_for_update(nowait=nowait, skip_locked=skip_locked, read=read).all()
             except Exception, e:
                 logger.error(e)
                 if "could not obtain lock on row" in repr(e):
@@ -180,7 +191,8 @@ class DataStore(object):
                     raise LockException(e)
                 raise e
         else:
-            qs = self.session.query(DataObject).filter(text("data->>'"+k+"' = '"+v+"'")).with_for_update(read=read).all()
+            qs = self.session.query(DataObject).filter(
+                text("data->>'"+k+"' = '"+v+"'")).with_for_update(read=read).all()
 
         return qs
 
@@ -281,6 +293,7 @@ class DataStorePlugin(Plugin):
             'LOCKS': [row for row in PsqlDataStore(keep=False, **plugin_settings)._execute(LOCKS, commit=False)]
         }
         return {}
+
 
 class LockException(Exception):
     pass
