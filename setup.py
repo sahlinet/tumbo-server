@@ -5,7 +5,7 @@ import os
 from pip.req import parse_requirements
 from setuptools import find_packages, setup
 
-__VERSION__ = "0.4.24-dev"
+__VERSION__ = "0.4.25-dev"
 
 
 install_reqs = parse_requirements("./requirements.txt", session=False)
