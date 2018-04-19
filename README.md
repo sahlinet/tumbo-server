@@ -28,7 +28,7 @@ Tumbo is a Server Platform for simplifying common development and deployment tas
 
 For a quick start it is fine to use the package from pip.
 
-    pip install tumbo-server==0.4.25-dev
+    pip install tumbo-server==0.4.26-dev
     tumbo-cli.py server dev run
 
 ## Run Tumbo

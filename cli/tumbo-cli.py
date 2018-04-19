@@ -552,7 +552,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.25-dev")
+    arguments = docopt(__doc__, version="0.4.26-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -957,7 +957,7 @@ if __name__ == '__main__':
                 time.sleep(5)
                 print kubectl("delete pods -l service=app --namespace=tumbo".split())
                 print kubectl("delete pods -l service=background --namespace=tumbo".split())
-                print kubectl("delete pods -l service=rp --namespace=tumbo".split())
+                # print kubectl("delete pods -l service=rp --namespace=tumbo".split())
 
                 if is_minikube:
                     print "Waiting to launch UI"
