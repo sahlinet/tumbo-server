@@ -161,6 +161,12 @@ class StaticView(ResponseUnavailableViewMixing, View):
 
         data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % (
             "userland", base_obj.user.username, base_obj.name)
+        if hasattr(base_obj, "executor"):
+            data['SERVICE_PORT'] = base_obj.executor.port
+            data['SERVICE_IP'] = base_obj.executor.ip
+            data['SERVICE_IP6'] = base_obj.executor.ip6
+        else:
+            data['SERVICE_PORT'] = None
 
         try:
             logger.debug("Setup datastore for context starting")
