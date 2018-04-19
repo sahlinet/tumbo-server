@@ -47,10 +47,11 @@ class StaticView(ResponseUnavailableViewMixing, View):
         logger.debug("%s GET" % static_path)
 
         # verify that base exists for user
-        base_obj = Base.objects.get(user__username=kwargs['username'], name=kwargs['base'])
+        base_obj = Base.objects.get(
+            user__username=kwargs['username'], name=kwargs['base'])
 
         #response = self.verify(request, base_obj)
-        #if response:
+        # if response:
         #    return response
 
         last_modified = None
@@ -122,13 +123,17 @@ class StaticView(ResponseUnavailableViewMixing, View):
             if last_modified:
                 if isinstance(last_modified, float):
                     last_modified = datetime.utcfromtimestamp(last_modified)
-            if_modified_since = request.META.get('HTTP_IF_MODIFIED_SINCE', None)
+            if_modified_since = request.META.get(
+                'HTTP_IF_MODIFIED_SINCE', None)
             if last_modified and if_modified_since:
-                if_modified_since_dt = datetime.strptime(if_modified_since, frmt)
+                if_modified_since_dt = datetime.strptime(
+                    if_modified_since, frmt)
                 last_modified = last_modified.replace(microsecond=0)
-                logger.debug("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" % (static_path, last_modified, if_modified_since_dt))
+                logger.debug("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" %
+                             (static_path, last_modified, if_modified_since_dt))
                 if last_modified <= if_modified_since_dt:
-                    logger.info("%s: 304 (last_modified): %s" % (static_path, last_modified))
+                    logger.info("%s: 304 (last_modified): %s" %
+                                (static_path, last_modified))
                     return HttpResponseNotModified()
             response = HttpResponse(rfile, content_type=mimetype)
             if last_modified:
@@ -137,19 +142,21 @@ class StaticView(ResponseUnavailableViewMixing, View):
             if static_path.endswith("png") or static_path.endswith("css") or static_path.endswith("js") \
                     or static_path.endswith("woff"):
                 response['Cache-Control'] = "max-age=120"
-            logger.info("%s: 200 (last_modified: %s)" % (static_path, last_modified))
+            logger.info("%s: 200 (last_modified: %s)" %
+                        (static_path, last_modified))
         return response
-
 
     def _setup_context(self, request, base_obj):
         data = dict((s.key, s.value) for s in base_obj.setting.all())
 
-        data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % ("userland", base_obj.user.username, base_obj.name)
+        data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % (
+            "userland", base_obj.user.username, base_obj.name)
 
         try:
             logger.debug("Setup datastore for context starting")
             plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.datastore']
-            data['datastore'] = PsqlDataStore(schema=base_obj.name, keep=False, **plugin_settings)
+            data['datastore'] = PsqlDataStore(
+                schema=base_obj.name, keep=False, **plugin_settings)
             logger.debug("Setup datastore for context done")
             logger.debug("Datastore-Size: %s" % data['datastore'].count())
         except KeyError:
