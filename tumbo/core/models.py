@@ -107,6 +107,7 @@ class Base(models.Model):
             config['modules'][texec.name] = {}
             config['modules'][texec.name]['module'] = texec.name + ".py"
             config['modules'][texec.name]['public'] = texec.public
+            config['modules'][texec.name]['schedule'] = texec.schedule
             if texec.description:
                 config['modules'][texec.name]['description'] = texec.description
             else:
