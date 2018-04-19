@@ -128,6 +128,7 @@ class AccountTestCase(StaticLiveServerTestCase):
         submit.send_keys(Keys.RETURN)
 
         selenium.implicitly_wait(5)
+        time.sleep(5)
 
         selenium.get_screenshot_as_file("c.png")
         base_obj = models.Base.objects.get(name="testbase")
