@@ -19,3 +19,5 @@ try:
         amod = my_import(plugin)
 except ImproperlyConfigured, e:
     print e
+
+import signals
