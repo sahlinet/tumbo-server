@@ -5,7 +5,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 def get_var(var_name, fail=True):
     """ Get the environment variable or return exception """
-    # Taken from twoo scoops book, Thank you guys.
+    # Taken from two scoops book, Thank you guys.
     # https://django.2scoops.org/
     try:
         val = os.environ[var_name]
@@ -111,7 +111,7 @@ if os.environ.get("KUBERNETES_PORT", None):
     STORE_DB_PORT = 5432
     STORE_DB_NAME = "store"
     STORE_DB_USER = "store"
-    STORE_DB_PASSWORD = "storepw"
+    STORE_DB_PASSWORD = get_var("STORE_ENV_PASSWORD")
 else:
     STORE_DB_HOST = os.environ.get('STORE_DB_HOST', None)
     STORE_DB_PORT = int(os.environ.get('STORE_DB_PORT', 5432))

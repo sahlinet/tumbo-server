@@ -50,6 +50,11 @@ items:
                 secretKeyRef:
                   name: passwords
                   key: dbpw
+            - name: STORE_ENV_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: storepw
             envFrom:
             - configMapRef:
                 name: tumbo-config
