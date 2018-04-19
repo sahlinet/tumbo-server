@@ -147,6 +147,16 @@ class StaticView(ResponseUnavailableViewMixing, View):
         return response
 
     def _setup_context(self, request, base_obj):
+        """Creates a context for rendering files ending with 'html'.
+        
+        Arguments:
+            request {Request} -- [The request]
+            base_obj {Base} -- [Base object]
+        
+        Returns:
+            Context -- The context used for rendering.
+        """
+
         data = dict((s.key, s.value) for s in base_obj.setting.all())
 
         data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % (
