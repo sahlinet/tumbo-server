@@ -161,6 +161,7 @@ class StaticView(ResponseUnavailableViewMixing, View):
 
         data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % (
             "userland", base_obj.user.username, base_obj.name)
+        data['RUNTIME_USER'] = base_obj.user.username
         if hasattr(base_obj, "executor"):
             data['SERVICE_PORT'] = base_obj.executor.port
             data['SERVICE_IP'] = base_obj.executor.ip
