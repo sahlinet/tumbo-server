@@ -19,7 +19,6 @@ def _handle_settings(settings, base_obj, override_public=False, override_private
     dict with settings (k, v)
     """
     # get settings
-    print settings.items()
     for k, v in settings.items():
         setting_obj, _ = Setting.objects.get_or_create(
             base=base_obj, key=k)
@@ -38,7 +37,7 @@ def _handle_settings(settings, base_obj, override_public=False, override_private
 
 def _handle_apy(filename, content, base_obj, appconfig):
     name = filename.replace(".py", "")
-    apy, created = Apy.objects.get_or_create(base=base_obj, name=name)
+    apy, _ = Apy.objects.get_or_create(base=base_obj, name=name)
     apy.module = content
     description = appconfig['modules'][name]['description']
     if description:
