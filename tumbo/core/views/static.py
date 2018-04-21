@@ -148,11 +148,11 @@ class StaticView(ResponseUnavailableViewMixing, View):
 
     def _setup_context(self, request, base_obj):
         """Creates a context for rendering files ending with 'html'.
-        
+
         Arguments:
             request {Request} -- [The request]
             base_obj {Base} -- [Base object]
-        
+
         Returns:
             Context -- The context used for rendering.
         """
