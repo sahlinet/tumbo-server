@@ -365,6 +365,10 @@ class Env(object):
         state = "Running" if project['state'] else "Stopped"
         print state
 
+        print "\nAccess\n******"
+        print "Public:        " + str(project['public'])
+        print "Static Public: " + str(project['static_public'])
+
         print "\nExecutors\n*******"
         table = []
         for executor in project['executors']:
