@@ -375,6 +375,7 @@ class ZipFileRenderer(renderers.BaseRenderer):
 class BaseExportViewSet(viewsets.ModelViewSet):
     model = Base
     permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication, SessionAuthentication, )
     renderer_classes = [ZipFileRenderer]
     serializer_class = BaseSerializer
 

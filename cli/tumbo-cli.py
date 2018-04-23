@@ -31,7 +31,7 @@ Usage:
   tumbo-cli.py project <base-name> function <function-name> create [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> edit [--env=<env>]
   tumbo-cli.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>] [--nocolor] [--env=<env>]
-  # tumbo-cli.py project <base-name> export [filename] [--env=<env>]
+  tumbo-cli.py project <base-name> export [--env=<env>]
   tumbo-cli.py project <base-name> import <zipfile> [--env=<env>]
 
   # tumbo-cli.py server dev test
@@ -213,7 +213,7 @@ class Env(object):
                 json=json
             )
             response = r.json(
-            ) if 'Content-Type' in r.headers and "json" in r.headers['Content-Type'] else r.text
+            ) if 'Content-Type' in r.headers and "json" in r.headers['Content-Type'] else r.content
             if exit_on_error:
                 r.raise_for_status()
         except requests.exceptions.HTTPError as e:
@@ -426,6 +426,20 @@ class Env(object):
         if status_code == 201:
             print "Base '%s' imported" % name
 
+    def project_export(self, name):
+        status_code, _ = self._call_api(
+            "/core/api/base/%s/export/" % name, method="GET")
+        with open(name + ".zip", 'wb') as zf:
+        #import zipfile
+        #with zipfile.ZipFile(name + ".zip", "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            #zf.write(_.encode('utf-8'))
+            zf.write(_)
+            #import StringIO
+            #zf = zipfile.ZipFile(StringIO.StringIO(_))
+            zf.close()
+        
+
+
     def project_transactions(self, name, tid=None):
         data = {}
         if tid:
@@ -633,6 +647,9 @@ if __name__ == '__main__':
             if arguments['import'] and arguments['<zipfile>']:
                 print "Importing %s to Base '%s'" % (arguments['<zipfile>'], arguments['<base-name>'])
                 env.project_import(arguments['<base-name>'], arguments['<zipfile>'])
+
+            if arguments['export']:
+                env.project_export(arguments['<base-name>'])
 
             if arguments['function']:
 
