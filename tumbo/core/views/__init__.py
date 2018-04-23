@@ -604,7 +604,7 @@ class View(TemplateView):
         return super(View, self).dispatch(*args, **kwargs)
 
 def get_dropbox_auth_flow(web_app_session):
-    redirect_uri = "%s/fastapp/dropbox_auth_finish" % settings.DROPBOX_REDIRECT_URL
+    redirect_uri = "%s/core/dropbox_auth_finish" % settings.DROPBOX_REDIRECT_URL
     dropbox_consumer_key = settings.DROPBOX_CONSUMER_KEY
     dropbox_consumer_secret = settings.DROPBOX_CONSUMER_SECRET
     return dropbox.client.DropboxOAuth2Flow(dropbox_consumer_key, dropbox_consumer_secret, redirect_uri, web_app_session, "dropbox-auth-csrf-token")
@@ -621,7 +621,7 @@ def dropbox_auth_finish(request):
     try:
         dropbox_access_token, user_id, url_state = get_dropbox_auth_flow(
             request.session).finish(request.GET)
-        auth, created = AuthProfile.objects.get_or_create(user=request.user)
+        auth, _ = AuthProfile.objects.get_or_create(user=request.user)
         # store dropbox_access_token
         auth.dropbox_access_token = dropbox_access_token
         auth.dropbox_userid = user_id
