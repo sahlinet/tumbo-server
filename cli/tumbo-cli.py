@@ -269,7 +269,8 @@ class Env(object):
                 os.lchmod(self.config_path, 0600)
             else:
                 os.chmod(self.config_path, 0600)
-            print "Logged in to '%s' with '%s' successfully" % (self.envId, self.user)
+            print "Logged in to '%s' with '%s' successfully" % (
+                self.envId, self.user)
 
     def logout(self):
         try:
@@ -413,20 +414,20 @@ class Env(object):
                 executed,
                 failed
             ])
-        print tabulate(table, headers=["Name", "Public", "Schedule", "Counter success", "Counter failed"])
-
+        print tabulate(table, headers=[
+                       "Name", "Public", "Schedule", "Counter success", "Counter failed"])
 
     def project_import(self, name, zipfile):
         """Import a project from a zipfile.
-        
+
         Arguments:
             name {String} -- Basename
             zipfile {String} -- [Zipfil]
         """
 
         multipart_form_data = {
-                'name': ('', name),
-                'file': ('zip.zip', open(zipfile, 'rb'))
+            'name': ('', name),
+            'file': ('zip.zip', open(zipfile, 'rb'))
         }
         status_code, _ = self._call_api(
             "/core/api/base/import/", method="POST", files=multipart_form_data)
@@ -435,7 +436,7 @@ class Env(object):
 
     def project_export(self, name):
         """Export a project to a zipfile.
-        
+
         Arguments:
             name {String} -- Basename
             zipfile {String} -- [Zipfil]
@@ -450,7 +451,7 @@ class Env(object):
         data = {}
         if tid:
             data['rid'] = tid
-        status_code, transactions = self._call_api(
+        _, transactions = self._call_api(
             "/core/api/base/%s/transactions/" % name, method="GET", params=data)
 
         logs_only = arguments.get('--logs', False)
@@ -492,7 +493,8 @@ class Env(object):
                     "Out", tolocaltime(transaction['modified']), custom_format(
                         tout, cut, nocolor)
                 ])
-            print tabulate(table, headers=[rid, "Date", "Type"], tablefmt="simple")
+            print tabulate(table, headers=[
+                           rid, "Date", "Type"], tablefmt="simple")
 
     def create_function(self, project_name, function_name):
         status_code, response = self._call_api(
@@ -519,7 +521,8 @@ class Env(object):
             if status_code == 200:
                 print "Saved"
             elif status_code == 500:
-                print "Function %s/%s not saved:" % (project_name, function_name)
+                print "Function %s/%s not saved:" % (
+                    project_name, function_name)
                 print response
                 env.edit_function(project_name, function_name, path)
                 time.sleep(5)
@@ -651,8 +654,10 @@ if __name__ == '__main__':
                 env.open_browser(base=arguments['<base-name>'])
 
             if arguments['import'] and arguments['<zipfile>']:
-                print "Importing %s to Base '%s'" % (arguments['<zipfile>'], arguments['<base-name>'])
-                env.project_import(arguments['<base-name>'], arguments['<zipfile>'])
+                print "Importing %s to Base '%s'" % (
+                    arguments['<zipfile>'], arguments['<base-name>'])
+                env.project_import(
+                    arguments['<base-name>'], arguments['<zipfile>'])
 
             if arguments['export']:
                 env.project_export(arguments['<base-name>'])
@@ -996,8 +1001,10 @@ if __name__ == '__main__':
                         j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
 
                 time.sleep(5)
-                print kubectl("delete pods -l service=app --namespace=tumbo".split())
-                print kubectl("delete pods -l service=background --namespace=tumbo".split())
+                print kubectl(
+                    "delete pods -l service=app --namespace=tumbo".split())
+                print kubectl(
+                    "delete pods -l service=background --namespace=tumbo".split())
                 # print kubectl("delete pods -l service=rp --namespace=tumbo".split())
 
                 if is_minikube:
@@ -1011,7 +1018,7 @@ if __name__ == '__main__':
 
                     cmd_list = [
                         "./k8s-files/cli/rp.yml",
-                        #"./k8s-files/cli/core.yml",
+                        # "./k8s-files/cli/core.yml",
                     ]
                     for cmd in cmd_list:
                         base = kubectl(["delete", "-f"] +

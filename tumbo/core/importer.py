@@ -4,7 +4,6 @@ from distutils.util import strtobool
 from configobj import ConfigObj
 
 from core.models import Apy, Base, Setting
-from core.utils import Connection
 from core.storage import Storage
 
 logger = logging.getLogger(__name__)
