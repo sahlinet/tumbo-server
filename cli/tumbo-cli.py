@@ -589,7 +589,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.28-dev")
+    arguments = docopt(__doc__, version="0.4.29-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -998,9 +998,11 @@ if __name__ == '__main__':
                     pass
 
                 if arguments["--ingress"]:
+                    cmd_list.append("../tumbo-sahli-net/tumbo-secret.yml")
                     cmd_list.append("./k8s-files/cli/ingress.yml")
 
                 for cmd in cmd_list:
+                    print "*** " + cmd
                     base = kubectl(
                         j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
 
