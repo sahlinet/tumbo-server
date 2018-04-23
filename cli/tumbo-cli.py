@@ -1029,14 +1029,12 @@ if __name__ == '__main__':
                                        cmd.split(), _out=STDOUT, _err=STDERR)
                 else:
                     print "Deleting Tumbo on Kubernetes"
+
                     for cmd in cmd_list:
-                        base = kubectl(["delete", "-f"] +
-                                       cmd.split(), _out=STDOUT, _err=STDERR)
-                        print base
                     try:
                         base = kubectl(
-                            "delete namespace tumbo".split(), _out=STDOUT, _err=STDERR)
-                    except sh.ErrorReturnCode_1:
+                                j2(cmd, _env=env), "delete -f - ".split(), _out=STDOUT, _err=STDERR)
+                    except Exception, e:
                         pass
 
     if arguments['docker'] and arguments['url']:
