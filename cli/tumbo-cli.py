@@ -375,9 +375,9 @@ class Env(object):
         for executor in project['executors']:
             table.append([
                 executor['port'],
-                executor['ip'] + " / " + executor['plugins'].get(
+                str(executor.get('ip', "NA")) + " / " + executor['plugins'].get(
                     'dnsnameplugin', {}).get('SERVICE_DNS_V4', ""),
-                str(executor['ip6']) + " / " + executor['plugins'].get(
+                str(executor.get('ip6', "NA")) + " / " + executor['plugins'].get(
                     'dnsnameplugin', {}).get('SERVICE_DNS_V6', ""),
             ])
 
@@ -621,6 +621,10 @@ if __name__ == '__main__':
     if arguments['project']:
         envId = arguments.get('--env', None)
         env = EnvironmentList.get_active(env=envId)
+
+        if not env:
+            print "Set an environment active or specify env argument"
+            sys.exit(1)
 
         if arguments['list']:
             env.projects_list()
