@@ -5,16 +5,16 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.management import call_command
+from django.db.models.signals import post_delete, post_save
 from selenium import webdriver
 from selenium.common.exceptions import ElementNotVisibleException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.keys import Keys
 
-from core import models
+from core import models, signals
+from core.models import Apy, Base, Setting, ready_to_sync
 
 # from unittest import skip
-
-
 
 User = get_user_model()
 
@@ -61,25 +61,27 @@ class AccountTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = webdriver.ChromeOptions()
 
+        post_save.disconnect(signals.synchronize_to_storage, sender=Apy)
+        post_save.disconnect(signals.send_to_workers, sender=Setting)
+        post_save.disconnect(signals.initialize_on_storage, sender=Base)
+
+        ready_to_sync.disconnect(signals.synchronize_to_storage, sender=Apy)
+
+        post_delete.disconnect(
+            signals.synchronize_to_storage_on_delete, sender=Apy)
 
         dc = DesiredCapabilities.CHROME
         dc['loggingPrefs'] = {'browser': 'ALL'}
 
-
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
-        self.selenium = webdriver.Chrome(chrome_options=options, desired_capabilities=dc)
+        self.selenium = webdriver.Chrome(
+            chrome_options=options, desired_capabilities=dc)
         super(AccountTestCase, self).setUp()
 
         self.admin_pw = 'mypassword'
         User.objects.create_superuser(
             'admin', 'myemail@test.com', self.admin_pw)
-
-        # connections_override = self.__class__.server_thread.connections_override
-        # try:
-        #     self.__class__._start_heartbeat(connections_override)
-        # except:
-        #     pass
 
     def tearDown(self):
         self.selenium.quit()
@@ -188,9 +190,11 @@ class AccountTestCase(StaticLiveServerTestCase):
         driver.find_element_by_link_text("admin/cccc").click()
         driver.get_screenshot_as_file("test_cas_login_base_created.png")
         try:
-            driver.find_element_by_xpath("//button[@name='state_cycle']").click()
+            driver.find_element_by_xpath(
+                "//button[@name='state_cycle']").click()
         except ElementNotVisibleException:
-            driver.find_element_by_xpath("//button[@name='state_cycle']").click()
+            driver.find_element_by_xpath(
+                "//button[@name='state_cycle']").click()
         driver.get_screenshot_as_file("test_cas_login_base_started.png")
         time.sleep(10)
         base_obj = models.Base.objects.get(name="cccc")

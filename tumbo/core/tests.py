@@ -13,11 +13,9 @@ from mock import patch
 from pyflakes.messages import Message, UnusedImport
 from rest_framework.test import APIRequestFactory, force_authenticate
 
+from core import signals
 from core.api_views import ApyViewSet
-from core.models import Apy, AuthProfile, Base, Executor, Setting, Transaction
-from core.signals import (initialize_on_storage, ready_to_sync,
-                          synchronize_to_storage,
-                          synchronize_to_storage_on_delete)
+from core.models import Apy, AuthProfile, Base, Executor, Setting, Transaction, ready_to_sync
 from core.utils import check_code
 from core.views import ResponseUnavailableViewMixing
 
@@ -28,24 +26,27 @@ class BaseTestCase(TransactionTestCase):
 
     @patch("core.models.distribute")
     def setUp(self, distribute_mock):
-        post_save.disconnect(synchronize_to_storage, sender=Apy)
-        ready_to_sync.disconnect(synchronize_to_storage, sender=Apy)
-        post_save.disconnect(initialize_on_storage, sender=Base)
-        post_delete.disconnect(synchronize_to_storage_on_delete, sender=Apy)
+        post_save.disconnect(signals.synchronize_to_storage, sender=Apy)
+        post_save.disconnect(signals.send_to_workers, sender=Setting)
+        post_save.disconnect(signals.initialize_on_storage, sender=Base)
+
+        ready_to_sync.disconnect(signals.synchronize_to_storage, sender=Apy)
+        post_delete.disconnect(signals.synchronize_to_storage_on_delete, sender=Apy)
+
         distribute_mock.return_value = True
 
         self.user1 = User.objects.create_user(
             'user1', 'user1@example.com', 'pass')
         self.user1.save()
 
-        auth, created = AuthProfile.objects.get_or_create(user=self.user1)
+        auth, _ = AuthProfile.objects.get_or_create(user=self.user1)
         auth.user = self.user1
         auth.save()
 
         self.user2 = User.objects.create_user(
             'user2', 'user2@example.com', 'pass')
         self.user2.save()
-        auth, created = AuthProfile.objects.get_or_create(user=self.user2)
+        auth, _ = AuthProfile.objects.get_or_create(user=self.user2)
         auth.user = self.user2
         auth.save()
 
