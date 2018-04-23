@@ -5,6 +5,7 @@ from configobj import ConfigObj
 
 from core.models import Apy, Base, Setting
 from core.utils import Connection
+from core.storage import Storage
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,11 @@ def _handle_apy(filename, content, base_obj, appconfig):
     description = appconfig['modules'][name]['description']
     if description:
         apy.description = description
+    schedule = appconfig['modules'][name]['schedule']
+    if schedule:
+        apy.schedule = appconfig['modules'][name]['schedule']
+    else:
+        apy.schedule = ""
     public = appconfig['modules'][name].get('public', None)
     if public:
         apy.public = strtobool(public)
@@ -53,12 +59,8 @@ def import_base(zf, user_obj, name, override_public, override_private):
     if not created:
         logger.info("base '%s' did already exist" % name)
         base.save()
-    # Dropbox connection
-    try:
-        dropbox_connection = Connection(base.auth_token)
-    except Exception:
-        logger.exception("Error on Connectin to Dropbx")
 
+    storage = Storage.factory()(base)
     # app.config
     appconfig = _read_config(zf.open("app.config"))
 
@@ -68,7 +70,13 @@ def import_base(zf, user_obj, name, override_public, override_private):
         apy_content = zf.open(filename).read()
         _handle_apy(filename, apy_content, base, appconfig)
 
-    # settings
+    # Access
+    access = appconfig.get('access', None)
+    if access:
+        base.static_public = strtobool(access['static_public'])
+        base.public = strtobool(access['public'])
+
+    # Settings
     settings = appconfig['settings']
     _handle_settings(settings, base)
 
@@ -86,7 +94,8 @@ def import_base(zf, user_obj, name, override_public, override_private):
             base.save()
 
         if "static" in filename:
-            file = "/%s/%s" % (base.name, filename)
-            dropbox_connection.put_file(file, content)
+            print filename
+            file = "%s/%s" % (base.name, filename)
+            storage.put(file, content)
 
     return base

@@ -1,38 +1,38 @@
 # -*- coding: utf-8 -*-
 
-import urllib
-import StringIO
-import gevent
 import json
-import pytz
+import logging
 import random
-import zipfile
 import re
-
-from configobj import ConfigObj
+import StringIO
+import urllib
+import zipfile
 from datetime import datetime, timedelta
-from jsonfield import JSONField
-from sequence_field.fields import SequenceField
 
-from django.core.urlresolvers import reverse
-from django.db import models, transaction
-from django.template import Template
-from django_extensions.db.fields import UUIDField, ShortUUIDField, RandomCharField
-from django.dispatch import receiver, Signal
-from django.db.models import F
+import gevent
+import pytz
+from configobj import ConfigObj
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import serializers
+from django.core.urlresolvers import reverse
+from django.db import models, transaction
+from django.db.models import F
+from django.dispatch import Signal, receiver
+from django.template import Template
 from django.utils import timezone
+from django_extensions.db.fields import (RandomCharField, ShortUUIDField,
+                                         UUIDField)
+from jsonfield import JSONField
+from sequence_field.fields import SequenceField
 
-from core.communication import generate_vhost_configuration, create_vhost
-from core.executors.remote import distribute, CONFIGURATION_EVENT, SETTINGS_EVENT
+from core.communication import create_vhost, generate_vhost_configuration
+from core.executors.remote import (CONFIGURATION_EVENT, SETTINGS_EVENT,
+                                   distribute)
+from core.plugins import PluginRegistry, call_plugin_func
+from core.storage import Storage
 from core.utils import Connection
-from core.plugins import call_plugin_func
-from core.plugins import PluginRegistry
 
-
-import logging
 logger = logging.getLogger(__name__)
 
 index_template = """{% extends "fastapp/base.html" %}
@@ -101,6 +101,10 @@ class Base(models.Model):
         config_string = StringIO.StringIO()
         config = ConfigObj()
 
+        config['access'] = {}
+        config['access']['static_public'] = self.static_public
+        config['access']['public'] = self.public
+
         # execs
         config['modules'] = {}
         for texec in self.apys.all():
@@ -146,20 +150,8 @@ class Base(models.Model):
             zf.writestr("%s.py" % apy.name, apy.module.encode("utf-8"))
 
         # add static files
-        try:
-            dropbox_connection = Connection(self.auth_token)
-
-            try:
-                zf = dropbox_connection.directory_zip(
-                    "%s/%s/static" % (self.user.username, self.name), zf
-                )
-            except Exception, e:
-                logger.warn(e)
-        except AuthProfile.DoesNotExist, e:
-            logger.warn(e)
-        except Exception, e:
-            logger.warn(e.__class__)
-            logger.exception(e)
+        storage = Storage.factory()(self)
+        zf = storage.directory_zip("%s/static" % (self.name), zf)
 
         # add config
         zf.writestr("app.config", self.config.encode("utf-8"))
