@@ -488,6 +488,7 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
                                 logger.warning("Func is None")
                             logger.debug("%s: Func attached to _do" % plugin.shortname)
                         except Exception, e:
+                            logger.exception(plugin)
                             logger.exception("%s: Not able to attach, pluginconfig is: %s" % (plugin, pluginconfig))
 
                 # execution

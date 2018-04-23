@@ -1,32 +1,32 @@
+"""Module with Code used on several places.
+"""
+
+import cProfile
 import datetime
-import time
-import logging
-import dropbox
-import json
-import StringIO
 import hashlib
+import json
+import logging
 import os
 import re
-import cProfile
-
-from jose import jws
-from dropbox.rest import ErrorResponse
-
-from django.contrib import messages
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
-from django.contrib.auth import get_user_model
-
-from core import defaults
-
+import StringIO
 import sys
-import _ast
-from pyflakes import checker
-from pyflakes import reporter as modReporter
-from pyflakes.messages import Message
+import time
 
+import dropbox
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.test import RequestFactory
+from dropbox.rest import ErrorResponse
+from jose import jws
+from pyflakes import reporter as modReporter
+from pyflakes import checker
+from pyflakes.messages import Message
+
+import _ast
+from core import defaults
 
 
 class UnAuthorized(Exception):

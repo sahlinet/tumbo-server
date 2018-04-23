@@ -1,4 +1,10 @@
-__VERSION__ = "0.4.26-dev"
+__VERSION__ = "0.4.27-dev"
+"""Initialize core components:
+
+    - Plugins
+    - Signals
+"""
+
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -19,3 +25,5 @@ try:
         amod = my_import(plugin)
 except ImproperlyConfigured, e:
     print e
+
+import signals

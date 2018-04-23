@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from jsonfield import JSONField
-
 from django.db import models
-
+from jsonfield import JSONField
 
 logger = logging.getLogger(__name__)
 

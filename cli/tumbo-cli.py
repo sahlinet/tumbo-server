@@ -31,9 +31,8 @@ Usage:
   tumbo-cli.py project <base-name> function <function-name> create [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> edit [--env=<env>]
   tumbo-cli.py project <base-name> transactions [--tid=<tid>]  [--logs] [--cut=<cut>] [--nocolor] [--env=<env>]
-
-  # tumbo-cli.py project <base-name> export [filename] [--env=<env>]
-   tumbo-cli.py project <base-name> import <zipfile> [--env=<env>]
+  tumbo-cli.py project <base-name> export [--env=<env>]
+  tumbo-cli.py project <base-name> import <zipfile> [--env=<env>]
 
   # tumbo-cli.py server dev test
   # tumbo-cli.py server docker test
@@ -60,7 +59,9 @@ import tempfile
 import time
 from base64 import standard_b64encode
 from ConfigParser import RawConfigParser
+from datetime import datetime
 from os.path import expanduser
+from subprocess import call
 
 import requests
 from docopt import docopt
@@ -200,7 +201,7 @@ class Env(object):
             self.active_str = ""
             self.active = False
 
-    def _call_api(self, url, method="GET", params=None, json=None, exit_on_error=True):
+    def _call_api(self, url, method="GET", params=None, json=None, exit_on_error=True, files=None):
         try:
             r = requests.request(method, self.config_data['url'] + url,
                                  # allow_redirects=False,
@@ -208,15 +209,16 @@ class Env(object):
                 'Authorization': "Token %s" % self.config_data['token']
             },
                 params=params,
+                files=files,
                 json=json
             )
             response = r.json(
-            ) if 'Content-Type' in r.headers and "json" in r.headers['Content-Type'] else r.text
+            ) if 'Content-Type' in r.headers and "json" in r.headers['Content-Type'] else r.content
             if exit_on_error:
                 r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             print "Error (%s)" % e.message
-            print response
+            #print response
             sys.exit(1)
         except requests.exceptions.ConnectionError:
             print "Could not connect to %s" % self.config_data['url']
@@ -363,6 +365,10 @@ class Env(object):
         state = "Running" if project['state'] else "Stopped"
         print state
 
+        print "\nAccess\n******"
+        print "Public:        " + str(project['public'])
+        print "Static Public: " + str(project['static_public'])
+
         print "\nExecutors\n*******"
         table = []
         for executor in project['executors']:
@@ -409,13 +415,43 @@ class Env(object):
             ])
         print tabulate(table, headers=["Name", "Public", "Schedule", "Counter success", "Counter failed"])
 
+
+    def project_import(self, name, zipfile):
+        """Import a project from a zipfile.
+        
+        Arguments:
+            name {String} -- Basename
+            zipfile {String} -- [Zipfil]
+        """
+
+        multipart_form_data = {
+                'name': ('', name),
+                'file': ('zip.zip', open(zipfile, 'rb'))
+        }
+        status_code, _ = self._call_api(
+            "/core/api/base/import/", method="POST", files=multipart_form_data)
+        if status_code == 201:
+            print "Base '%s' imported" % name
+
+    def project_export(self, name):
+        """Export a project to a zipfile.
+        
+        Arguments:
+            name {String} -- Basename
+            zipfile {String} -- [Zipfil]
+        """
+        _, _ = self._call_api(
+            "/core/api/base/%s/export/" % name, method="GET")
+        with open(name + ".zip", 'wb') as zf:
+            zf.write(_)
+            zf.close()
+
     def project_transactions(self, name, tid=None):
         data = {}
         if tid:
             data['rid'] = tid
         status_code, transactions = self._call_api(
             "/core/api/base/%s/transactions/" % name, method="GET", params=data)
-        print status_code, transactions
 
         logs_only = arguments.get('--logs', False)
         cut = arguments.get('--cut', None)
@@ -472,7 +508,6 @@ class Env(object):
             f = open(path, "w")
             f.write(response['module'])
             f.close()
-        from subprocess import call
         call(["/usr/bin/vim", path])
 
         if confirm():
@@ -538,7 +573,6 @@ def do_ngrok():
 
 
 def tolocaltime(dt):
-    from datetime import datetime
     import pytz     # $ pip install pytz
     import tzlocal  # $ pip install tzlocal
 
@@ -552,7 +586,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.26-dev")
+    arguments = docopt(__doc__, version="0.4.27-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -615,6 +649,13 @@ if __name__ == '__main__':
 
             if arguments['open']:
                 env.open_browser(base=arguments['<base-name>'])
+
+            if arguments['import'] and arguments['<zipfile>']:
+                print "Importing %s to Base '%s'" % (arguments['<zipfile>'], arguments['<base-name>'])
+                env.project_import(arguments['<base-name>'], arguments['<zipfile>'])
+
+            if arguments['export']:
+                env.project_export(arguments['<base-name>'])
 
             if arguments['function']:
 

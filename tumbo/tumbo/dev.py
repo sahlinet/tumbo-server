@@ -66,6 +66,7 @@ ALLOWED_HOSTS = "*"
 TUMBO_REPOSITORIES_PATH = home + "/workspace"
 TUMBO_DEV_STORAGE_DROPBOX_PATH = home + "/Dropbox/Apps/tumbo dev/"
 
+# docker run -d -p 65432:5432 -e SUPERUSER=true -e DB_NAME=store -e DB_USER=store -e PASSWORD=storepw --name postgresql philipsahli/postgresql-test
 TUMBO_PLUGINS_CONFIG = {
     'core.plugins.stats': {},
     'core.plugins.rabbitmq': {},
@@ -74,14 +75,14 @@ TUMBO_PLUGINS_CONFIG = {
         'token': os.environ.get('DIGITALOCEAN_CONFIG', None),
         'zone': os.environ.get('DIGITALOCEAN_ZONE', None)
     },
-    #'core.plugins.datastore': {
-    #    'ENGINE': "django.db.backends.postgresql_psycopg2",
-    #    'HOST': "127.0.0.1",
-    #    'PORT': "15432",
-    #    'NAME': "store",
-    #    'USER': "store",
-    #    'PASSWORD': "store123"
-    #}
+    'core.plugins.datastore': {
+        'ENGINE': "django.db.backends.postgresql_psycopg2",
+        'HOST': "127.0.0.1",
+        'PORT': "65432",
+        'NAME': "store",
+        'USER': "store",
+        'PASSWORD': "storepw"
+    }
 }
 
 TUMBO_SCHEDULE_JOBSTORE = "sqlite:////tmp/jobstore.db"

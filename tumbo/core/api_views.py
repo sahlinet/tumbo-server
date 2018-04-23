@@ -1,39 +1,38 @@
 # -*- coding: utf-8 -*-
+import logging
 import zipfile
-import requests
 from threading import Thread
-from rest_framework.renderers import JSONRenderer
-from rest_framework_jsonp.renderers import JSONPRenderer
-from rest_framework import permissions, viewsets, views
-from rest_framework import status
 
+import requests
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
+from django.db import transaction
+from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404
-from django.http import Http404
-from django.conf import settings
-from django.db import transaction
-from django.core.management import call_command
-
-from rest_framework import renderers
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication, BasicAuthentication
-from rest_framework.response import Response
-#from rest_framework.decorators import link
+from rest_framework import permissions, renderers, status, views, viewsets
+from rest_framework.authentication import (BasicAuthentication,
+                                           SessionAuthentication,
+                                           TokenAuthentication)
 from rest_framework.exceptions import APIException
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from rest_framework_jsonp.renderers import JSONPRenderer
 
 from api_authentication import CustomSessionAuthentication
-
-from django.contrib.auth import get_user_model
-
+from core.api_serializers import (ApySerializer, BaseSerializer,
+                                  PublicApySerializer, SettingSerializer,
+                                  TransactionSerializer,
+                                  TransportEndpointSerializer)
 from core.importer import import_base
-from core.models import Base, Apy, Setting, TransportEndpoint, Transaction
-from core.api_serializers import PublicApySerializer, ApySerializer, BaseSerializer, SettingSerializer, TransportEndpointSerializer, TransactionSerializer
+from core.models import Apy, Base, Setting, Transaction, TransportEndpoint
 from core.utils import check_code
 from core.views import ExecView
 
 User = get_user_model()
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -90,8 +89,11 @@ class TransactionViewSet(viewsets.ModelViewSet):
         get_object_or_404(Base, user=self.request.user, name=name)
         queryset = Transaction.objects.filter(apy__base__name=name)
         rid = self.request.GET.get('rid', None)
+        apy = self.request.GET.get('apy', None)
         if rid is not None:
             return queryset.filter(rid=rid)
+        if apy:
+            queryset = queryset.filter(apy__name=apy)
         return queryset.order_by("modified")[10:]
 
 
@@ -373,6 +375,7 @@ class ZipFileRenderer(renderers.BaseRenderer):
 class BaseExportViewSet(viewsets.ModelViewSet):
     model = Base
     permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication, SessionAuthentication, )
     renderer_classes = [ZipFileRenderer]
     serializer_class = BaseSerializer
 
@@ -382,7 +385,6 @@ class BaseExportViewSet(viewsets.ModelViewSet):
     def export(self, request, name):
         base = self.get_queryset().get(name=name)
         f = base.export()
-        logger.info(f)
 
         response = Response(f.getvalue(), headers={
             'Content-Disposition': 'attachment; filename=%s.zip' % base.name
@@ -413,11 +415,17 @@ class BaseImportViewSet(viewsets.ModelViewSet):
         f = request.FILES['file']
         zf = zipfile.ZipFile(f)
 
+        error = None
+#        try:
         base = import_base(zf,
-                           request.user,
-                           name,
-                           override_public,
-                           override_private)
+                        request.user,
+                        name,
+                        override_public,
+                        override_private)
+#        except Exception, e:
+#            pass
+#            error = e.message
+#            return Response(error, status=500)
 
         base_queryset = base
         base.save()

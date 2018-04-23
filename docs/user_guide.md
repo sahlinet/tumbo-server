@@ -306,7 +306,13 @@ For every worker a service port is reserved. This let's you for example to run a
 
 ### Port
 
+The port is available in functions 
+
     print os.environ['SERVICE_PORT']
+
+and in templates
+
+    {{ SERVICE_PORT }}
 
 ### IP
 
