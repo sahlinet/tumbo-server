@@ -417,6 +417,13 @@ class Env(object):
 
 
     def project_import(self, name, zipfile):
+        """Import a project from a zipfile.
+        
+        Arguments:
+            name {String} -- Basename
+            zipfile {String} -- [Zipfil]
+        """
+
         multipart_form_data = {
                 'name': ('', name),
                 'file': ('zip.zip', open(zipfile, 'rb'))
@@ -427,18 +434,17 @@ class Env(object):
             print "Base '%s' imported" % name
 
     def project_export(self, name):
-        status_code, _ = self._call_api(
+        """Export a project to a zipfile.
+        
+        Arguments:
+            name {String} -- Basename
+            zipfile {String} -- [Zipfil]
+        """
+        _, _ = self._call_api(
             "/core/api/base/%s/export/" % name, method="GET")
         with open(name + ".zip", 'wb') as zf:
-        #import zipfile
-        #with zipfile.ZipFile(name + ".zip", "w", compression=zipfile.ZIP_DEFLATED) as zf:
-            #zf.write(_.encode('utf-8'))
             zf.write(_)
-            #import StringIO
-            #zf = zipfile.ZipFile(StringIO.StringIO(_))
             zf.close()
-        
-
 
     def project_transactions(self, name, tid=None):
         data = {}

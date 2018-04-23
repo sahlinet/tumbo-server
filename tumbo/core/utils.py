@@ -1,3 +1,6 @@
+"""Module with Code used on several places.
+"""
+
 import cProfile
 import datetime
 import hashlib

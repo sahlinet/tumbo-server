@@ -94,8 +94,7 @@ def import_base(zf, user_obj, name, override_public, override_private):
             base.save()
 
         if "static" in filename:
-            print filename
-            file = "%s/%s" % (base.name, filename)
-            storage.put(file, content)
+            sfile = "%s/%s" % (base.name, filename)
+            storage.put(sfile, content)
 
     return base

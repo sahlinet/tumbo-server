@@ -1,10 +1,12 @@
+"""Module for Storage classes.
+"""
+
+import logging
 import os
-import sys
 
 import gevent
 from django.conf import settings
 
-import logging 
 from core.utils import Connection
 
 logger = logging.getLogger(__name__)
@@ -15,6 +17,7 @@ class Storage(object):
     Storage in this context is used to write data changed in UI to the storage.
     """
 
+    @staticmethod
     def factory():
         """class method to return class with implementation.
 
@@ -25,7 +28,6 @@ class Storage(object):
         if hasattr(settings, "TUMBO_REPOSITORIES_PATH"):
             return LocalStorage
         assert 0, "bad storage class creation: " + type
-    factory = staticmethod(factory)
 
 
 class BaseStorage(object):
@@ -100,12 +102,11 @@ class LocalStorage(BaseStorage):
         for root, _, files in os.walk(os.path.join(self.root, path)):
             #for folder in subFolders:
                 print root
-                for file in files:
-                    filePath = root + "/" + file
+                for sfile in files:
+                    filePath = root + "/" + sfile
                     print "filePath: " + filePath
                     f = open(filePath, 'r')
                     filePath_zip = filePath.replace(self.root + "/" + self.base_name + "/", "")
-                    #print filePath_zip
                     logger.info("Add file '%s' as '%s' to zip" % (filePath, filePath_zip))
                     zf.writestr(filePath_zip, f.read())
                     f.close()
@@ -137,7 +138,7 @@ class DropboxStorage(BaseStorage):
         self._save_config()
         return result
 
-    def create_folder(self, filename):
+    def create_folder(self):
         self.connection.create_folder(
             "%s/%s" % (self.username, self.instance_name))
         self._save_config()
