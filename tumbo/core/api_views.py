@@ -90,7 +90,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
         queryset = Transaction.objects.filter(apy__base__name=name)
         rid = self.request.GET.get('rid', None)
         apy = self.request.GET.get('apy', None)
-        if rid is not None:
+        if rid:
             return queryset.filter(rid=rid)
         if apy:
             queryset = queryset.filter(apy__name=apy)
