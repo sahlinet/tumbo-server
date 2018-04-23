@@ -1031,11 +1031,11 @@ if __name__ == '__main__':
                     print "Deleting Tumbo on Kubernetes"
 
                     for cmd in cmd_list:
-                    try:
-                        base = kubectl(
-                                j2(cmd, _env=env), "delete -f - ".split(), _out=STDOUT, _err=STDERR)
-                    except Exception, e:
-                        pass
+                        try:
+                            base = kubectl(
+                                    j2(cmd, _env=env), "delete -f - ".split(), _out=STDOUT, _err=STDERR)
+                        except Exception, e:
+                            pass
 
     if arguments['docker'] and arguments['url']:
         # port = docker_compose("-p", "tumboserver", "-f", compose_file,
