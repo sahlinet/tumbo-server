@@ -497,7 +497,7 @@ class Env(object):
                            rid, "Date", "Type"], tablefmt="simple")
 
     def create_function(self, project_name, function_name):
-        status_code, response = self._call_api(
+        status_code, _ = self._call_api(
             "/core/api/base/%s/apy/" % (project_name), method="POST", json={"name": function_name})
         if status_code == 201:
             print "Function %s/%s created" % (project_name, function_name)
@@ -953,7 +953,7 @@ if __name__ == '__main__':
             if arguments["--context"]:
                 cmd = "config use-context %s" % arguments["--context"]
                 kubectl(cmd.split())
-            # kubernetes run
+
             cmd_list = [
                 os.path.join(k8s_files_path, "config.yml"),
                 os.path.join(k8s_files_path, "passwords.yml"),
@@ -978,12 +978,12 @@ if __name__ == '__main__':
 
             env = ini_dict
 
-            # print env['HOST']
-
             if arguments['show']:
                 print "Show Kubernetes Resources\n"
 
                 print kubectl("get pods --namespace=tumbo".split())
+
+            # kubernetes run
             if arguments['run']:
                 print "Starting Tumbo on Kubernetes"
                 try:
