@@ -44,14 +44,13 @@ class BaseStorage(object):
         """
 
         self.instance = instance
-        #if isinstance(self.instance, Base):
         if "Base" in type(self.instance).__name__:
-            print self
-
+            self.base = self.instance
             self.username = self.instance.user.username
             self.base_name = self.instance.name
             self.config = self.instance.config
         else:
+            self.base = self.instance.base
             self.username = self.instance.base.user.username
             self.instance_name = self.instance.base.name
             self.base_name = self.instance.base.name
@@ -123,7 +122,7 @@ class DropboxStorage(BaseStorage):
         super(DropboxStorage, self).__init__(instance)
 
         self.connection = Connection(
-            instance.base.user.authprofile.dropbox_access_token)
+            self.base.user.authprofile.dropbox_access_token)
 
     def _save_config(self):
         gevent.spawn(self.connection.put_file("%s/%s/app.config" %
