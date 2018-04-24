@@ -619,7 +619,7 @@ def dropbox_auth_start(request):
 # URL handler for /dropbox-auth-finish
 def dropbox_auth_finish(request):
     try:
-        dropbox_access_token, user_id, url_state = get_dropbox_auth_flow(
+        dropbox_access_token, user_id, _ = get_dropbox_auth_flow(
             request.session).finish(request.GET)
         auth, _ = AuthProfile.objects.get_or_create(user=request.user)
         # store dropbox_access_token
@@ -628,12 +628,12 @@ def dropbox_auth_finish(request):
         auth.user = request.user
         auth.save()
 
-        return HttpResponseRedirect("/profile/")
+        return HttpResponseRedirect("/core/profile/")
     except dropbox.client.DropboxOAuth2Flow.BadRequestException, e:
         return HttpResponseBadRequest(e)
     except dropbox.client.DropboxOAuth2Flow.BadStateException, e:
         # Start the auth flow again.
-        return HttpResponseRedirect("http://www.mydomain.com/dropbox_auth_start")
+        return HttpResponseRedirect("/core//dropbox_auth_start")
     except dropbox.client.DropboxOAuth2Flow.CsrfException, e:
         return HttpResponseForbidden()
     except dropbox.client.DropboxOAuth2Flow.NotApprovedException, e:
