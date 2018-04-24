@@ -589,7 +589,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.29-dev")
+    arguments = docopt(__doc__, version="0.4.30-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -974,7 +974,7 @@ if __name__ == '__main__':
                     #    each_val = standard_b64encode(each_val)
                     ini_dict[each_key.upper()] = each_val
 
-            # pprint.pprint(ini_dict)
+            pprint.pprint(ini_dict)
 
             env = ini_dict
 
@@ -1003,9 +1003,11 @@ if __name__ == '__main__':
 
                 for cmd in cmd_list:
                     print "*** " + cmd
-                    base = kubectl(
-                        j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
-
+                    try:
+                        base = kubectl(
+                            j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
+                    except Exception, e:
+                        print e.stderr
                 time.sleep(5)
                 print kubectl(
                     "delete pods -l service=app --namespace=tumbo".split())
