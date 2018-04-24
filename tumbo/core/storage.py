@@ -27,7 +27,9 @@ class Storage(object):
 
         if hasattr(settings, "TUMBO_REPOSITORIES_PATH"):
             return LocalStorage
-        assert 0, "bad storage class creation: " + type
+        if len(getattr(settings, "DROPBOX_CONSUMER_KEY", "")) > 3:
+            return DropboxStorage
+        assert 0, "bad storage class creation: " + str(type)
 
 
 class BaseStorage(object):
