@@ -132,16 +132,6 @@ Following stuff is needed for login to one private repository as you would do wi
     DOCKER_LOGIN_EMAIL = "username@example.com"
     DOCKER_LOGIN_HOST= "https://tutum.co/v1/"
 
-or
-
-#### Rancher
-
-    TUMBO_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.rancher.RancherApiExecutor"
-    RANCHER_ACCESS_KEY="asdfasdf"
-    RANCHER_ACCESS_SECRET="asdfasdf"
-    RANCHER_ENVIRONMENT_ID="xnx"
-    RANCHER_URL="http://rancher.xy.xy:8080"
-
 ## Cache
 
 Configure a cache backend.
