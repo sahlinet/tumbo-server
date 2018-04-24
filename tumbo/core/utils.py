@@ -19,7 +19,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.test import RequestFactory
-from dropbox.rest import ErrorResponse
+from dropbox.exceptions import DropboxException
 from jose import jws
 from pyflakes import reporter as modReporter
 from pyflakes import checker
@@ -47,11 +47,11 @@ logger = logging.getLogger(__name__)
 class Connection(object):
 
     def __init__(self, dropbox_access_token):
-        self.client = dropbox.client.DropboxClient(dropbox_access_token)
+        self.client = dropbox.Dropbox(dropbox_access_token)
         super(Connection, self).__init__()
 
     def info(self):
-        account_info = self.client.account_info()
+        account_info = self.client.users_get_current_account()
         email = account_info['email']
         name = account_info['display_name']
         return email, name
@@ -96,10 +96,10 @@ class Connection(object):
         try:
             m = getattr(self.client, ms)
             return m(*args)
-        except ErrorResponse, e:
-            if e.__dict__['status'] == 401:
+        except DropboxException, e:
+            if e.__dict__['status_code'] == 401:
                 raise UnAuthorized(e.__dict__['body']['error'])
-            if e.__dict__['status'] == 404:
+            if e.__dict__['status_code'] == 404:
                 raise NotFound(e.__dict__['body']['error'])
             raise e
         except Exception, e:
