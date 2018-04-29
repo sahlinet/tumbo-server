@@ -1,6 +1,7 @@
 # Tumbo Server - Highly flexible Application Runtime Platform
 
 `develop` [![Circle  CI (master)](https://img.shields.io/circleci/project/github/sahlinet/tumbo-server/develop.svg)](https://circleci.com/gh/sahlinet/tumbo-server/tree/develop)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsahlinet%2Ftumbo-server.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsahlinet%2Ftumbo-server?ref=badge_shield)
 
 `master` [![Circle  CI (master)](https://img.shields.io/circleci/project/github/sahlinet/tumbo-server/master.svg)](https://circleci.com/gh/sahlinet/tumbo-server/tree/master)
 
@@ -137,3 +138,7 @@ a job runs and deletes transaction data older than
     CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a coverage run --append --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
 
 See also the configuration in `circle.yml` for a better understanding.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsahlinet%2Ftumbo-server.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsahlinet%2Ftumbo-server?ref=badge_large)
