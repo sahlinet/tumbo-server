@@ -26,7 +26,7 @@ class Command(BaseCommand):
                     help='Base name'),
     )
 
-    help = 'Import base'
+    help = 'Imports base from zip'
 
     def handle(self, *args, **options):
 
