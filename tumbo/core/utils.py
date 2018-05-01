@@ -13,6 +13,7 @@ import sys
 import time
 
 import dropbox
+import pytz
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -125,9 +126,12 @@ class Connection(object):
                         filepath = content['path']
                         try:
                             file = self.get_file(filepath)
-                            filepath_new = re.sub(r"(.*?)/(.+?)(\/.*)", r"\2", filepath)
-                            logger.debug("Add file '%s' as '%s' to zip" % (filepath, filepath_new))
-                            zf.writestr(os.path.relpath(filepath_new, "/"), file.read())
+                            filepath_new = re.sub(
+                                r"(.*?)/(.+?)(\/.*)", r"\2", filepath)
+                            logger.debug("Add file '%s' as '%s' to zip" %
+                                         (filepath, filepath_new))
+                            zf.writestr(os.path.relpath(
+                                filepath_new, "/"), file.read())
                             file.close()
                         except ErrorResponse, e:
                             logger.error(e)
@@ -146,7 +150,8 @@ def message(request, level, message):
         tag = "alert-info"
     elif level == logging.WARN:
         tag = "alert-info"
-    messages.error(request, dt + " " + str(message)[:1000], extra_tags="%s safe" % tag)
+    messages.error(request, dt + " " + str(message)
+                   [:1000], extra_tags="%s safe" % tag)
 
 
 def sign(data):
@@ -215,10 +220,12 @@ def load_setting(name, fail=True):
     setting = getattr(settings, name, None)
     if setting:
         v = setting
-        logger.debug("Loaded setting from settings %s with value: %s" % (name, v))
+        logger.debug(
+            "Loaded setting from settings %s with value: %s" % (name, v))
     elif default:
         v = default
-        logger.debug("Loaded setting from defaults %s with value: %s" % (name, v))
+        logger.debug(
+            "Loaded setting from defaults %s with value: %s" % (name, v))
     if not v and fail:
         logger.error("Could not load setting %s" % name)
         raise ImproperlyConfigured(name)
@@ -260,7 +267,8 @@ def call_apy(base_name, apy_name):
         from core.views import ExecView
         view = ExecView()
         response = view.get(request, base=apy.base.name, id=apy.id)
-        logger.info("method called for base %s, response_code: %s" % (apy.base.name, response.status_code))
+        logger.info("method called for base %s, response_code: %s" %
+                    (apy.base.name, response.status_code))
         logger.info("END call_apy %s" % apy.name)
     except Exception, e:
         logger.error("ERROR call_apy")
@@ -287,12 +295,13 @@ def profileit(func):
 
 def totimestamp(t):
     logger.debug("totimestamp: %s" % t)
-    return (t-datetime.datetime(1970, 1, 1)).total_seconds()
+    return (t-datetime.datetime(1970, 1, 1).replace(tzinfo=pytz.UTC)).total_seconds()
 
 
 def fromtimestamp(t):
     logger.debug("fromtimestamp: %s" % t)
     return datetime.datetime.fromtimestamp(t)
+
 
 def create_jwt(user, secret):
     """The above token need to be saved in database, and a one-to-one relation should exist with the username/user_pk."""
@@ -304,19 +313,23 @@ def create_jwt(user, secret):
     expiry_s = time.mktime(expiry.timetuple())
     if user.is_authenticated():
         internalid = user.authprofile.internalid
-        payload = {'username': user.username, 'expiry': expiry_s, 'type': "AuthenticatedUser", 'internalid': internalid, 'email': user.email}
+        payload = {'username': user.username, 'expiry': expiry_s,
+                   'type': "AuthenticatedUser", 'internalid': internalid, 'email': user.email}
         token = jws.sign(payload, secret, algorithm='HS256')
     else:
-        payload = {'expiry':expiry_s, 'type': "AnonymousUser", 'internalid': None, 'email': None}
+        payload = {'expiry': expiry_s, 'type': "AnonymousUser",
+                   'internalid': None, 'email': None}
         token = jws.sign(payload, secret, algorithm='HS256')
     logger.debug("Payload: %s" % payload)
     # logger.info("Token: %s" % token)
     return token
 
+
 def read_jwt(payload, secret):
     logger.debug("Read JWT with secret %s" % secret)
     logger.debug("Payload: %s" % payload)
-    decoded_dict = json.loads(jws.verify(payload, secret, algorithms=['HS256']))
+    decoded_dict = json.loads(jws.verify(
+        payload, secret, algorithms=['HS256']))
     logger.info("Identity: %s" % decoded_dict)
     # print decoded_dict
     # print type(decoded_dict)
