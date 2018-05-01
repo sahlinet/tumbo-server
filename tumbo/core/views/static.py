@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+import pytz
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import (HttpResponse, HttpResponseNotFound,
@@ -50,6 +51,9 @@ class StaticView(ResponseUnavailableViewMixing, View):
         base_obj = Base.objects.get(
             user__username=kwargs['username'], name=kwargs['base'])
 
+        if not base_obj.executor.is_running():
+            return HttpResponseNotFound()
+
         #response = self.verify(request, base_obj)
         # if response:
         #    return response
@@ -66,6 +70,8 @@ class StaticView(ResponseUnavailableViewMixing, View):
             return HttpResponseNotFound("Not found: %s" % static_path)
         except Exception, e:
             logger.error(e)
+            import traceback
+            traceback.print_exc()
             raise e
 
         # default
@@ -127,10 +133,12 @@ class StaticView(ResponseUnavailableViewMixing, View):
                 'HTTP_IF_MODIFIED_SINCE', None)
             if last_modified and if_modified_since:
                 if_modified_since_dt = datetime.strptime(
-                    if_modified_since, frmt)
+                    if_modified_since, frmt).replace(tzinfo=pytz.UTC)
                 last_modified = last_modified.replace(microsecond=0)
+                
                 logger.debug("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" %
                              (static_path, last_modified, if_modified_since_dt))
+                    
                 if last_modified <= if_modified_since_dt:
                     logger.info("%s: 304 (last_modified): %s" %
                                 (static_path, last_modified))
