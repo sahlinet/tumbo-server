@@ -14,7 +14,6 @@ djangorestframework==3.5.3
 django-rest-swagger==2.1.1
 django-solo==1.1.0
 docopt==0.6.2
-dropbox==8.8.1
 ecdsa==0.10
 #0
 -e git+https://github.com/docker/docker-py.git@aa19d7b6609c6676e8258f6b900dea2eda1dbe95#egg=docker_py-master

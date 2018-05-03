@@ -66,18 +66,6 @@ def setup_base(sender, *args, **kwargs):
         executor.save()
 
 
-@receiver(post_delete, sender=Base)
-def base_to_storage_on_delete(sender, *args, **kwargs):
-    instance = kwargs['instance']
-    try:
-        connection = Connection(instance.user.authprofile.dropbox_access_token)
-        gevent.spawn(connection.delete_file("%s/%s" %
-                                            (instance.user.username, instance.name)))
-    except Exception, e:
-        logger.error("error in base_to_storage_on_delete")
-        logger.exception(e)
-
-
 @receiver(post_delete, sender=Apy)
 def synchronize_to_storage_on_delete(sender, *args, **kwargs):
     instance = kwargs['instance']
@@ -99,7 +87,6 @@ def synchronize_to_storage_on_delete(sender, *args, **kwargs):
 @receiver(ready_to_sync, sender=Base)
 def initialize_on_storage(sender, *args, **kwargs):
     instance = kwargs['instance']
-    # TODO: If a user connects his dropbox after creating a base, it should be initialized anyway.
 
     logger.info("initialize_on_storage for Base '%s'" % instance.name)
     logger.info(kwargs)

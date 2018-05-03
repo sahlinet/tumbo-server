@@ -34,10 +34,6 @@ RABBITMQ_ADMIN_PASSWORD = "guest"
 RABBITMQ_HOST = "localhost"
 RABBITMQ_PORT = 5672
 
-DROPBOX_CONSUMER_KEY = os.environ['DROPBOX_CONSUMER_KEY']
-DROPBOX_CONSUMER_SECRET = os.environ['DROPBOX_CONSUMER_SECRET']
-DROPBOX_REDIRECT_URL = os.environ['DROPBOX_REDIRECT_URL']
-
 # Spawn
 TUMBO_WORKER_IMPLEMENTATION = "core.executors.worker_engines.spawnproc.SpawnExecutor"
 
@@ -57,7 +53,6 @@ WORKER_RABBITMQ_PORT = "5672"
 ALLOWED_HOSTS = "*"
 
 TUMBO_REPOSITORIES_PATH = home + "/workspace"
-TUMBO_DEV_STORAGE_DROPBOX_PATH = home + "/Dropbox/Apps/tumbo dev/"
 
 # docker run -d -p 65432:5432 -e SUPERUSER=true -e DB_NAME=store -e DB_USER=store -e PASSWORD=storepw --name postgresql philipsahli/postgresql-test
 TUMBO_PLUGINS_CONFIG = {

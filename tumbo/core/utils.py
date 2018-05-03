@@ -12,7 +12,6 @@ import StringIO
 import sys
 import time
 
-import dropbox
 import pytz
 from django.conf import settings
 from django.contrib import messages
@@ -20,7 +19,6 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.test import RequestFactory
-from dropbox.exceptions import DropboxException
 from jose import jws
 from pyflakes import reporter as modReporter
 from pyflakes import checker
@@ -43,103 +41,6 @@ class NoBasesFound(Exception):
 
 
 logger = logging.getLogger(__name__)
-
-
-class Connection(object):
-
-    def __init__(self, dropbox_access_token):
-        self.client = dropbox.Dropbox(dropbox_access_token)
-        super(Connection, self).__init__()
-
-    def info(self):
-        account_info = self.client.users_get_current_account()
-        email = account_info['email']
-        name = account_info['display_name']
-        return email, name
-
-    def listing(self):
-        bases = []
-        for base in self._call('metadata', '/')['contents']:
-            bases.append(base['path'].lstrip('/'))
-        if len(bases) == 0:
-            raise NoBasesFound()
-        return bases
-
-    def get_file(self, path):
-        logger.debug("get file %s" % path)
-        return self._call('get_file', path)
-
-    def get_file_content_and_rev(self, path):
-        file, metadata = self._call('get_file_and_metadata', path)
-        content = file.read()
-        file.close()
-        rev = metadata['rev']
-        return content, rev
-
-    def get_file_content(self, path):
-        logger.debug("return content %s" % path)
-        return self.get_file(path).read()
-
-    def put_file(self, path, content):
-        f = StringIO.StringIO(content)
-        return self._call('put_file', path, f, True)
-
-    def delete_file(self, path):
-        return self._call('file_delete', path)
-
-    def create_folder(self, path):
-        return self._call('file_create_folder', path)
-
-    def delta(self, cursor):
-        return self._call('delta', cursor)
-
-    def _call(self, ms, *args):
-        try:
-            m = getattr(self.client, ms)
-            return m(*args)
-        except DropboxException, e:
-            if e.__dict__['status_code'] == 401:
-                raise UnAuthorized(e.__dict__['body']['error'])
-            if e.__dict__['status_code'] == 404:
-                raise NotFound(e.__dict__['body']['error'])
-            raise e
-        except Exception, e:
-            raise e
-
-    def metadata(self, path):
-        return self._call('metadata', path)
-
-    def directory_zip(self, path, zf):
-
-        logger.info("download "+path)
-        try:
-            f_metadata = self.metadata(path)
-
-            if f_metadata['is_dir']:
-                for content in f_metadata['contents']:
-                    logger.info("download "+content['path'])
-
-                    if content['is_dir']:
-                        self.directory_zip(content['path'], zf)
-                    else:
-                        # get the file
-                        filepath = content['path']
-                        try:
-                            file = self.get_file(filepath)
-                            filepath_new = re.sub(
-                                r"(.*?)/(.+?)(\/.*)", r"\2", filepath)
-                            logger.debug("Add file '%s' as '%s' to zip" %
-                                         (filepath, filepath_new))
-                            zf.writestr(os.path.relpath(
-                                filepath_new, "/"), file.read())
-                            file.close()
-                        except ErrorResponse, e:
-                            logger.error(e)
-
-        except ErrorResponse, e:
-            logger.error(e)
-
-        return zf
 
 
 def message(request, level, message):

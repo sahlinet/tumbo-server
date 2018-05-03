@@ -37,18 +37,10 @@ items:
               value: "{{ HOST }}"
             - name: VHOST_1_SSL
               value: "False"
-            - name: VHOST_1_PROXYCONF_notify_plain
-              value: "True"
             - name: VHOST_1_PROXYCONF_all_proxy_pass
               value: "http://app:80"
             - name: VHOST_1_PROXYCONF_all_location
               value: "/"
-            - name: VHOST_1_PROXYCONF_notify_proxy_pass
-              value: "http://app:80"
-            - name: VHOST_1_PROXYCONF_notify_plain
-              value: "True"
-            - name: VHOST_1_PROXYCONF_notify_location
-              value: "/core/dropbox_notify/"
             image: philipsahli/nginx-rp:latest
             imagePullPolicy: ""
             name: rp

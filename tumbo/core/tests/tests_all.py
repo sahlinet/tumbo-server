@@ -298,8 +298,6 @@ class AppConfigGenerationTestCase(BaseTestCase):
 
 class ImportTestCase(BaseTestCase):
 
-    @patch("core.utils.Connection.metadata")
-    @patch("core.utils.Connection.get_file")
     def test_export_to_zip_testcase(self, mock_get_file, mock_metadata):
         mock_get_file.return_value = StringIO.StringIO("asdf")
         metadata = {u'hash': u'f9c342ee00e216e844d9a6c23980e19c', u'revision': 3330, u'bytes': 0,
@@ -331,10 +329,6 @@ class ImportTestCase(BaseTestCase):
             self.assertTrue(file in zf.namelist(), file)
         self.assertEqual(self.base1_apy1.module, zf.read(files[0]))
 
-    @patch("core.utils.Connection.metadata")
-    @patch("core.utils.Connection.get_file")
-    @patch("core.utils.Connection.delete_file")
-    @patch("core.utils.Connection.put_file")
     def test_import_from_zip_testcase(self, mock_put_file, mock_delete_file, mock_get_file, mock_metadata):
         mock_get_file.return_value = StringIO.StringIO("asdf")
         metadata = {u'hash': u'f9c342ee00e216e844d9a6c23980e19c', u'revision': 3330, u'bytes': 0,
