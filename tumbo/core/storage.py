@@ -7,6 +7,7 @@ import os
 import gevent
 from django.conf import settings
 
+from core.models import StaticFile
 from core.utils import Connection
 
 logger = logging.getLogger(__name__)
@@ -18,13 +19,15 @@ class Storage(object):
     """
 
     @staticmethod
-    def factory():
+    def factory(type=None):
         """class method to return class with implementation.
 
         Returns:
             [BaseStorage Subclass] -- Concret class.
         """
 
+        if type:
+            return DBStorage
         if hasattr(settings, "TUMBO_REPOSITORIES_PATH"):
             return LocalStorage
         if len(getattr(settings, "DROPBOX_CONSUMER_KEY", "")) > 3:
@@ -46,7 +49,6 @@ class BaseStorage(object):
         self.instance = instance
         #if isinstance(self.instance, Base):
         if "Base" in type(self.instance).__name__:
-            print self
 
             self.username = self.instance.user.username
             self.base_name = self.instance.name
@@ -74,7 +76,6 @@ class LocalStorage(BaseStorage):
                 os.makedirs(p)
 
     def _save(self, filename, content):
-        print os.path.exists(os.path.dirname(filename))
         if not os.path.exists(os.path.join(self.root, os.path.dirname(filename))):
             os.makedirs(os.path.join(self.root, os.path.dirname(filename)))
 
@@ -114,6 +115,43 @@ class LocalStorage(BaseStorage):
                     f.close()
         return zf
 
+class DBStorage(BaseStorage):
+    """Class for Dropbox Storage.
+    """
+
+    def __init__(self, instance):
+        super(DBStorage, self).__init__(instance)
+
+    def delete(self, filename):
+        staticfile_obj = StaticFile.objects.get(
+                base = self.instance,
+                name = filename,
+                storage = "DB"
+        )
+        staticfile_obj.delete()
+
+    def rename(self, filename_from, filename_to):
+        staticfile_obj = StaticFile.objects.get(
+                base = self.instance,
+                name = filename_from,
+                storage = "DB"
+        )
+        staticfile_obj.filename = filename_to
+        staticfile_obj.save()
+
+    def put(self, filename, content):
+        staticfile_obj, created = StaticFile.objects.get_or_create(
+                base = self.instance,
+                name = filename,
+                storage = "DB"
+        )
+        if not created:
+            # TODO: remove from cache
+            pass
+            
+        staticfile_obj.content = content
+        staticfile_obj.save()
+
 
 class DropboxStorage(BaseStorage):
     """Class for Dropbox Storage.
@@ -121,9 +159,6 @@ class DropboxStorage(BaseStorage):
 
     def __init__(self, instance):
         super(DropboxStorage, self).__init__(instance)
-
-        self.connection = Connection(
-            instance.base.user.authprofile.dropbox_access_token)
 
     def _save_config(self):
         gevent.spawn(self.connection.put_file("%s/%s/app.config" %

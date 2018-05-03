@@ -106,7 +106,9 @@
                   method: 'POST',
                   url: 'base/new',
                   data: $.param({
-                      "new_base_name": this.new_base_name
+                      "new_base_name": this.new_base_name,
+                      "new_base_source": this.new_base_source
+                      
                   }), // pass in data as strings
                   headers: {
                       "Content-Type": "application/x-www-form-urlencoded"

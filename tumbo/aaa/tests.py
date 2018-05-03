@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 
-from core.tests import BaseTestCase
+from core.tests.tests_all import BaseTestCase
 from core.utils import read_jwt
 
 User = get_user_model()

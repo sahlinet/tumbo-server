@@ -30,7 +30,7 @@ from core.communication import create_vhost, generate_vhost_configuration
 from core.executors.remote import (CONFIGURATION_EVENT, SETTINGS_EVENT,
                                    distribute)
 from core.plugins import PluginRegistry, call_plugin_func
-from core.storage import Storage
+#from core.storage import Storage
 from core.utils import Connection
 
 logger = logging.getLogger(__name__)
@@ -60,6 +60,12 @@ class AuthProfile(models.Model):
     def __unicode__(self):
         return self.user.username
 
+SOURCE_TYPES = (
+    ("FS", 'filesystem'),
+    ("DEPR", 'depredicated'),
+    ("GIT", 'git-repo')
+)
+
 
 class Base(models.Model):
     name = models.CharField(max_length=32)
@@ -76,6 +82,9 @@ class Base(models.Model):
     frontend_host = models.CharField(max_length=40,
                                      blank=True, null=True,
                                      default=None)
+    revision = models.CharField(max_length=4, blank=True, null=True)
+    source_type = models.CharField(max_length=3, choices=SOURCE_TYPES, default="DEPR")
+    source = models.CharField(max_length=100)
 
     class Meta:
         app_label = "core"
@@ -150,8 +159,8 @@ class Base(models.Model):
             zf.writestr("%s.py" % apy.name, apy.module.encode("utf-8"))
 
         # add static files
-        storage = Storage.factory()(self)
-        zf = storage.directory_zip("%s/static" % (self.name), zf)
+        #storage = Storage.factory()(self)
+        #zf = storage.directory_zip("%s/static" % (self.name), zf)
 
         # add config
         zf.writestr("app.config", self.config.encode("utf-8"))
@@ -680,6 +689,7 @@ class StaticFile(models.Model):
         ("FS", 'filesystem'),
         ("DR", 'dropbox'),
         ("MO", 'module'),
+        ("DB", 'database'),
     )
 
     base = models.ForeignKey(Base, related_name="staticfiles")
@@ -688,6 +698,7 @@ class StaticFile(models.Model):
     rev = models.CharField(max_length=32, blank=True, null=True)
     updated = models.DateTimeField(auto_now=True)
     accessed = models.DateTimeField(null=True)
+    content = models.BinaryField(max_length=300, blank=True, null=True)
 
     def __str__(self):
         return "%s://%s" % (self.get_storage_display(), self.name)

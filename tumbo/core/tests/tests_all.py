@@ -16,7 +16,6 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from core import signals
 from core.api_views import ApyViewSet
 from core.models import Apy, AuthProfile, Base, Executor, Setting, Transaction, ready_to_sync
-from core.utils import check_code
 from core.views import ResponseUnavailableViewMixing
 
 User = get_user_model()
@@ -31,7 +30,8 @@ class BaseTestCase(TransactionTestCase):
         post_save.disconnect(signals.initialize_on_storage, sender=Base)
 
         ready_to_sync.disconnect(signals.synchronize_to_storage, sender=Apy)
-        post_delete.disconnect(signals.synchronize_to_storage_on_delete, sender=Apy)
+        post_delete.disconnect(
+            signals.synchronize_to_storage_on_delete, sender=Apy)
 
         distribute_mock.return_value = True
 
@@ -79,9 +79,9 @@ class BaseTestCase(TransactionTestCase):
         setting.value = "setting2_value"
         setting.save()
 
-        #self.client1 = Client(enforce_csrf_checks=True)  # logged in with objects
-        #self.client2 = Client(enforce_csrf_checks=True)  # logged in without objects
-        #self.client3 = Client(enforce_csrf_checks=True)  # not logged in
+        # self.client1 = Client(enforce_csrf_checks=True)  # logged in with objects
+        # self.client2 = Client(enforce_csrf_checks=True)  # logged in without objects
+        # self.client3 = Client(enforce_csrf_checks=True)  # not logged in
 
         self.client1 = Client()  # logged in with objects
         self.client2 = Client()  # logged in without objects
@@ -92,74 +92,6 @@ class BaseTestCase(TransactionTestCase):
         my_admin = User.objects.create_superuser(
             'myuser', 'myemail@test.com', self.admin_pw)
 
-
-class BaseObjectTestCase(BaseTestCase):
-
-    def test_base_duplicates_not_possible(self):
-        # self.base1_duplicate = #Base.objects.create(name=self.base1.name,
-        #                    user=self.user1)
-        #
-        self.assertRaises(IntegrityError, Base.objects.create,
-                          name=self.base1.name, user=self.user1)
-
-
-class ApiTestCase(BaseTestCase):
-
-    def test_base_get_403_when_not_logged_in(self):
-        response = self.client3.get(reverse('base-list'))
-        self.assertEqual(401, response.status_code)
-
-    def test_base_empty_response_without_objects(self):
-        self.client2.login(username='user2', password='pass')
-        response = self.client2.get(reverse('base-list'))
-        self.assertEqual(200, response.status_code)
-        self.assertJSONEqual(response.content, [])
-
-    def test_base_response_base_list(self):
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.get(reverse('base-list'))
-        self.assertEqual(200, response.status_code)
-        assert json.loads(response.content)
-
-    def _api(self, url, view, user, params):
-        factory = APIRequestFactory()
-        request = factory.get(url)
-        force_authenticate(request, user=user)
-        response = view(request, **{"base_name": self.base1.name})
-        response.render()
-        return response
-
-    def test_get_all_apys_for_base(self):
-        user = User.objects.get(username='user1')
-        view = ApyViewSet.as_view({'get': 'list'})
-        url = reverse('apy-list', kwargs={'base_name': self.base1.name})
-        params = {"base_name": self.base1.name}
-
-        response = self._api(url, view, user, params)
-
-        self.assertEqual(200, response.status_code)
-        assert json.loads(response.content)
-
-    def test_get_one_apy_for_base(self):
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.get(
-            "/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name))
-        self.assertEqual(200, response.status_code)
-        self.assertTrue(json.loads(response.content).has_key('name'))
-        self.assertTrue(json.loads(response.content).has_key('module'))
-
-    @patch("core.models.distribute")
-    def test_clone_apy_for_base_and_delete(self, distribute_mock):
-        distribute_mock.return_value = True
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.post(
-            "/core/api/base/%s/apy/%s/clone/" % (self.base1.name, self.base1_apy1.name))
-        self.assertEqual(200, response.status_code)
-        assert json.loads(response.content)
-
-        response = self.client1.delete(
-            "/core/api/base/%s/apy/%s/" % (self.base1.name, json.loads(response.content)['name']))
-        self.assertEqual(204, response.status_code)
 
 
 class BaseExecutorStateTestCase(BaseTestCase):
@@ -364,14 +296,6 @@ class AppConfigGenerationTestCase(BaseTestCase):
         #self.assertTrue("setting1_key" in self.base1.config)
 
 
-# class StaticfileTestCae(BaseTestCase):
-#
-#    @patch("core.staticfiles..metadata")
-#    @patch("core.utils.Connection.get_file")
-#    def test_dev_repo_found(self, mock_get_file, mock_metadata):
-#        mock_get_file.return_value = StringIO.StringIO("asdf")
-
-
 class ImportTestCase(BaseTestCase):
 
     @patch("core.utils.Connection.metadata")
@@ -462,67 +386,3 @@ class ImportTestCase(BaseTestCase):
 
         tf.close()
         os.remove(tempfile_name)
-
-
-class SyntaxCheckerTestCase(BaseTestCase):
-
-    # def setUp(self):
-
-    @patch("core.models.distribute")
-    def setUp(self, distribute_mock):
-        super(SyntaxCheckerTestCase, self).setUp()
-
-    def test_module_syntax_ok(self):
-        self.assertEqual((True, [], []), check_code(
-            self.base1_apy1.module, self.base1_apy1.name))
-
-    def test_module_unused_import(self):
-        # unused import
-        self.base1_apy1.module = "import asdf"
-        ok, warnings, errors = check_code(
-            self.base1_apy1.module, self.base1_apy1.name)
-        self.assertFalse(ok)
-        self.assertEqual(UnusedImport, warnings[0].__class__)
-
-    def test_module_intendation_error(self):
-        # intendation error
-        self.base1_apy1.module = """
-        def func(self):
-    print "a"
-import asdf
-    print "b"
-        """
-        ok, warnings, errors = check_code(
-            self.base1_apy1.module, self.base1_apy1.name)
-        self.assertFalse(ok)
-        self.assertEqual(Message, errors[0].__class__)
-
-    def test_save_invalid_module(self):
-        self.base1_apy1.module = "import asdf, blublub"
-
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
-                                      data=json.dumps({'name': self.base1_apy1.module, 'module': self.base1_apy1.module}), content_type='application/json'
-                                      )
-        self.assertEqual(500, response.status_code)
-        self.assertTrue(len(json.loads(response.content)['warnings']) > 0)
-
-    def test_save_valid_module(self):
-        self.base1_apy1.module = """import django
-print django"""
-
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
-                                      data=json.dumps({'name': self.base1_apy1.name, 'module': self.base1_apy1.module}), content_type='application/json'
-                                      )
-        self.assertEqual(200, response.status_code)
-
-    def test_save_unparsebla_module(self):
-        self.base1_apy1.module = "def blu()"
-
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
-                                      data=json.dumps({'name': self.base1_apy1.module, 'module': self.base1_apy1.module}), content_type='application/json'
-                                      )
-        self.assertEqual(500, response.status_code)
-        self.assertTrue(len(json.loads(response.content)['errors']) > 0)

@@ -102,8 +102,12 @@ class StaticfileFactory(LoadMixin):
         else:
             logger.debug("%s: not in cache" % self.static_path)
 
-            storages = [DevRepoStaticfile,
-                        DevStorageDropboxStaticfile, WorkerModuleStaticfile]
+            storages = [
+                # DevRepoStaticfile,
+                DevStorageDropboxStaticfile,
+                DBStaticfile,
+                WorkerModuleStaticfile
+            ]
             if len(getattr(settings, "DROPBOX_CONSUMER_KEY", "")) > 3:
                 storages.append(DropboxStaticfile)
             else:
@@ -240,6 +244,30 @@ class DevStorageDropboxStaticfile(StaticfileFactory):
 
         except IOError, e:
             logger.error(e)
+            raise NotFound()
+
+
+class DBStaticfile(StaticfileFactory):
+
+    def _load(self):
+        try:
+            obj = StaticFile.objects.get(
+                base=self.base_obj, name=self.static_path, storage="DB")
+
+            logger.debug("%s: load from database" %
+                         self.static_path)
+            last_modified = obj.updated
+
+            obj.accessed = self.now
+            obj.save()
+
+            import pytz
+            obj.last_modified = last_modified.replace(tzinfo=pytz.UTC)
+
+            return obj
+
+        except IOError, e:
+            logger.warn(e)
             raise NotFound()
 
 

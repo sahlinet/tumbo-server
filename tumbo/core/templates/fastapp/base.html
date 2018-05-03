@@ -223,7 +223,7 @@
                             <div class="input-group">
                                 <input type="text" class="form-control" ng-model="new_exec_name">
                                 <span class="input-group-btn">
-                                    <button class="btn btn-default" type="button" ng-click="create()">
+                                    <button  class="btn btn-default" type="button" ng-click="create()">
                                         <span class="glyphicon glyphicon-save"></span> Save</button>
                                 </span>
                             </div>
@@ -240,16 +240,16 @@
                         {{ apy.description }}
                     </p>
                     <div>
-                        <button id="edit_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="showApyEditor = !showApyEditor">
+                        <button ng-disabled="base.source == 'GIT'" id="edit_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="showApyEditor = !showApyEditor">
                             <span class="glyphicon glyphicon-edit"></span> Edit</button>
 
-                        <button id="delete_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="delete(apy)">
+                        <button ng-disabled="base.source == 'GIT'" id="delete_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="delete(apy)">
                             <span class="glyphicon glyphicon-remove"></span> Delete</button>
 
-                        <button type="button" class="btn btn-default btn-xs" ng-click="save(apy)">
+                        <button ng-disabled="base.source == 'GIT'" type="button" class="btn btn-default btn-xs" ng-click="save(apy)">
                             <span class="glyphicon glyphicon-save"></span> Save</button>
 
-                        <button id="clone_exec_{{ apy.name }}" class="btn btn-default btn-xs" ng-click="clone(apy)">
+                        <button ng-disabled="base.source == 'GIT'" id="clone_exec_{{ apy.name }}" class="btn btn-default btn-xs" ng-click="clone(apy)">
                             <span class="glyphicon glyphicon-chevron-down"></span> Clone</button>
 
                         <button id="exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="executeNewWindow(apy)">
@@ -258,7 +258,7 @@
                         <!--<button id="exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="printcurl(apy)">
                             <span class="glyphicon glyphicon-fire"></span> Curl command</button> -->
 
-                        <button id="rename_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="show = !show">
+                        <button ng-disabled="base.source == 'GIT'" id="rename_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="show = !show">
                             <span class="glyphicon glyphicon-pencil"></span> Rename</button>
 
                     </div>

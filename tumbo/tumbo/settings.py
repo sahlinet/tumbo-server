@@ -180,6 +180,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'core.views.static': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
         'core.loader': {
             'handlers': ['console'],
             'level': 'INFO',
