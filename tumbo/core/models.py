@@ -30,8 +30,6 @@ from core.communication import create_vhost, generate_vhost_configuration
 from core.executors.remote import (CONFIGURATION_EVENT, SETTINGS_EVENT,
                                    distribute)
 from core.plugins import PluginRegistry, call_plugin_func
-#from core.storage import Storage
-from core.utils import Connection
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +44,7 @@ MODULE_DEFAULT_CONTENT = """def func(self):\n    pass"""
 class AuthProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, related_name="authprofile")
-    dropbox_access_token = models.CharField(
-        max_length=72, help_text="Access token for dropbox-auth")
     internalid = RandomCharField(length=12, include_alpha=False)
-    dropbox_userid = models.CharField(max_length=32,
-                                      help_text="Userid on dropbox",
-                                      default=None, null=True)
 
     class Meta:
         app_label = "core"
@@ -141,12 +134,6 @@ class Base(models.Model):
                 }
         config.write(config_string)
         return config_string.getvalue()
-
-    def refresh(self):
-        connection = Connection(self.user.authprofile.dropbox_access_token)
-        template_name = "%s/index.html" % self.name
-        template_content = connection.get_file_content(template_name)
-        self.content = template_content
 
     def export(self):
         # create in-memory zipfile

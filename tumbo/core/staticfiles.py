@@ -3,7 +3,6 @@ import sys
 import base64
 import logging
 import json
-import dropbox
 
 from datetime import datetime
 
@@ -108,10 +107,6 @@ class StaticfileFactory(LoadMixin):
                 DBStaticfile,
                 WorkerModuleStaticfile
             ]
-            if len(getattr(settings, "DROPBOX_CONSUMER_KEY", "")) > 3:
-                storages.append(DropboxStaticfile)
-            else:
-                logger.debug("DropboxStaticFile not activated")
             file_obj = None
             for storage in storages:
                 file_obj = storage(
@@ -211,42 +206,6 @@ class DevRepoStaticfile(StaticfileFactory):
                 raise NotFound()
 
 
-class DevStorageDropboxStaticfile(StaticfileFactory):
-
-    def _load(self):
-
-        DEV_STORAGE_DROPBOX_PATH = getattr(
-            settings, "TUMBO_DEV_STORAGE_DROPBOX_PATH", None)
-        if not DEV_STORAGE_DROPBOX_PATH:
-            raise NotFound()
-        filepath = os.path.join(DEV_STORAGE_DROPBOX_PATH, self.static_path)
-        try:
-            file = open(filepath, 'r')
-            size = os.path.getsize(filepath)
-            logger.debug("%s: load from local filesystem (dropbox app) (%s) (%s)" % (
-                self.static_path, filepath, size))
-            last_modified = datetime.fromtimestamp(os.stat(filepath).st_mtime)
-
-            obj, created = StaticFile.objects.get_or_create(
-                base=self.base_obj, name=self.static_path, storage="FS")
-            if created or obj.rev != os.stat(filepath).st_mtime:
-                obj.rev = os.stat(filepath).st_mtime
-                obj.accessed = self.now
-                obj.save()
-            file_obj = StorageStaticFile(username=self.username,
-                                         project=self.project_name,
-                                         name=self.static_name,
-                                         content=file,
-                                         last_modified=last_modified,
-                                         storage=self.__class__.__name__,
-                                         cached=True)
-            return file_obj
-
-        except IOError, e:
-            logger.error(e)
-            raise NotFound()
-
-
 class DBStaticfile(StaticfileFactory):
 
     def _load(self):
@@ -320,49 +279,6 @@ class WorkerModuleStaticfile(StaticfileFactory):
                                              storage=self.__class__.__name__,
                                              cached=True)
                 return file_obj
-
-        except Exception, e:
-            logger.error(e)
-            raise NotFound()
-
-
-class DropboxStaticfile(StaticfileFactory):
-
-    def _load(self):
-
-        try:
-
-            logger.debug("%s: try to load from dropbox" % self.static_path)
-            # get file from dropbox
-            auth_token = self.base_obj.user.authprofile.dropbox_access_token
-            client = dropbox.client.DropboxClient(auth_token)
-
-            dropbox_path = os.path.join(
-                self.base_obj.user.username, self.static_path)
-            file, metadata = client.get_file_and_metadata(dropbox_path)
-            file = file.read()
-
-            # "modified": "Tue, 19 Jul 2011 21:55:38 +0000",
-            dropbox_frmt = "%a, %d %b %Y %H:%M:%S +0000"
-            last_modified = datetime.strptime(
-                metadata['modified'], dropbox_frmt)
-            logger.debug("%s: file loaded from dropbox (lm: %s)" %
-                         (dropbox_path, last_modified))
-
-            obj, created = StaticFile.objects.get_or_create(
-                base=self.base_obj, name=self.static_path, storage="DR")
-            if created or obj.rev != metadata['modified']:
-                obj.rev = metadata['modified']
-                obj.accessed = self.now
-                obj.save()
-            file_obj = StorageStaticFile(username=self.username,
-                                         project=self.project_name,
-                                         name=self.static_name,
-                                         content=file,
-                                         last_modified=last_modified,
-                                         storage=self.__class__.__name__,
-                                         cached=True)
-            return file_obj
 
         except Exception, e:
             logger.error(e)

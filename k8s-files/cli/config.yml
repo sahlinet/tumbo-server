@@ -5,9 +5,6 @@ metadata:
   namespace: tumbo
 data:
   log_level: INFO
-  DROPBOX_CONSUMER_KEY: "{{ DROPBOX_CONSUMER_KEY }}"
-  DROPBOX_CONSUMER_SECRET: "{{ DROPBOX_CONSUMER_SECRET }}"
-  DROPBOX_REDIRECT_URL: "{{ DROPBOX_REDIRECT_URL }}"
   DB_HOST: db
   DB_NAME: planet
   DB_PORT: '5432'

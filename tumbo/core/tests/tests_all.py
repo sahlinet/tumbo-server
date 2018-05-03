@@ -9,9 +9,9 @@ from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.db.models.signals import post_delete, post_save
 from django.test import Client, TransactionTestCase
-from mock import patch
 from pyflakes.messages import Message, UnusedImport
 from rest_framework.test import APIRequestFactory, force_authenticate
+from mock import patch
 
 from core import signals
 from core.api_views import ApyViewSet
@@ -298,20 +298,7 @@ class AppConfigGenerationTestCase(BaseTestCase):
 
 class ImportTestCase(BaseTestCase):
 
-    @patch("core.utils.Connection.metadata")
-    @patch("core.utils.Connection.get_file")
-    def test_export_to_zip_testcase(self, mock_get_file, mock_metadata):
-        mock_get_file.return_value = StringIO.StringIO("asdf")
-        metadata = {u'hash': u'f9c342ee00e216e844d9a6c23980e19c', u'revision': 3330, u'bytes': 0,
-                    u'thumb_exists': False,
-                    u'rev': u'd0226669b01',
-                    u'modified': u'Mon, 18 Aug 2014 16:46:50 +0000',
-                    u'path': u'/base1/static',
-                    u'is_dir': True, u'size': u'0 bytes',
-                    u'root': u'app_folder',
-                    u'contents': [{u'revision': 3331, u'bytes': 70, u'thumb_exists': False, u'rev': u'd0326669b01', u'modified': u'Mon, 18 Aug 2014 16:46:50 +0000', u'mime_type': u'text/html', u'path': u'/admin/base1/static/index.html', u'is_dir': False, u'size': u'70 bytes', u'root': 'app_folder', u'client_mtime': u'Mon, 18 Aug 2014 16:42:47 +0000', u'icon': u'page_whitecode'}], u'icon': u'folder'}
-        mock_metadata.return_value = metadata
-
+    def test_export_to_zip_testcase(self):
         self.client1.login(username='user1', password='pass')
         response = self.client1.get(
             "/core/api/base/%s/export/" % self.base1.name)
@@ -331,22 +318,7 @@ class ImportTestCase(BaseTestCase):
             self.assertTrue(file in zf.namelist(), file)
         self.assertEqual(self.base1_apy1.module, zf.read(files[0]))
 
-    @patch("core.utils.Connection.metadata")
-    @patch("core.utils.Connection.get_file")
-    @patch("core.utils.Connection.delete_file")
-    @patch("core.utils.Connection.put_file")
-    def test_import_from_zip_testcase(self, mock_put_file, mock_delete_file, mock_get_file, mock_metadata):
-        mock_get_file.return_value = StringIO.StringIO("asdf")
-        metadata = {u'hash': u'f9c342ee00e216e844d9a6c23980e19c', u'revision': 3330, u'bytes': 0,
-                    u'thumb_exists': False,
-                    u'rev': u'd0226669b01',
-                    u'modified': u'Mon, 18 Aug 2014 16:46:50 +0000',
-                    u'path': u'/base1/static',
-                    u'is_dir': True, u'size': u'0 bytes',
-                    u'root': u'app_folder',
-                    u'contents': [{u'revision': 3331, u'bytes': 70, u'thumb_exists': False, u'rev': u'd0326669b01', u'modified': u'Mon, 18 Aug 2014 16:46:50 +0000', u'mime_type': u'text/html', u'path': u'/base1/static/index.html', u'is_dir': False, u'size': u'70 bytes', u'root': 'app_folder', u'client_mtime': u'Mon, 18 Aug 2014 16:42:47 +0000', u'icon': u'page_whitecode'}], u'icon': u'folder'}
-        mock_metadata.return_value = metadata
-
+    def test_import_from_zip_testcase(self):
         # export
         zf = self.base1.export()
         # save to temp to omit name attribute error on stringio file
@@ -360,9 +332,6 @@ class ImportTestCase(BaseTestCase):
         self.base1.delete()
 
         # import
-        mock_put_file.return_value = True
-        mock_delete_file.return_value = True
-
         self.client1.login(username='user1', password='pass')
         new_base_name = self.base1.name + "-new"
 
@@ -372,7 +341,6 @@ class ImportTestCase(BaseTestCase):
         self.assertEqual(201, response.status_code)
         responsed_name = json.loads(response.content)['name']
         self.assertEqual(responsed_name, new_base_name)
-        #self.assertTrue(mock_put_file.call_count > 0)
 
         # check if setting is saved
         self.assertEqual(1,

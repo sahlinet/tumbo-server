@@ -8,7 +8,6 @@ import gevent
 from django.conf import settings
 
 from core.models import StaticFile
-from core.utils import Connection
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +29,6 @@ class Storage(object):
             return DBStorage
         if hasattr(settings, "TUMBO_REPOSITORIES_PATH"):
             return LocalStorage
-        if len(getattr(settings, "DROPBOX_CONSUMER_KEY", "")) > 3:
-            return DropboxStorage
         assert 0, "bad storage class creation: " + str(type)
 
 

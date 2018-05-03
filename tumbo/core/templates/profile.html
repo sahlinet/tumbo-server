@@ -35,20 +35,6 @@
 					<img class="img-circle" src="{% gravatar_url user.email 150 %}"/>
 				</div>
 			</div>
-			<h2>Linked Apps</h2>
-			<div class="row">
-				<div class="col-md-2">
-					<p>Dropbox</p>
-				</div>
-				<div class="col-md-2">
-					{% if user.authprofile.dropbox_access_token %}
-						<code>linked</code>
-						<a href="/core/dropbox_auth_disconnect/">unlink app</a>
-					{% else %}
-						<a href="/core/dropbox_auth_start/">authorize now</a>
-					{% endif %}
-				</div>
-			</div>
 			<h2>Password</h2>
 
             <form id="change_password" action="{% url 'change_password' %}">

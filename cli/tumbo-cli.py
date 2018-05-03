@@ -738,10 +738,7 @@ if __name__ == '__main__':
                 print "Starting Development Server"
                 env = {}
                 env.update(os.environ)
-                env.update({'PYTHONPATH': "fastapp",
-                            'DROPBOX_CONSUMER_KEY': os.environ['DROPBOX_CONSUMER_KEY'],
-                            'DROPBOX_CONSUMER_SECRET': os.environ['DROPBOX_CONSUMER_SECRET'],
-                            'DROPBOX_REDIRECT_URL': os.environ['DROPBOX_REDIRECT_URL'],
+                env.update({'PYTHONPATH': "fastapp"
                             })
                 PROPAGATE_VARIABLES = os.environ.get(
                     "PROPAGATE_VARIABLES", None)
@@ -1037,7 +1034,7 @@ if __name__ == '__main__':
                     for cmd in cmd_list:
                         try:
                             base = kubectl(
-                                    j2(cmd, _env=env), "delete -f - ".split(), _out=STDOUT, _err=STDERR)
+                                j2(cmd, _env=env), "delete -f - ".split(), _out=STDOUT, _err=STDERR)
                         except Exception, e:
                             pass
 

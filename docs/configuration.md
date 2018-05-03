@@ -168,21 +168,6 @@ Following credentials are used for heartbeating between workers and server.
 
 Specify on the server the setting `WORKER_RABBITMQ_HOST` and `WORKER_RABBITMQ_PORT` on how the worker can connect to RabbitMQ.
 
-### Dropbox Storage
-
-Create a Dropbox App and enter the key and secret.
-
-    # django-fastapp
-    DROPBOX_CONSUMER_KEY = "xxxxxx"
-    DROPBOX_CONSUMER_SECRET = "xxxxxx"
-    DROPBOX_REDIRECT_URL = "http://localhost:8000"
-
-Development only (runserver) for loading static files, root path used for loading static files:
-
-    TUMBO_REPOSITORIES_PATH = "/Users/fatrix/Dropbox/Repositories"
-    TUMBO_DEV_STORAGE_DROPBOX_PATH="/Users/fatrix/Dropbox/Apps/planet dev"
-
-
 # Running
 
     python manage.py runserver

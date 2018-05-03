@@ -30,7 +30,7 @@ Start Redis
 
     redis-server &
 
-    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes --autostart
+    CI=yes tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes --autostart
 
 Then login on http://localhost:8000/ with the following credentials: 
 
