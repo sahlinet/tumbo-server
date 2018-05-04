@@ -95,10 +95,6 @@ class Base(models.Model):
             urllib.quote(self.uuid))
 
     @property
-    def auth_token(self):
-        return self.user.authprofile.dropbox_access_token
-
-    @property
     def config(self):
         config_string = StringIO.StringIO()
         config = ConfigObj()
@@ -674,7 +670,6 @@ class StaticFile(models.Model):
 
     STORAGE = (
         ("FS", 'filesystem'),
-        ("DR", 'dropbox'),
         ("MO", 'module'),
         ("DB", 'database'),
     )

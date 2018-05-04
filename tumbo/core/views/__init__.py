@@ -1,6 +1,5 @@
 import logging
 import json
-import dropbox
 import time
 import copy
 import threading
@@ -28,7 +27,6 @@ from django.core.cache import cache
 
 
 from core.api_serializers import BaseSerializer
-from dropbox.rest import ErrorResponse
 
 from core.utils import UnAuthorized, NoBasesFound, message, create_jwt
 from core.communication import generate_vhost_configuration
@@ -86,12 +84,6 @@ class ResponseUnavailableViewMixing():
         else:
             return None
 
-
-class Mixin(object):
-
-    def connection(self, request):
-        logger.debug("Creating connection for %s" % request.user)
-        return Connection(request.user.authprofile.dropbox_access_token)
 
 
 class ExecView(View, ResponseUnavailableViewMixing, Mixin):
@@ -513,11 +505,6 @@ class BaseSaveView(View):
 
 class BaseView(TemplateView, ContextMixin):
 
-    def _refresh_single_base(self, base):
-        base = Base.objects.get(name=base)
-        base.refresh()
-        base.save()
-
     def get(self, request, *args, **kwargs):
         rs = None
         context = RequestContext(request)
@@ -528,13 +515,7 @@ class BaseView(TemplateView, ContextMixin):
                 return SharedView.as_view()(request, *args, **kwargs)
 
         try:
-            # refresh bases from dropbox
-            refresh = "refresh" in request.GET
-
             base = kwargs.get('base')
-
-            if refresh and base:
-                self._refresh_single_base(base)
 
             base_model = None
             if base:
@@ -575,9 +556,6 @@ class BaseView(TemplateView, ContextMixin):
                     messages.error(request, "Template %s not found" %
                                    template_name, extra_tags="alert-danger")
 
-        # error handling
-        except (UnAuthorized, AuthProfile.DoesNotExist), e:
-            return HttpResponseRedirect("/core/dropbox_auth_start")
         except NoBasesFound, e:
             message(request, logging.WARNING, "No bases found")
 
@@ -602,52 +580,6 @@ class View(TemplateView):
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super(View, self).dispatch(*args, **kwargs)
-
-def get_dropbox_auth_flow(web_app_session):
-    redirect_uri = "%s/core/dropbox_auth_finish" % settings.DROPBOX_REDIRECT_URL
-    dropbox_consumer_key = settings.DROPBOX_CONSUMER_KEY
-    dropbox_consumer_secret = settings.DROPBOX_CONSUMER_SECRET
-    return dropbox.client.DropboxOAuth2Flow(dropbox_consumer_key, dropbox_consumer_secret, redirect_uri, web_app_session, "dropbox-auth-csrf-token")
-
-
-# URL handler for /dropbox-auth-start
-def dropbox_auth_start(request):
-    authorize_url = get_dropbox_auth_flow(request.session).start()
-    return HttpResponseRedirect(authorize_url)
-
-
-# URL handler for /dropbox-auth-finish
-def dropbox_auth_finish(request):
-    try:
-        dropbox_access_token, user_id, _ = get_dropbox_auth_flow(
-            request.session).finish(request.GET)
-        auth, _ = AuthProfile.objects.get_or_create(user=request.user)
-        # store dropbox_access_token
-        auth.dropbox_access_token = dropbox_access_token
-        auth.dropbox_userid = user_id
-        auth.user = request.user
-        auth.save()
-
-        return HttpResponseRedirect("/core/profile/")
-    except dropbox.client.DropboxOAuth2Flow.BadRequestException, e:
-        return HttpResponseBadRequest(e)
-    except dropbox.client.DropboxOAuth2Flow.BadStateException, e:
-        # Start the auth flow again.
-        return HttpResponseRedirect("/core//dropbox_auth_start")
-    except dropbox.client.DropboxOAuth2Flow.CsrfException, e:
-        return HttpResponseForbidden()
-    except dropbox.client.DropboxOAuth2Flow.NotApprovedException, e:
-        raise e
-    except dropbox.client.DropboxOAuth2Flow.ProviderException, e:
-        raise e
-
-# URL handler for /dropbox-auth-start
-
-
-def dropbox_auth_disconnect(request):
-    request.user.authprofile.dropbox_access_token = ""
-    request.user.authprofile.save()
-    return HttpResponseRedirect("/profile/")
 
 
 def process_file(path, metadata, client, user):
@@ -781,64 +713,6 @@ def process_file(path, metadata, client, user):
         logger.error("Exception handling path %s" % path)
         logger.exception(e)
 
-
-def process_user(uid):
-    auth_profile = AuthProfile.objects.filter(dropbox_userid=uid)[0]
-    token = auth_profile.dropbox_access_token
-    user = auth_profile.user
-    logger.info("START process user '%s'" % user)
-    logger.debug("Process change notfication for user: %s" % user.username)
-    cursor = cache.get("cursor-%s" % uid)
-
-    client = Connection(token)
-
-    has_more = True
-    while has_more:
-        result = client.delta(cursor)
-
-        pool = ThreadPool(1)
-        for path, metadata in result['entries']:
-            logger.info("Add task for %s to pool" % path)
-            pool.add_task(process_file, path, metadata, client, user)
-            logger.debug("Waiting for completion ... %s" % path)
-        pool.wait_completion()
-        logger.debug("Tasks completed.")
-
-        # Update cursor
-        cursor = result['cursor']
-        cursor = cache.set("cursor-%s" % uid, cursor)
-
-        # Repeat only if there's more to do
-        has_more = result['has_more']
-
-    logger.info("END process user '%s'" % user)
-
-
-class DropboxNotifyView(View):
-
-    def get(self, request):
-        try:
-            challenge = request.GET['challenge']
-        except:
-            logger.warn("DropboxNotifyView called without challenge")
-            return HttpResponseNotFound("Not Found")
-        return HttpResponse(challenge)
-
-    def post(self, request):
-        logger.info("DropboxNotifyView is called")
-
-        # get delta for user
-        for uid in json.loads(request.body)['delta']['users']:
-            logger.debug("Start thread for handling delta for user '%s'" % uid)
-            thread = threading.Thread(target=process_user, args=(uid,))
-            thread.daemon = True
-            thread.start()
-
-        return HttpResponse()
-
-    @csrf_exempt
-    def dispatch(self, *args, **kwargs):
-        return super(DropboxNotifyView, self).dispatch(*args, **kwargs)
 
 
 @csrf_exempt

@@ -148,38 +148,3 @@ class DBStorage(BaseStorage):
             
         staticfile_obj.content = content
         staticfile_obj.save()
-
-
-class DropboxStorage(BaseStorage):
-    """Class for Dropbox Storage.
-    """
-
-    def __init__(self, instance):
-        super(DropboxStorage, self).__init__(instance)
-
-        self.connection = Connection(
-            self.base.user.authprofile.dropbox_access_token)
-
-    def _save_config(self):
-        gevent.spawn(self.connection.put_file("%s/%s/app.config" %
-                                              (self.username, self.base_name), self.config))
-
-    def delete(self, filename):
-        gevent.spawn(self.connection.delete_file(filename %
-                                                 (self.base_name, self.instance_name)))
-        self._save_config()
-
-    def put(self, filename, content):
-        result = self.connection.put_file(filename % (
-            self.base_name, self.instance_name), content)
-        self._save_config()
-        return result
-
-    def create_folder(self):
-        self.connection.create_folder(
-            "%s/%s" % (self.username, self.instance_name))
-        self._save_config()
-
-    def directory_zip(self, path, zf):
-        self.connection.directory_zip(self.username + "/" + path, zf)
-        return zf

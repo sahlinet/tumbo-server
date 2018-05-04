@@ -5,7 +5,6 @@ import base64
 
 from django.template import TemplateDoesNotExist
 from django.template.loaders.base import Loader
-from core.utils import Connection
 
 from django.conf import settings
 
