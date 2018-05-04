@@ -16,7 +16,7 @@ class GitImportTestCase(BaseTestCase):
         name = "tumbo-demoapp"
         branch = "test-branch"
         # repo_url = "git@github.com:sahlinet/tumbo-demoapp.git"
-        repo_url = "https://github.com/sahlinet/tumbo-demoapp.git"
+        repo_url = "https://:@github.com/sahlinet/tumbo-demoapp.git/"
 
         result = git().import_base(username, name, branch, repo_url, repo_ref=True)
         assert result[0] is not None
