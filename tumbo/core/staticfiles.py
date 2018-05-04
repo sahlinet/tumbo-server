@@ -103,7 +103,6 @@ class StaticfileFactory(LoadMixin):
 
             storages = [
                 # DevRepoStaticfile,
-                DevStorageDropboxStaticfile,
                 DBStaticfile,
                 WorkerModuleStaticfile
             ]
@@ -167,7 +166,7 @@ class DevRepoStaticfile(StaticfileFactory):
 
         REPOSITORIES_PATH = getattr(settings, "TUMBO_REPOSITORIES_PATH", None)
         if "runserver" in sys.argv and REPOSITORIES_PATH:
-            # for debugging with local runserver not loading from repository or dropbox directory
+            # for debugging with local runserver not loading from repository
             # but from local filesystem
             try:
                 filepath = os.path.join(REPOSITORIES_PATH, self.static_path)

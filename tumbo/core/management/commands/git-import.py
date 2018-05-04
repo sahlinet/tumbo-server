@@ -17,7 +17,7 @@ logger = logging.getLogger("core.management.git-import")
 class Command(BaseCommand):
     help = 'Cleanup old transactions and logs'
 
-    # CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a python tumbo/manage.py git-import --settings=tumbo.dev
+    # CI=yes python tumbo/manage.py git-import --settings=tumbo.dev
 
     def handle(self, *args, **options):
         # Check if we have to Repo already

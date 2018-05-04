@@ -86,7 +86,7 @@ class ResponseUnavailableViewMixing():
 
 
 
-class ExecView(View, ResponseUnavailableViewMixing, Mixin):
+class ExecView(View, ResponseUnavailableViewMixing):
     STATE_OK = "OK"
     STATE_NOK = "NOK"
     STATE_NOT_FOUND = "NOT_FOUND"
@@ -539,8 +539,6 @@ class BaseView(TemplateView, ContextMixin):
                 context['bases'] = Base.objects.filter(
                     user=request.user.id).order_by('name')
                 context['TUMBO_NAME'] = base
-                #context['DROPBOX_REDIRECT_URL'] = settings.DROPBOX_REDIRECT_URL
-                #context['PUSHER_KEY'] = settings.PUSHER_KEY
                 context['TUMBO_STATIC_URL'] = "/%s/%s/static/" % (
                     "fastapp", base)
                 context['active_base'] = base_model

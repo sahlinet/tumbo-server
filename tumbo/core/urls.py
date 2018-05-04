@@ -12,7 +12,7 @@ from core.views import BaseView, BaseDeleteView, \
         ExecDeleteView, \
         ExecView, \
         login_or_sharedkey, View, \
-        BaseRenameView, CockpitView, DropboxNotifyView, \
+        BaseRenameView, CockpitView,  \
         change_password
 from core.views.static import StaticView
 

@@ -56,7 +56,6 @@ WORKER_RABBITMQ_PORT = "5672"
 ALLOWED_HOSTS = "*"
 
 TUMBO_REPOSITORIES_PATH = home + "/workspace"
-TUMBO_DEV_STORAGE_DROPBOX_PATH = home + "/Dropbox/Apps/tumbo dev/"
 
 
 TUMBO_PLUGINS_CONFIG = {
