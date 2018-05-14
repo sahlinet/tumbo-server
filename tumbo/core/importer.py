@@ -148,9 +148,15 @@ class GitImport(object):
         if num_results == 0:
             initial = True
         else:
-            base_obj = Base.objects.get(
-                user=user_obj, name=name, source_type=source_type)
-            revision = base_obj.revision
+            try:
+                base_obj = Base.objects.get(
+                    user=user_obj, name=name, source_type=source_type)
+                revision = base_obj.revision
+
+                if not base_obj.revision:
+                    initial = True
+            except Base.DoesNotExist:
+                raise Exception("Base already exists but not as Git project.")
 
         try:
             with transaction.atomic():
