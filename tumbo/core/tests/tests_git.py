@@ -15,37 +15,44 @@ class GitImportTestCase(BaseTestCase):
         username = self.user1.username
         name = "tumbo-demoapp"
         branch = "test-branch"
-        # repo_url = "git@github.com:sahlinet/tumbo-demoapp.git"
-        repo_url = "https://:@github.com/sahlinet/tumbo-demoapp.git/"
+        repo_url = "https://git:@github.com/sahlinet/tumbo-demoapp.git/"
 
+        # Initial import
         result = git().import_base(username, name, branch, repo_url, repo_ref=True)
         assert result[0] is not None
         assert type(result[1]) is Base
 
+        # Import again, no changes expected
         result = git().import_base(username, name, branch, repo_url, repo_ref=True, repo_path="/tmp/demoapp-test-branch")
         assert result[0] is None
         base_obj = result[1]
         assert type(base_obj) is Base
 
+        # Verify revision on base object
         old_revision = base_obj.revision
 
         repo = result[2]
         repo_path = result[3]
 
+        # Create commit (add file)
         new_file = "{}/asdf_{}.txt".format(repo_path, str(uuid.uuid4()))
         touch = sh.Command("touch")
         touch(new_file)
 
         repo.git.add(new_file)
         repo.git.commit('-m', 'test commit', author='Philip Sahli <philip@sahli.net>')
-        repo.git.push()
+        # repo.git.push()
 
-        shutil.rmtree(repo_path)
-
+        # Import update
         result = git().import_base(username, name, branch, repo_url, repo_ref=True, repo_path="/tmp/demoapp-test-branch")
         assert result[0] is not None
         base_obj = result[1]
         assert type(base_obj) is Base
 
-        # verify revision changed
+        # Verify revision changed
         assert old_revision is not base_obj.revision
+
+    def tearDown(self):
+        """Delete checked out repo path.
+        """
+        shutil.rmtree("/tmp/demoapp-test-branch")
