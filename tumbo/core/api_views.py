@@ -7,7 +7,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -17,6 +17,7 @@ from rest_framework.authentication import (BasicAuthentication,
                                            SessionAuthentication,
                                            TokenAuthentication)
 from rest_framework.exceptions import APIException
+from rest_framework.mixins import CreateModelMixin
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework_jsonp.renderers import JSONPRenderer
@@ -26,6 +27,7 @@ from core.api_serializers import (ApySerializer, BaseSerializer,
                                   PublicApySerializer, SettingSerializer,
                                   TransactionSerializer,
                                   TransportEndpointSerializer)
+from core.importer import GitImport as git
 from core.importer import import_base
 from core.models import Apy, Base, Setting, Transaction, TransportEndpoint
 from core.utils import check_code
@@ -257,7 +259,7 @@ class BaseLogViewSet(viewsets.ViewSet):
         return Response(logs)
 
 
-class BaseViewSet(viewsets.ModelViewSet):
+class BaseViewSet(viewsets.ModelViewSet, CreateModelMixin):
     model = Base
     serializer_class = BaseSerializer
     renderer_classes = [JSONRenderer, JSONPRenderer]
@@ -267,7 +269,19 @@ class BaseViewSet(viewsets.ModelViewSet):
     queryset = Base.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        try:
+            serializer.save(user=self.request.user, source_type="GIT")
+
+            username = self.request.user
+            name = serializer._validated_data['name']
+            branch = "test-branch"
+            repo_url = serializer._validated_data['source']
+            git().import_base(username, name, branch, repo_url)
+
+
+        except IntegrityError, e:
+            raise APIException(code=409)
+
 
     def get_queryset(self):
         return Base.objects.all()._clone().filter(user=self.request.user)
