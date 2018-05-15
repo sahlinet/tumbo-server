@@ -121,9 +121,9 @@ class DBStorage(BaseStorage):
 
     def delete(self, filename):
         staticfile_obj = StaticFile.objects.get(
-                base = self.instance,
-                name = filename,
-                storage = "DB"
+                base=self.instance,
+                name=filename,
+                storage="DB"
         )
         staticfile_obj.delete()
 
@@ -145,6 +145,6 @@ class DBStorage(BaseStorage):
         if not created:
             # TODO: remove from cache
             pass
-            
+
         staticfile_obj.content = content
         staticfile_obj.save()

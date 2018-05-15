@@ -1,20 +1,17 @@
 import os
-import datetime
 import logging
 import shutil
 import tempfile
 import zipfile
 from distutils.util import strtobool
 
-import pytz
 from configobj import ConfigObj
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import transaction
 from git import Repo
 
 # from core.models import Storage
-from core.models import Apy, Base, LogEntry, Setting, Transaction
+from core.models import Apy, Base, LogEntry, Setting
 from core.storage import Storage
 
 logger = logging.getLogger(__name__)
@@ -186,7 +183,7 @@ class GitImport(object):
                         zf = zipfile.ZipFile(archive_file)
                         base_obj = import_base(zf, user_obj, name, override_public=False,
                                     override_private=False, source_type=source_type, source=repo_url, revision=short_sha)
-                        return short_sha, base_obj 
+                        return short_sha, base_obj
                 else:
                     if short_sha == revision:
                         print "Nothing changed"

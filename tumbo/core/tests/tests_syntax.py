@@ -12,7 +12,7 @@ class SyntaxCheckerTestCase(BaseTestCase):
     # def setUp(self):
 
     @patch("core.models.distribute")
-    def setUp(self, distribute_mock):
+    def setUp(self):
         super(SyntaxCheckerTestCase, self).setUp()
 
     def test_module_syntax_ok(self):
