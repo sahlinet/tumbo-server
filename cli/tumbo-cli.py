@@ -327,6 +327,13 @@ class Env(object):
         print tabulate(table, headers=["Projectname", "State"])
 
     def project_create(self, name, source_url):
+        """Call API to create a Base
+        
+        Arguments:
+            name {string} -- Base name
+            source_url {git-url} -- URL to repository
+        """
+
         status_code, _ = self._call_api(
             "/core/api/base/", method="POST", json={"name": name, "source": source_url})
         if status_code == 201:
@@ -589,7 +596,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.5.0-dev")
+    arguments = docopt(__doc__, version="0.5.1-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
