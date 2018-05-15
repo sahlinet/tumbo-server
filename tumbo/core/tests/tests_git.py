@@ -40,6 +40,8 @@ class GitImportTestCase(BaseTestCase):
         touch(new_file)
 
         repo.git.add(new_file)
+        repo.git.config('--global', "user.name", "user name")
+        repo.git.config('--global', "user.email", "user@domain.com")
         repo.git.commit('-m', 'test commit', author='Philip Sahli <philip@sahli.net>')
         # repo.git.push()
 
