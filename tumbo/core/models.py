@@ -55,7 +55,7 @@ class AuthProfile(models.Model):
 
 SOURCE_TYPES = (
     ("FS", 'filesystem'),
-    ("DEPR", 'depredicated'),
+    ("DEP", 'depredicated'),
     ("GIT", 'git-repo')
 )
 
@@ -76,7 +76,7 @@ class Base(models.Model):
                                      blank=True, null=True,
                                      default=None)
     revision = models.CharField(max_length=4, blank=True, null=True)
-    source_type = models.CharField(max_length=3, choices=SOURCE_TYPES, default="DEPR")
+    source_type = models.CharField(max_length=3, choices=SOURCE_TYPES, default="DEP")
     source = models.CharField(max_length=100)
 
     class Meta:

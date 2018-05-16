@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='base',
             name='source',
-            field=models.CharField(default=b'DEPR', max_length=3, choices=[(b'FS', b'filesystem'), (b'DEPR', b'depredicated'), (b'GIT', b'git-repo')]),
+            field=models.CharField(default=b'DEP', max_length=3, choices=[(b'FS', b'filesystem'), (b'DEP', b'depredicated'), (b'GIT', b'git-repo')]),
         ),
     ]
