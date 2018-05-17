@@ -18,18 +18,18 @@ class Storage(object):
     """
 
     @staticmethod
-    def factory(type=None):
+    def factory(instance, type=None):
         """class method to return class with implementation.
 
         Returns:
             [BaseStorage Subclass] -- Concret class.
         """
 
-        if type:
-            return DBStorage
-        if hasattr(settings, "TUMBO_REPOSITORIES_PATH"):
-            return LocalStorage
-        assert 0, "bad storage class creation: " + str(type)
+        if type == "DB":
+            return DBStorage(instance)
+        elif hasattr(settings, "TUMBO_REPOSITORIES_PATH"):
+            return LocalStorage(instance)
+        return DBStorage(instance)
 
 
 class BaseStorage(object):
@@ -56,6 +56,8 @@ class BaseStorage(object):
             self.base_name = self.instance.base.name
             self.config = self.instance.base.config
 
+    def _save_config(self):
+        pass
 
 class LocalStorage(BaseStorage):
     """Class for Local Storage.

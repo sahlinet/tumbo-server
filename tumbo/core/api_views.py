@@ -278,10 +278,8 @@ class BaseViewSet(viewsets.ModelViewSet, CreateModelMixin):
             repo_url = serializer._validated_data['source']
             git().import_base(username, name, branch, repo_url)
 
-
         except IntegrityError, e:
             raise APIException(code=409)
-
 
     def get_queryset(self):
         return Base.objects.all()._clone().filter(user=self.request.user)

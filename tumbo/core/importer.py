@@ -72,7 +72,7 @@ def import_base(zf, user_obj, name, override_public, override_private, source_ty
         logger.info("base '%s' did already exist" % name)
     base.save()
 
-    storage = Storage.factory()(base)
+    storage = Storage.factory(base)
     # app.config
     appconfig = _read_config(zf.open("app.config"))
 
@@ -118,7 +118,7 @@ def import_base(zf, user_obj, name, override_public, override_private, source_ty
 def _delete_static(source_type, base, filename):
     filename = base.name + "/" + filename
     if source_type == "GIT":
-        storage = Storage.factory("DB")(base)
+        storage = Storage.factory(base, type="DB")
         storage.delete(filename)
     else:
         storage.delete(filename)
@@ -126,7 +126,7 @@ def _delete_static(source_type, base, filename):
 
 def _handle_static(source_type, base, filename, content):
     if source_type == "GIT":
-        storage = Storage.factory("DB")(base)
+        storage = Storage.factory(base, type="DB")
         filename = base.name + "/" + filename
         storage.put(filename, content)
     else:

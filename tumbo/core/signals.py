@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 @receiver(post_save, sender=Setting)
 def send_to_workers(sender, *args, **kwargs):
     instance = kwargs['instance']
-    storage = Storage.factory()(instance)
+    storage = Storage.factory(instance)
     storage._save_config()
 
     if instance.base.state:
@@ -71,7 +71,7 @@ def synchronize_to_storage_on_delete(sender, *args, **kwargs):
     instance = kwargs['instance']
     from utils import NotFound
     try:
-        storage = Storage.factory()(instance)
+        storage = Storage.factory(instance)
         storage.delete("%s/%s.py" % (instance.base.name, instance.name))
     except NotFound:
         logger.exception("error in synchronize_to_storage_on_delete")
@@ -91,7 +91,7 @@ def initialize_on_storage(sender, *args, **kwargs):
     logger.info("initialize_on_storage for Base '%s'" % instance.name)
     logger.info(kwargs)
     try:
-        storage = Storage.factory()(instance)
+        storage = Storage.factory(instance)
         storage.create_folder("%s/%s")
     except Exception:
         pass
@@ -101,7 +101,7 @@ def initialize_on_storage(sender, *args, **kwargs):
 def synchronize_to_storage(sender, *args, **kwargs):
     instance = kwargs['instance']
     try:
-        storage = Storage.factory()(instance)
+        storage = Storage.factory(instance)
         result = storage.put("%s/%s.py" %
                              (instance.base.name, instance.name), instance.module)
 
