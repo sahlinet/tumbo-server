@@ -141,10 +141,6 @@ class Base(models.Model):
             logger.info("add %s to zip" % apy.name)
             zf.writestr("%s.py" % apy.name, apy.module.encode("utf-8"))
 
-        # add static files
-        #storage = Storage.factory()(self)
-        #zf = storage.directory_zip("%s/static" % (self.name), zf)
-
         # add config
         zf.writestr("app.config", self.config.encode("utf-8"))
 
