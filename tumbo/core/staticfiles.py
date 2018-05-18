@@ -1,3 +1,6 @@
+"""Staticfiles handling.
+"""
+
 import os
 import sys
 import base64

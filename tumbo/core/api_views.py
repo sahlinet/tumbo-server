@@ -259,7 +259,7 @@ class BaseLogViewSet(viewsets.ViewSet):
         return Response(logs)
 
 
-class BaseViewSet(viewsets.ModelViewSet, CreateModelMixin):
+class BaseViewSet(viewsets.ModelViewSet):
     model = Base
     serializer_class = BaseSerializer
     renderer_classes = [JSONRenderer, JSONPRenderer]
@@ -270,6 +270,9 @@ class BaseViewSet(viewsets.ModelViewSet, CreateModelMixin):
 
     def perform_create(self, serializer):
         try:
+            import pprint
+            pprint.pprint(serializer.__dict__)
+            import pdb; pdb.set_trace()
             serializer.save(user=self.request.user, source_type="GIT")
 
             username = self.request.user
@@ -279,7 +282,9 @@ class BaseViewSet(viewsets.ModelViewSet, CreateModelMixin):
             git().import_base(username, name, branch, repo_url)
 
         except IntegrityError, e:
-            raise APIException(code=409)
+            pass
+            # Implement update or redirect to POST with ID url
+            #raise APIException(code=409)
 
     def get_queryset(self):
         return Base.objects.all()._clone().filter(user=self.request.user)

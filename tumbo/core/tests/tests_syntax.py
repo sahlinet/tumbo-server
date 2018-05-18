@@ -22,7 +22,7 @@ class SyntaxCheckerTestCase(BaseTestCase):
     def test_module_unused_import(self):
         # unused import
         self.base1_apy1.module = "import asdf"
-        ok, warnings, errors = check_code(
+        ok, warnings, _ = check_code(
             self.base1_apy1.module, self.base1_apy1.name)
         self.assertFalse(ok)
         self.assertEqual(UnusedImport, warnings[0].__class__)

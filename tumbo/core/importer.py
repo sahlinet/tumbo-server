@@ -11,7 +11,7 @@ from django.db import transaction
 from git import Repo
 
 # from core.models import Storage
-from core.models import Apy, Base, LogEntry, Setting
+from core.models import Apy, Base, Setting
 from core.storage import Storage
 
 logger = logging.getLogger(__name__)
@@ -72,7 +72,7 @@ def import_base(zf, user_obj, name, override_public, override_private, source_ty
         logger.info("base '%s' did already exist" % name)
     base.save()
 
-    storage = Storage.factory(base)
+    Storage.factory(base)
     # app.config
     appconfig = _read_config(zf.open("app.config"))
 

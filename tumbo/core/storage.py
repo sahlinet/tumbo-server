@@ -11,6 +11,7 @@ from core.models import StaticFile
 
 logger = logging.getLogger(__name__)
 
+
 class Storage(object):
     """Factory class to create Storage class.
 
@@ -59,6 +60,7 @@ class BaseStorage(object):
     def _save_config(self):
         pass
 
+
 class LocalStorage(BaseStorage):
     """Class for Local Storage.
     """
@@ -100,19 +102,23 @@ class LocalStorage(BaseStorage):
         self._save_config()
 
     def directory_zip(self, path, zf):
-        logger.info("Adding recursive %s to zip" % os.path.join(self.root, path))
+        logger.info("Adding recursive %s to zip" %
+                    os.path.join(self.root, path))
         for root, _, files in os.walk(os.path.join(self.root, path)):
-            #for folder in subFolders:
-                print root
-                for sfile in files:
-                    filePath = root + "/" + sfile
-                    print "filePath: " + filePath
-                    f = open(filePath, 'r')
-                    filePath_zip = filePath.replace(self.root + "/" + self.base_name + "/", "")
-                    logger.info("Add file '%s' as '%s' to zip" % (filePath, filePath_zip))
-                    zf.writestr(filePath_zip, f.read())
-                    f.close()
+            # for folder in subFolders:
+            print root
+            for sfile in files:
+                filePath = root + "/" + sfile
+                print "filePath: " + filePath
+                f = open(filePath, 'r')
+                filePath_zip = filePath.replace(
+                    self.root + "/" + self.base_name + "/", "")
+                logger.info("Add file '%s' as '%s' to zip" %
+                            (filePath, filePath_zip))
+                zf.writestr(filePath_zip, f.read())
+                f.close()
         return zf
+
 
 class DBStorage(BaseStorage):
     """Class for Dropbox Storage.
@@ -123,26 +129,26 @@ class DBStorage(BaseStorage):
 
     def delete(self, filename):
         staticfile_obj = StaticFile.objects.get(
-                base=self.instance,
-                name=filename,
-                storage="DB"
+            base=self.instance,
+            name=filename,
+            storage="DB"
         )
         staticfile_obj.delete()
 
     def rename(self, filename_from, filename_to):
         staticfile_obj = StaticFile.objects.get(
-                base = self.instance,
-                name = filename_from,
-                storage = "DB"
+            base=self.instance,
+            name=filename_from,
+            storage="DB"
         )
         staticfile_obj.filename = filename_to
         staticfile_obj.save()
 
     def put(self, filename, content):
         staticfile_obj, created = StaticFile.objects.get_or_create(
-                base = self.instance,
-                name = filename,
-                storage = "DB"
+            base=self.instance,
+            name=filename,
+            storage="DB"
         )
         if not created:
             # TODO: remove from cache

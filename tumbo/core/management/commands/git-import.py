@@ -1,3 +1,6 @@
+"""Management Command to import a Base from Git.
+"""
+
 import logging
 
 from django.core.management.base import BaseCommand

@@ -26,7 +26,7 @@ class GitImportTestCase(BaseTestCase):
         result = git().import_base(username, name, branch, repo_url, repo_ref=True, repo_path="/tmp/demoapp-test-branch")
         assert result[0] is None
         base_obj = result[1]
-        assert type(base_obj) is Base
+        assert isinstance(base_obj) is Base
 
         # Verify revision on base object
         old_revision = base_obj.revision
@@ -49,7 +49,7 @@ class GitImportTestCase(BaseTestCase):
         result = git().import_base(username, name, branch, repo_url, repo_ref=True, repo_path="/tmp/demoapp-test-branch")
         assert result[0] is not None
         base_obj = result[1]
-        assert type(base_obj) is Base
+        assert isinstance(base_obj) is Base
 
         # Verify revision changed
         assert old_revision is not base_obj.revision
