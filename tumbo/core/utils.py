@@ -7,7 +7,6 @@ import hashlib
 import json
 import logging
 import os
-import re
 import StringIO
 import sys
 import time
