@@ -64,6 +64,7 @@ from os.path import expanduser
 from subprocess import call
 
 import requests
+from django.template import loader
 from docopt import docopt
 from pygments import highlight
 from pygments.formatters import Terminal256Formatter
@@ -328,7 +329,7 @@ class Env(object):
 
     def project_create(self, name, source_url):
         """Call API to create a Base
-        
+
         Arguments:
             name {string} -- Base name
             source_url {git-url} -- URL to repository
@@ -371,7 +372,6 @@ class Env(object):
         status_code, project = self._call_api("/core/api/base/%s/" % name)
         print "\nStatus\n******"
         state = "Running" if project['state'] else "Stopped"
-        print state
 
         print "\nAccess\n******"
         print "Public:        " + str(project['public'])
@@ -596,7 +596,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.5.2-dev")
+    arguments = docopt(__doc__, version="0.5.3-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -629,8 +629,6 @@ if __name__ == '__main__':
         envId = arguments.get('--env', None)
         env = EnvironmentList.get_active(env=envId)
 
-        print arguments
-
         if not env:
             print "Set an environment active or specify env argument"
             sys.exit(1)
@@ -640,7 +638,8 @@ if __name__ == '__main__':
         if arguments['<base-name>']:
 
             if arguments['create'] and not arguments['function']:
-                env.project_create(arguments['<base-name>'], arguments['--git_url'])
+                env.project_create(
+                    arguments['<base-name>'], arguments['--git_url'])
 
             if arguments['delete'] and not arguments['function']:
                 env.project_delete(arguments['<base-name>'])
@@ -1010,8 +1009,15 @@ if __name__ == '__main__':
                 for cmd in cmd_list:
                     print "*** " + cmd
                     try:
+                        # t = loader.get_template(cmd)
+                        # s = t.render(env)
+                        # with open(cmd + "tmp", 'w') as cmd_tmp:
+                        #     cmd_tmp.write(s)
+                            
+
                         base = kubectl(
                             j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
+
                     except Exception, e:
                         print e.stderr
                 time.sleep(5)
