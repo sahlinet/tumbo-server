@@ -1,6 +1,7 @@
-from django.conf.urls import patterns, include, url
+import debug_toolbar
+from django.conf import settings
+from django.conf.urls import include, patterns, url
 from django.views.generic.base import RedirectView
-
 
 favicon_view = RedirectView.as_view(url='/static/favicon.ico', permanent=True)
 
@@ -20,3 +21,8 @@ urlpatterns = patterns('',
     # CAS login and authentication
     url(r'^cas/', include('aaa.cas.urls')),
 )
+
+if settings.DEBUG:
+    urlpatterns = [
+       url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
