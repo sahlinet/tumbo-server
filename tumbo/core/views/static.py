@@ -126,7 +126,7 @@ class StaticView(ResponseUnavailableViewMixing, View):
                 pass
             if last_modified:
                 if isinstance(last_modified, float):
-                    last_modified = datetime.utcfromtimestamp(last_modified)
+                    last_modified = pytz.utc.localize(datetime.utcfromtimestamp(last_modified))
             if_modified_since = request.META.get(
                 'HTTP_IF_MODIFIED_SINCE', None)
             if last_modified and if_modified_since:
