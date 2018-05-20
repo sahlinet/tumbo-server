@@ -221,8 +221,9 @@ class DBStaticfile(StaticfileFactory):
             obj.accessed = self.now
             obj.save()
 
-            import pytz
             obj.last_modified = last_modified.replace(tzinfo=pytz.UTC)
+            # buffer to string conversion
+            obj.content = "%s" % obj.content
 
             return obj
 
