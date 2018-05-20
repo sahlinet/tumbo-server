@@ -1,23 +1,22 @@
 """Staticfiles handling.
 """
 
+import base64
+import json
+import logging
 import os
 import sys
-import base64
-import logging
-import json
-
 from datetime import datetime
 
-from django.contrib.auth import get_user_model
+import pytz
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 
-from core.utils import totimestamp
 from core.communication import generate_vhost_configuration
-from core.models import Base, StaticFile
 from core.executors.remote import get_static
-
+from core.models import Base, StaticFile
+from core.utils import totimestamp
 
 User = get_user_model()
 
