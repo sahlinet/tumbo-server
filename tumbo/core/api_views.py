@@ -270,9 +270,6 @@ class BaseViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         try:
-            import pprint
-            pprint.pprint(serializer.__dict__)
-            import pdb; pdb.set_trace()
             serializer.save(user=self.request.user, source_type="GIT")
 
             username = self.request.user
