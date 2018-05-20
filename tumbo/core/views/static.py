@@ -69,9 +69,7 @@ class StaticView(ResponseUnavailableViewMixing, View):
             logger.error(e)
             return HttpResponseNotFound("Not found: %s" % static_path)
         except Exception, e:
-            logger.error(e)
-            import traceback
-            traceback.print_exc()
+            logger.exception(e)
             raise e
 
         # default
