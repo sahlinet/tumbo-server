@@ -109,7 +109,7 @@ def import_base(zf, user_obj, name, override_public, override_private, source_ty
             base.content = content
             base.save()
 
-        if "static" in filename:
+        if "static" in filename and not filename.endswith("/"):
             _handle_static(source_type, base, filename, content)
 
     return base
