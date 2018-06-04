@@ -75,7 +75,7 @@ class ResponseUnavailableViewMixing():
     def verify(self, request, base_model):
         if not base_model.state:
             response = HttpResponse()
-            if request.META and "html" in request.META.get('HTTP_ACCEPT', None):
+            if request.META and "HTTP_ACCEPT" in request.META and "html" in request.META.get('HTTP_ACCEPT', None):
                 #response.content_type = "text/html"
                 #response.content = "Function cannot be executed"
                 response = render_to_response('503.html', {})
@@ -83,7 +83,6 @@ class ResponseUnavailableViewMixing():
             return response
         else:
             return None
-
 
 
 class ExecView(View, ResponseUnavailableViewMixing):
@@ -292,6 +291,9 @@ class ExecView(View, ResponseUnavailableViewMixing):
         try:
             returned = json.loads(data['returned'])
             data['returned'] = returned
+            transaction.tout = returned
+            transaction.status = FINISHED
+            transaction.save()
         except Exception, e:
             logger.debug(
                 "returned data could not be loaded as json (%s)" % repr(e))
