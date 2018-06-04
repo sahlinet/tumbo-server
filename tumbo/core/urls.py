@@ -35,7 +35,6 @@ urlpatterns = patterns('',
     url(r'^profile/$', 'ui.views.profile', name='core-profile'),
 
     url(r'admin/', include(admin.site.urls)),
-    #url(r'dashboard/', include('core.urls')),
     url(r'api/', include('core.api_urls')),
 
     url(r'change_password/?$', change_password, name="change_password"),
