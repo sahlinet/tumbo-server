@@ -219,7 +219,6 @@ class Env(object):
                 r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             print "Error (%s)" % e.message
-            #print response
             sys.exit(1)
         except requests.exceptions.ConnectionError:
             print "Could not connect to %s" % self.config_data['url']
@@ -837,12 +836,9 @@ if __name__ == '__main__':
                 r = requests.post("http://localhost:8000/core/api/api-token-auth/",
                                   data={'username': "admin", 'password': "admin"})
                 token = r.json()['token']
-                print token
                 r = requests.post("http://localhost:8000/core/api/base/87/start/", headers={
                     'Authorization': "Token " + token
                 })
-                print r.text
-                print r.status_code
                 time.sleep(5)
                 r = requests.get("http://localhost:8000/core/base/example/exec/foo/?json", headers={
                     'Authorization': "Token " + token
@@ -979,8 +975,6 @@ if __name__ == '__main__':
                     #    each_val = standard_b64encode(each_val)
                     ini_dict[each_key.upper()] = each_val
 
-            pprint.pprint(ini_dict)
-
             env = ini_dict
 
             if arguments['show']:
@@ -1013,8 +1007,6 @@ if __name__ == '__main__':
                         # s = t.render(env)
                         # with open(cmd + "tmp", 'w') as cmd_tmp:
                         #     cmd_tmp.write(s)
-                            
-
                         base = kubectl(
                             j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
 
