@@ -78,6 +78,7 @@ class Base(models.Model):
     revision = models.CharField(max_length=4, blank=True, null=True)
     source_type = models.CharField(max_length=3, choices=SOURCE_TYPES, default="DEP")
     source = models.CharField(max_length=100)
+    branch = models.CharField(max_length=30)
 
     class Meta:
         app_label = "core"
