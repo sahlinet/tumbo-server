@@ -240,6 +240,7 @@ class GitImport(object):
                                         "change_type '%s' unknown." % diff_item.change_type)
 
                         base_obj.revision = short_sha
+                        base_obj.branch = branch
 
                         base_obj.save()
 
