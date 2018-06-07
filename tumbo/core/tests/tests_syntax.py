@@ -11,8 +11,7 @@ class SyntaxCheckerTestCase(BaseTestCase):
 
     # def setUp(self):
 
-    @patch("core.models.distribute")
-    def setUp(self, distribute_mock):
+    def setUp(self):
         super(SyntaxCheckerTestCase, self).setUp()
 
     def test_module_syntax_ok(self):
@@ -35,7 +34,7 @@ class SyntaxCheckerTestCase(BaseTestCase):
 import asdf
     print "b"
         """
-        ok, warnings, errors = check_code(
+        ok, _, errors = check_code(
             self.base1_apy1.module, self.base1_apy1.name)
         self.assertFalse(ok)
         self.assertEqual(Message, errors[0].__class__)

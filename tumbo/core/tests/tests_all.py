@@ -190,6 +190,9 @@ class ApyExecutionTestCase(BaseTestCase):
             self.assertEqual(200, response.status_code)
             self.assertTrue(json.loads(response.content).has_key('status'))
             self.assertEqual(response['Content-Type'], "application/json")
+            # transaction = Transaction.objects.get(pk=response.json()['rid'])
+            # self.assertEqual(status, "F")
+
 
     def test_receive_xml_when_response_is_XMLResponse(self, call_rpc_client_mock):
         with patch.object(ResponseUnavailableViewMixing, 'verify', return_value=None) as mock_method:

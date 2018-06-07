@@ -19,7 +19,7 @@ class Storage(object):
     """
 
     @staticmethod
-    def factory(instance, type=None):
+    def factory(instance, backend_type=None):
         """class method to return class with implementation.
 
         Returns:
