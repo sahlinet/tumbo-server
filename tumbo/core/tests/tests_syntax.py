@@ -9,11 +9,6 @@ from core.utils import check_code
 
 class SyntaxCheckerTestCase(BaseTestCase):
 
-    # def setUp(self):
-
-    def setUp(self):
-        super(SyntaxCheckerTestCase, self).setUp()
-
     def test_module_syntax_ok(self):
         self.assertEqual((True, [], []), check_code(
             self.base1_apy1.module, self.base1_apy1.name))
