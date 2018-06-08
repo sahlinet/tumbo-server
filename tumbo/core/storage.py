@@ -26,7 +26,7 @@ class Storage(object):
             [BaseStorage Subclass] -- Concret class.
         """
 
-        if type == "DB":
+        if backend_type == "DB":
             return DBStorage(instance)
         elif hasattr(settings, "TUMBO_REPOSITORIES_PATH"):
             return LocalStorage(instance)
