@@ -119,6 +119,7 @@ class KubernetesExecutor(BaseExecutor):
                         }
                     },
                     "spec": {
+                        "serviceAccountName": "worker",
                         "containers": [
                             {
                                 "env": worker_env,

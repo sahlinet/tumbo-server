@@ -957,6 +957,7 @@ if __name__ == '__main__':
                 kubectl(cmd.split())
 
             cmd_list = [
+                os.path.join(k8s_files_path, "serviceaccount.yml"),
                 os.path.join(k8s_files_path, "config.yml"),
                 os.path.join(k8s_files_path, "passwords.yml"),
                 os.path.join(k8s_files_path, "base.yml"),
