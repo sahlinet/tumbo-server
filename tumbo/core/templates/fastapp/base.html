@@ -79,7 +79,12 @@
 
     <div class="row">
         <div class="col-md-12" >
+            <h3>Configuration</h3>
+            {% verbatim %}
+            Source: <p>{{ base.source }}</p>
+            Branch: <p>{{ base.branch}}</p>
             <h3>State</h3>
+            {% endverbatim %}
             {% verbatim %}
             Running: <p>{{ base.state }}</p>
             {% endverbatim %}
@@ -102,9 +107,13 @@
 
         </div>
     </div>
+    <!--
+
     <div class="row rendered">
         {{ active_base.template }} {% block content %} {% endblock %}
     </div>
+
+    -->
     <div class="row">
         <div class="col-md-12" >
             <h3>Foreign Apys</h3>
@@ -141,10 +150,12 @@
         <div class="col-md-12" >
             <h3>Configuration</h3>
             {% verbatim %}
-            <p>Public: </p>
+            <p>Public: 
             <a href="#" editable-checkbox="base.public" e-title="Published?" onaftersave="updatePublicity(base)">{{ base.public && "Public" || "Private" }}</a>
-            <p>Static Public: </p>
+</p>
+            <p>Static Public:
             <a href="#" editable-checkbox="base.static_public" e-title="Published?" onaftersave="updatePublicity(base)">{{ base.static_public && "Public" || "Private" }}</a>
+ </p>
             {% endverbatim %}
         </div>
 
@@ -153,12 +164,16 @@
                 <h3>Transport</h3>
                 {% verbatim %}
                 <div ng-repeat="endpoint in endpoints">
-
                     <button ng-click="transport(endpoint, base)" id="transport" type="button" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-share"></span> Transport to {{ endpoint.url }}</button>
                 </div>
+
+                <p ng-show="!endpoints.length">No transport endpoints configured.</>
+
                 {% endverbatim %}
             </div>
+            <!--
+
             <h3>User Agent</h3>
             <h4>index
                 <button id="edit_html" type="button" class="btn btn-default btn-xs">
@@ -188,6 +203,8 @@
                     $('body > div.container > div.row.rendered').html(cm.getValue());
                 });
             </script>
+
+            -->
             <div class="table-responsive" ng-controller="SettingsCtrl" ng-init="init()">
                 <h3>Settings
                     <button type="button" class="btn btn-default btn-xs" ng-click="addRow()">

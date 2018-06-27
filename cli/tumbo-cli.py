@@ -26,7 +26,7 @@ Usage:
   tumbo-cli.py project <base-name> restart [--env=<env>]
   tumbo-cli.py project <base-name> destroy [--env=<env>]
   tumbo-cli.py project <base-name> delete [--env=<env>]
-  tumbo-cli.py project <base-name> create [--env=<env>] [--git_url=<repo-url>]
+  tumbo-cli.py project <base-name> create [--env=<env>] [--git_url=<repo-url>] [--branch=<branch>]
   tumbo-cli.py project <base-name> function <function-name> execute [--async] [--public] [--nocolor] [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> create [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> edit [--env=<env>]
@@ -326,16 +326,17 @@ class Env(object):
             table.append([project['name'], state])
         print tabulate(table, headers=["Projectname", "State"])
 
-    def project_create(self, name, source_url):
+    def project_create(self, name, source_url, branch):
         """Call API to create a Base
 
         Arguments:
             name {string} -- Base name
             source_url {git-url} -- URL to repository
+            branch {branch} -- Branch to use
         """
 
         status_code, _ = self._call_api(
-            "/core/api/base/", method="POST", json={"name": name, "source": source_url})
+            "/core/api/base/", method="POST", json={"name": name, "source": source_url, "branch": branch})
         if status_code == 201:
             print "Project %s created" % (name)
         else:
@@ -638,7 +639,7 @@ if __name__ == '__main__':
 
             if arguments['create'] and not arguments['function']:
                 env.project_create(
-                    arguments['<base-name>'], arguments['--git_url'])
+                    arguments['<base-name>'], arguments['--git_url'], arguments['--branch'])
 
             if arguments['delete'] and not arguments['function']:
                 env.project_delete(arguments['<base-name>'])

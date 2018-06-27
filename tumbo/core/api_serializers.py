@@ -106,4 +106,4 @@ class BaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Base
         fields = ('id', 'name', 'full_name', 'state', 'uuid',
-                  'executors', 'content', 'foreign_apys', 'public', 'static_public', 'apys', 'source')
+                  'executors', 'content', 'foreign_apys', 'public', 'static_public', 'apys', 'source', 'branch')

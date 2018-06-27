@@ -274,8 +274,8 @@ class BaseViewSet(viewsets.ModelViewSet):
 
             username = self.request.user
             name = serializer._validated_data['name']
-            branch = "test-branch"
             repo_url = serializer._validated_data['source']
+            branch = serializer._validated_data['branch']
             git().import_base(username, name, branch, repo_url)
 
         except IntegrityError, e:
