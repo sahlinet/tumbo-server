@@ -89,6 +89,7 @@ jobs:
                  twine upload -r $PYPI_HOST -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz
             fi
   trigger_deploy:
+    machine: true
     steps:
       - run:
         command: | 
