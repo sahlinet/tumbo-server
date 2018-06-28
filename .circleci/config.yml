@@ -120,6 +120,9 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*?dev/
+      - trigger_deploy:
+          requires:
+            - build_test
   release:
     jobs:
       - build_test:
