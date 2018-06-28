@@ -1,4 +1,4 @@
-__VERSION__ = "0.5.8-dev"
+__VERSION__ = "0.5.9-dev"
 """Initialize core components:
 
     - Plugins
