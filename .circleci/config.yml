@@ -95,7 +95,7 @@ jobs:
         command: | 
            curl -u ${CIRCLE_API_USER_TOKEN}: \
            -d build_parameters[CIRCLE_JOB]=deploy_docker \
-           https://circleci.com/api/v1.1/project/github/sahli-net/tumbo-sahli-net/tree/develop
+           https://circleci.com/api/v1.1/project/github/sahlinet/tumbo-sahli-net/tree/develop
 
 workflows:
   version: 2
