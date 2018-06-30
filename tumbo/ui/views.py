@@ -10,13 +10,21 @@ from ui.decorators import render_to
 
 
 def context(**extra):
-    return dict({
+    context_data = dict({
         # 'plus_id': getattr(settings, 'SOCIAL_AUTH_GOOGLE_PLUS_KEY', None),
         # 'plus_scope': ' '.join(GooglePlusAuth.DEFAULT_SCOPE),
         'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS),
-        'PLANET_VERSION': TUMBO_VERSION,
+        'TUMBO_VERSION': TUMBO_VERSION,
         'TUMBO_STATIC_CACHE_SECONDS': settings.TUMBO_STATIC_CACHE_SECONDS
     }, **extra)
+
+    try:
+        plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.dnsname']
+        context_data['DNS_ZONE'] = plugin_settings.get("zone")
+    except Exception, e:
+        context_data['DNS_ZONE'] = "ZONE"
+
+    return context_data
 
 
 HOME_TEMPLATE = getattr(settings, 'HOME_TEMPLATE', 'home.html')
