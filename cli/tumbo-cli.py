@@ -98,6 +98,7 @@ try:
     tumbo_path = os.path.join(os.path.dirname(tumbo.__file__), "..")
     manage_py = "%s/tumbo/manage.py" % tumbo_path
     compose_files_path = sys.prefix + "/tumbo_server/compose-files"
+    print compose_files_path
     k8s_files_path = sys.prefix + "/tumbo_server/k8s-files/cli"
 except ImportError:
     tumbo_path = os.path.abspath(".")
@@ -596,7 +597,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.5.10-dev")
+    arguments = docopt(__doc__, version="0.5.11-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
