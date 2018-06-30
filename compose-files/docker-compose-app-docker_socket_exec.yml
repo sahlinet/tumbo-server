@@ -1,6 +1,6 @@
 app:
   build: ..
-  #image: philipsahli/tumbo-server:v0.4.30-dev
+  #image: philipsahli/tumbo-server:v0.5.11-dev
   #image: philipsahli/tumbo-server:develop
   external_links:
    - tumboserver_db_1:db
@@ -25,14 +25,11 @@ app:
    - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
    - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
    - TUMBO_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
-   - DROPBOX_CONSUMER_KEY
-   - DROPBOX_CONSUMER_SECRET
-   - DROPBOX_REDIRECT_URL
    - FRONTEND_HOST
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
    - TUMBO_DOCKER_MEM_LIMIT="128m"
-   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.4.30-dev
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.5.11-dev
    - DEBUG=True
    - ALLOWED_HOSTS=*
    - DIGITALOCEAN_CONFIG
@@ -42,7 +39,7 @@ app:
    - ../tumbo:/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo
 cleaner:
   build: ..
-  #image: philipsahli/tumbo-server:v0.4.30-dev
+  #image: philipsahli/tumbo-server:v0.5.11-dev
   #image: philipsahli/tumbo-server:develop
   external_links:
    - tumboserver_db_1:db
@@ -68,14 +65,11 @@ cleaner:
    - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
    - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
    - TUMBO_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
-   - DROPBOX_CONSUMER_KEY
-   - DROPBOX_CONSUMER_SECRET
-   - DROPBOX_REDIRECT_URL
    - FRONTEND_HOST
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
    - TUMBO_DOCKER_MEM_LIMIT="128m"
-   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.4.30-dev
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.5.11-dev
    - DEBUG=True
    - DIGITALOCEAN_CONFIG
    - DIGITALOCEAN_ZONE
@@ -116,9 +110,6 @@ heartbeat:
    - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
    - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
    - TUMBO_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
-   - DROPBOX_CONSUMER_KEY
-   - DROPBOX_CONSUMER_SECRET
-   - DROPBOX_REDIRECT_URL
    - FRONTEND_HOST
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
@@ -158,14 +149,11 @@ async:
    - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
    - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
    - TUMBO_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
-   - DROPBOX_CONSUMER_KEY
-   - DROPBOX_CONSUMER_SECRET
-   - DROPBOX_REDIRECT_URL
    - FRONTEND_HOST
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
    - TUMBO_DOCKER_MEM_LIMIT="128m"
-   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.4.30-dev
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.5.11-dev
    - DEBUG=True
    - DIGITALOCEAN_CONFIG
    - DIGITALOCEAN_ZONE
@@ -200,9 +188,6 @@ logger:
    - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
    - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
    - TUMBO_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
-   - DROPBOX_CONSUMER_KEY
-   - DROPBOX_CONSUMER_SECRET
-   - DROPBOX_REDIRECT_URL
    - FRONTEND_HOST
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
@@ -242,9 +227,6 @@ scheduler:
    - JOBSTOREDB_PORT=$${JOBSTOREDB_PORT_5432_TCP_PORT}
    - JOBSTOREDB_HOST=$${JOBSTOREDB_PORT_5432_TCP_ADDR}
    - TUMBO_WORKER_IMPLEMENTATION=core.executors.worker_engines.dockers.DockerSocketExecutor
-   - DROPBOX_CONSUMER_KEY
-   - DROPBOX_CONSUMER_SECRET
-   - DROPBOX_REDIRECT_URL
    - FRONTEND_HOST
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin

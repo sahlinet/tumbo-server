@@ -3,18 +3,11 @@ from core.plugins.datastore.tests import *
 import unittest
 
 from core.plugins import call_plugin_func
-from core.tests import BaseTestCase
+from core.tests.tests_all import BaseTestCase
 from core.plugins.models import PluginUserConfig
-
-#@unittest.skipIf(hasattr(os.environ, "CIRCLECI"), "Running on CI")
-#@unittest.skip
 
 
 class PluginTests(BaseTestCase):
-
-    #@override_settings(DATABASES=db_settings)
-    # def setUp(self):
-    #    super(BaseTestCase, self).setUp()
 
     def test_config(self):
 

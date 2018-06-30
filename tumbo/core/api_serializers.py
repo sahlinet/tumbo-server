@@ -106,8 +106,4 @@ class BaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Base
         fields = ('id', 'name', 'full_name', 'state', 'uuid',
-                  'executors', 'content', 'foreign_apys', 'public', 'static_public', 'apys')
-
-    # def save(self, obj, **kwargs):
-        #super(BaseSerializer, self).save(obj, *args, **kwargs)
-        # obj.save_and_sync(**kwargs)
+                  'executors', 'content', 'foreign_apys', 'public', 'static_public', 'apys', 'source', 'branch')

@@ -5,7 +5,7 @@ env
 echo "#**************************************************"
 
 for var in $(env); do
-        k=`echo $var|awk -F= '{print $1}'`; v=`echo $var|awk -F= '{print $2}'`
+        k=$(echo $var|awk -F= '{print $1}'); v=$(echo $var|awk -F= '{print $2}')
         if [[ $var == *=\$* ]]; then
                 echo "Expand var $k to value of $v"
                 eval v="$v"
@@ -35,7 +35,7 @@ if [ "$MODE" == "web" ]; then
     LOCKFILE=$HOME/init
     if [ ! -f "$LOCKFILE" ]; then
         if [ -z "$ADMIN_PASSWORD" ]; then
-            ADMIN_PASSWORD=`pwgen  -ys 20 1`
+            ADMIN_PASSWORD=$(pwgen  -ys 20 1)
         fi
         # TODO: make admin email configurable
         echo "from django.contrib.auth import get_user_model;  get_user_model().objects.create_superuser('admin', 'philip@sahli.net', '$ADMIN_PASSWORD')" | /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY shell --settings=tumbo.container

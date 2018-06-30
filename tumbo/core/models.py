@@ -30,8 +30,6 @@ from core.communication import create_vhost, generate_vhost_configuration
 from core.executors.remote import (CONFIGURATION_EVENT, SETTINGS_EVENT,
                                    distribute)
 from core.plugins import PluginRegistry, call_plugin_func
-from core.storage import Storage
-from core.utils import Connection
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +44,7 @@ MODULE_DEFAULT_CONTENT = """def func(self):\n    pass"""
 class AuthProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, related_name="authprofile")
-    dropbox_access_token = models.CharField(
-        max_length=72, help_text="Access token for dropbox-auth")
     internalid = RandomCharField(length=12, include_alpha=False)
-    dropbox_userid = models.CharField(max_length=32,
-                                      help_text="Userid on dropbox",
-                                      default=None, null=True)
 
     class Meta:
         app_label = "core"
@@ -59,6 +52,12 @@ class AuthProfile(models.Model):
 
     def __unicode__(self):
         return self.user.username
+
+SOURCE_TYPES = (
+    ("FS", 'filesystem'),
+    ("DEP", 'depredicated'),
+    ("GIT", 'git-repo')
+)
 
 
 class Base(models.Model):
@@ -76,6 +75,10 @@ class Base(models.Model):
     frontend_host = models.CharField(max_length=40,
                                      blank=True, null=True,
                                      default=None)
+    revision = models.CharField(max_length=4, blank=True, null=True)
+    source_type = models.CharField(max_length=3, choices=SOURCE_TYPES, default="DEP")
+    source = models.CharField(max_length=100)
+    branch = models.CharField(max_length=30)
 
     class Meta:
         app_label = "core"
@@ -91,10 +94,6 @@ class Base(models.Model):
         return "/fastapp/%s/index/?shared_key=%s" % (
             self.name,
             urllib.quote(self.uuid))
-
-    @property
-    def auth_token(self):
-        return self.user.authprofile.dropbox_access_token
 
     @property
     def config(self):
@@ -133,12 +132,6 @@ class Base(models.Model):
         config.write(config_string)
         return config_string.getvalue()
 
-    def refresh(self):
-        connection = Connection(self.user.authprofile.dropbox_access_token)
-        template_name = "%s/index.html" % self.name
-        template_content = connection.get_file_content(template_name)
-        self.content = template_content
-
     def export(self):
         # create in-memory zipfile
         file_buffer = StringIO.StringIO()
@@ -148,10 +141,6 @@ class Base(models.Model):
         for apy in self.apys.all():
             logger.info("add %s to zip" % apy.name)
             zf.writestr("%s.py" % apy.name, apy.module.encode("utf-8"))
-
-        # add static files
-        storage = Storage.factory()(self)
-        zf = storage.directory_zip("%s/static" % (self.name), zf)
 
         # add config
         zf.writestr("app.config", self.config.encode("utf-8"))
@@ -678,8 +667,8 @@ class StaticFile(models.Model):
 
     STORAGE = (
         ("FS", 'filesystem'),
-        ("DR", 'dropbox'),
         ("MO", 'module'),
+        ("DB", 'database'),
     )
 
     base = models.ForeignKey(Base, related_name="staticfiles")
@@ -688,6 +677,7 @@ class StaticFile(models.Model):
     rev = models.CharField(max_length=32, blank=True, null=True)
     updated = models.DateTimeField(auto_now=True)
     accessed = models.DateTimeField(null=True)
+    content = models.BinaryField(max_length=1000, blank=True, null=True)
 
     def __str__(self):
         return "%s://%s" % (self.get_storage_display(), self.name)

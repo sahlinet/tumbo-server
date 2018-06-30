@@ -15,6 +15,7 @@ class ApyAdmin(admin.ModelAdmin):
 
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('rid', 'apy_name', 'base_name', 'status', 'created', 'modified')
+    list_filter = ('apy__base',)
 
 class TransportEndpointAdmin(admin.ModelAdmin):
     pass

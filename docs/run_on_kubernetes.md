@@ -6,7 +6,7 @@
 
 Development Release from PyPi's Testing Site
 
-    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple tumbo-server==0.4.30-dev
+    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple tumbo-server==0.5.11-dev
 
 Released Version from PyPi
 
@@ -30,7 +30,7 @@ Start Redis
 
     redis-server &
 
-    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes --autostart
+    CI=yes tumbo-cli.py server dev run --settings=tumbo.dev_kubernetes --autostart
 
 Then login on http://localhost:8000/ with the following credentials: 
 

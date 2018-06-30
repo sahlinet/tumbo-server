@@ -9,14 +9,13 @@ from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.db.models.signals import post_delete, post_save
 from django.test import Client, TransactionTestCase
-from mock import patch
 from pyflakes.messages import Message, UnusedImport
 from rest_framework.test import APIRequestFactory, force_authenticate
+from mock import patch
 
 from core import signals
 from core.api_views import ApyViewSet
 from core.models import Apy, AuthProfile, Base, Executor, Setting, Transaction, ready_to_sync
-from core.utils import check_code
 from core.views import ResponseUnavailableViewMixing
 
 User = get_user_model()
@@ -31,7 +30,8 @@ class BaseTestCase(TransactionTestCase):
         post_save.disconnect(signals.initialize_on_storage, sender=Base)
 
         ready_to_sync.disconnect(signals.synchronize_to_storage, sender=Apy)
-        post_delete.disconnect(signals.synchronize_to_storage_on_delete, sender=Apy)
+        post_delete.disconnect(
+            signals.synchronize_to_storage_on_delete, sender=Apy)
 
         distribute_mock.return_value = True
 
@@ -79,9 +79,9 @@ class BaseTestCase(TransactionTestCase):
         setting.value = "setting2_value"
         setting.save()
 
-        #self.client1 = Client(enforce_csrf_checks=True)  # logged in with objects
-        #self.client2 = Client(enforce_csrf_checks=True)  # logged in without objects
-        #self.client3 = Client(enforce_csrf_checks=True)  # not logged in
+        # self.client1 = Client(enforce_csrf_checks=True)  # logged in with objects
+        # self.client2 = Client(enforce_csrf_checks=True)  # logged in without objects
+        # self.client3 = Client(enforce_csrf_checks=True)  # not logged in
 
         self.client1 = Client()  # logged in with objects
         self.client2 = Client()  # logged in without objects
@@ -92,74 +92,6 @@ class BaseTestCase(TransactionTestCase):
         my_admin = User.objects.create_superuser(
             'myuser', 'myemail@test.com', self.admin_pw)
 
-
-class BaseObjectTestCase(BaseTestCase):
-
-    def test_base_duplicates_not_possible(self):
-        # self.base1_duplicate = #Base.objects.create(name=self.base1.name,
-        #                    user=self.user1)
-        #
-        self.assertRaises(IntegrityError, Base.objects.create,
-                          name=self.base1.name, user=self.user1)
-
-
-class ApiTestCase(BaseTestCase):
-
-    def test_base_get_403_when_not_logged_in(self):
-        response = self.client3.get(reverse('base-list'))
-        self.assertEqual(401, response.status_code)
-
-    def test_base_empty_response_without_objects(self):
-        self.client2.login(username='user2', password='pass')
-        response = self.client2.get(reverse('base-list'))
-        self.assertEqual(200, response.status_code)
-        self.assertJSONEqual(response.content, [])
-
-    def test_base_response_base_list(self):
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.get(reverse('base-list'))
-        self.assertEqual(200, response.status_code)
-        assert json.loads(response.content)
-
-    def _api(self, url, view, user, params):
-        factory = APIRequestFactory()
-        request = factory.get(url)
-        force_authenticate(request, user=user)
-        response = view(request, **{"base_name": self.base1.name})
-        response.render()
-        return response
-
-    def test_get_all_apys_for_base(self):
-        user = User.objects.get(username='user1')
-        view = ApyViewSet.as_view({'get': 'list'})
-        url = reverse('apy-list', kwargs={'base_name': self.base1.name})
-        params = {"base_name": self.base1.name}
-
-        response = self._api(url, view, user, params)
-
-        self.assertEqual(200, response.status_code)
-        assert json.loads(response.content)
-
-    def test_get_one_apy_for_base(self):
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.get(
-            "/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name))
-        self.assertEqual(200, response.status_code)
-        self.assertTrue(json.loads(response.content).has_key('name'))
-        self.assertTrue(json.loads(response.content).has_key('module'))
-
-    @patch("core.models.distribute")
-    def test_clone_apy_for_base_and_delete(self, distribute_mock):
-        distribute_mock.return_value = True
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.post(
-            "/core/api/base/%s/apy/%s/clone/" % (self.base1.name, self.base1_apy1.name))
-        self.assertEqual(200, response.status_code)
-        assert json.loads(response.content)
-
-        response = self.client1.delete(
-            "/core/api/base/%s/apy/%s/" % (self.base1.name, json.loads(response.content)['name']))
-        self.assertEqual(204, response.status_code)
 
 
 class BaseExecutorStateTestCase(BaseTestCase):
@@ -258,6 +190,9 @@ class ApyExecutionTestCase(BaseTestCase):
             self.assertEqual(200, response.status_code)
             self.assertTrue(json.loads(response.content).has_key('status'))
             self.assertEqual(response['Content-Type'], "application/json")
+            # transaction = Transaction.objects.get(pk=response.json()['rid'])
+            # self.assertEqual(status, "F")
+
 
     def test_receive_xml_when_response_is_XMLResponse(self, call_rpc_client_mock):
         with patch.object(ResponseUnavailableViewMixing, 'verify', return_value=None) as mock_method:
@@ -364,30 +299,9 @@ class AppConfigGenerationTestCase(BaseTestCase):
         #self.assertTrue("setting1_key" in self.base1.config)
 
 
-# class StaticfileTestCae(BaseTestCase):
-#
-#    @patch("core.staticfiles..metadata")
-#    @patch("core.utils.Connection.get_file")
-#    def test_dev_repo_found(self, mock_get_file, mock_metadata):
-#        mock_get_file.return_value = StringIO.StringIO("asdf")
-
-
 class ImportTestCase(BaseTestCase):
 
-    @patch("core.utils.Connection.metadata")
-    @patch("core.utils.Connection.get_file")
-    def test_export_to_zip_testcase(self, mock_get_file, mock_metadata):
-        mock_get_file.return_value = StringIO.StringIO("asdf")
-        metadata = {u'hash': u'f9c342ee00e216e844d9a6c23980e19c', u'revision': 3330, u'bytes': 0,
-                    u'thumb_exists': False,
-                    u'rev': u'd0226669b01',
-                    u'modified': u'Mon, 18 Aug 2014 16:46:50 +0000',
-                    u'path': u'/base1/static',
-                    u'is_dir': True, u'size': u'0 bytes',
-                    u'root': u'app_folder',
-                    u'contents': [{u'revision': 3331, u'bytes': 70, u'thumb_exists': False, u'rev': u'd0326669b01', u'modified': u'Mon, 18 Aug 2014 16:46:50 +0000', u'mime_type': u'text/html', u'path': u'/admin/base1/static/index.html', u'is_dir': False, u'size': u'70 bytes', u'root': 'app_folder', u'client_mtime': u'Mon, 18 Aug 2014 16:42:47 +0000', u'icon': u'page_whitecode'}], u'icon': u'folder'}
-        mock_metadata.return_value = metadata
-
+    def test_export_to_zip_testcase(self):
         self.client1.login(username='user1', password='pass')
         response = self.client1.get(
             "/core/api/base/%s/export/" % self.base1.name)
@@ -407,22 +321,7 @@ class ImportTestCase(BaseTestCase):
             self.assertTrue(file in zf.namelist(), file)
         self.assertEqual(self.base1_apy1.module, zf.read(files[0]))
 
-    @patch("core.utils.Connection.metadata")
-    @patch("core.utils.Connection.get_file")
-    @patch("core.utils.Connection.delete_file")
-    @patch("core.utils.Connection.put_file")
-    def test_import_from_zip_testcase(self, mock_put_file, mock_delete_file, mock_get_file, mock_metadata):
-        mock_get_file.return_value = StringIO.StringIO("asdf")
-        metadata = {u'hash': u'f9c342ee00e216e844d9a6c23980e19c', u'revision': 3330, u'bytes': 0,
-                    u'thumb_exists': False,
-                    u'rev': u'd0226669b01',
-                    u'modified': u'Mon, 18 Aug 2014 16:46:50 +0000',
-                    u'path': u'/base1/static',
-                    u'is_dir': True, u'size': u'0 bytes',
-                    u'root': u'app_folder',
-                    u'contents': [{u'revision': 3331, u'bytes': 70, u'thumb_exists': False, u'rev': u'd0326669b01', u'modified': u'Mon, 18 Aug 2014 16:46:50 +0000', u'mime_type': u'text/html', u'path': u'/base1/static/index.html', u'is_dir': False, u'size': u'70 bytes', u'root': 'app_folder', u'client_mtime': u'Mon, 18 Aug 2014 16:42:47 +0000', u'icon': u'page_whitecode'}], u'icon': u'folder'}
-        mock_metadata.return_value = metadata
-
+    def test_import_from_zip_testcase(self):
         # export
         zf = self.base1.export()
         # save to temp to omit name attribute error on stringio file
@@ -436,9 +335,6 @@ class ImportTestCase(BaseTestCase):
         self.base1.delete()
 
         # import
-        mock_put_file.return_value = True
-        mock_delete_file.return_value = True
-
         self.client1.login(username='user1', password='pass')
         new_base_name = self.base1.name + "-new"
 
@@ -448,7 +344,6 @@ class ImportTestCase(BaseTestCase):
         self.assertEqual(201, response.status_code)
         responsed_name = json.loads(response.content)['name']
         self.assertEqual(responsed_name, new_base_name)
-        #self.assertTrue(mock_put_file.call_count > 0)
 
         # check if setting is saved
         self.assertEqual(1,
@@ -462,67 +357,3 @@ class ImportTestCase(BaseTestCase):
 
         tf.close()
         os.remove(tempfile_name)
-
-
-class SyntaxCheckerTestCase(BaseTestCase):
-
-    # def setUp(self):
-
-    @patch("core.models.distribute")
-    def setUp(self, distribute_mock):
-        super(SyntaxCheckerTestCase, self).setUp()
-
-    def test_module_syntax_ok(self):
-        self.assertEqual((True, [], []), check_code(
-            self.base1_apy1.module, self.base1_apy1.name))
-
-    def test_module_unused_import(self):
-        # unused import
-        self.base1_apy1.module = "import asdf"
-        ok, warnings, errors = check_code(
-            self.base1_apy1.module, self.base1_apy1.name)
-        self.assertFalse(ok)
-        self.assertEqual(UnusedImport, warnings[0].__class__)
-
-    def test_module_intendation_error(self):
-        # intendation error
-        self.base1_apy1.module = """
-        def func(self):
-    print "a"
-import asdf
-    print "b"
-        """
-        ok, warnings, errors = check_code(
-            self.base1_apy1.module, self.base1_apy1.name)
-        self.assertFalse(ok)
-        self.assertEqual(Message, errors[0].__class__)
-
-    def test_save_invalid_module(self):
-        self.base1_apy1.module = "import asdf, blublub"
-
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
-                                      data=json.dumps({'name': self.base1_apy1.module, 'module': self.base1_apy1.module}), content_type='application/json'
-                                      )
-        self.assertEqual(500, response.status_code)
-        self.assertTrue(len(json.loads(response.content)['warnings']) > 0)
-
-    def test_save_valid_module(self):
-        self.base1_apy1.module = """import django
-print django"""
-
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
-                                      data=json.dumps({'name': self.base1_apy1.name, 'module': self.base1_apy1.module}), content_type='application/json'
-                                      )
-        self.assertEqual(200, response.status_code)
-
-    def test_save_unparsebla_module(self):
-        self.base1_apy1.module = "def blu()"
-
-        self.client1.login(username='user1', password='pass')
-        response = self.client1.patch("/core/api/base/%s/apy/%s/" % (self.base1.name, self.base1_apy1.name),
-                                      data=json.dumps({'name': self.base1_apy1.module, 'module': self.base1_apy1.module}), content_type='application/json'
-                                      )
-        self.assertEqual(500, response.status_code)
-        self.assertTrue(len(json.loads(response.content)['errors']) > 0)

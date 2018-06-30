@@ -93,7 +93,7 @@ class AccountTestCase(StaticLiveServerTestCase):
         selenium.set_page_load_timeout(20)
 
         selenium.get(self.live_server_url)
-        selenium.get_screenshot_as_file("a.png")
+        selenium.get_screenshot_as_file("a-test.png")
 
         # find the form element
         username = selenium.find_element_by_id('inputUsername')
@@ -123,7 +123,7 @@ class AccountTestCase(StaticLiveServerTestCase):
         self.test_login()
         selenium = self.selenium
         selenium.get(self.live_server_url + "/core/dashboard/")
-        selenium.get_screenshot_as_file("b.png")
+        selenium.get_screenshot_as_file("b-test.png")
         base_name = selenium.find_element_by_id('inputBaseName')
         base_name.send_keys("testbase")
         submit = selenium.find_element_by_name('create_new_base')
@@ -132,7 +132,7 @@ class AccountTestCase(StaticLiveServerTestCase):
         selenium.implicitly_wait(5)
         time.sleep(5)
 
-        selenium.get_screenshot_as_file("c.png")
+        selenium.get_screenshot_as_file("c-test.png")
         base_obj = models.Base.objects.get(name="testbase")
         assert base_obj
 
@@ -140,34 +140,34 @@ class AccountTestCase(StaticLiveServerTestCase):
         self.test_login()
         selenium = self.selenium
         selenium.get(self.live_server_url + "/core/dashboard/")
-        selenium.get_screenshot_as_file("bb.png")
+        selenium.get_screenshot_as_file("bb-test.png")
         base_name = selenium.find_element_by_id('inputBaseName')
         base_name.send_keys("testbase")
         submit = selenium.find_element_by_name('create_new_base')
         submit.send_keys(Keys.RETURN)
 
         selenium.implicitly_wait(5)
-        selenium.get_screenshot_as_file("cc.png")
+        selenium.get_screenshot_as_file("cc-test.png")
 
         base_obj = models.Base.objects.get(name="testbase")
         assert base_obj
-        selenium.get_screenshot_as_file("dd.png")
+        selenium.get_screenshot_as_file("dd-test.png")
 
         selenium = self.selenium
         link = selenium.find_elements_by_xpath(
             "//a[@href='/core/dashboard/testbase/index/']")[0]
         link.send_keys(Keys.RETURN)
         assert 'Runtime Information' in selenium.page_source
-        selenium.get_screenshot_as_file("ee.png")
+        selenium.get_screenshot_as_file("ee-test.png")
 
         button = selenium.find_element_by_name('state_cycle')
         button.send_keys(Keys.RETURN)
 
         time.sleep(10)
-        selenium.get_screenshot_as_file("ff.png")
+        selenium.get_screenshot_as_file("ff-test.png")
         selenium.refresh()
         time.sleep(5)
-        selenium.get_screenshot_as_file("fff.png")
+        selenium.get_screenshot_as_file("fff-test.png")
 
         base_obj = models.Base.objects.get(name="testbase")
         assert base_obj.state == True
@@ -188,17 +188,17 @@ class AccountTestCase(StaticLiveServerTestCase):
         driver.find_element_by_id("inputBaseName").send_keys("cccc")
         driver.find_element_by_name("create_new_base").click()
         driver.find_element_by_link_text("admin/cccc").click()
-        driver.get_screenshot_as_file("test_cas_login_base_created.png")
+        driver.get_screenshot_as_file("test_cas_login_base_created-test.png")
         try:
             driver.find_element_by_xpath(
                 "//button[@name='state_cycle']").click()
         except ElementNotVisibleException:
             driver.find_element_by_xpath(
                 "//button[@name='state_cycle']").click()
-        driver.get_screenshot_as_file("test_cas_login_base_started.png")
+        driver.get_screenshot_as_file("test_cas_login_base_started-test.png")
         time.sleep(10)
         base_obj = models.Base.objects.get(name="cccc")
-        driver.get_screenshot_as_file("test_cas_login_base_started.png")
+        driver.get_screenshot_as_file("test_cas_login_base_started-test.png")
         assert base_obj.state == True
         # driver.find_element_by_link_text("/userland/admin/cccc/static/index.html").click()
         # driver.find_element_by_id("username").clear()

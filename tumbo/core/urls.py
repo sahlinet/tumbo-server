@@ -11,8 +11,8 @@ from core.views import BaseView, BaseDeleteView, \
         BaseCreateView, \
         ExecDeleteView, \
         ExecView, \
-        login_or_sharedkey, dropbox_auth_finish, dropbox_auth_start, dropbox_auth_disconnect, View, \
-        BaseRenameView, CockpitView, DropboxNotifyView, \
+        login_or_sharedkey, View, \
+        BaseRenameView, CockpitView,  \
         change_password
 from core.views.static import StaticView
 
@@ -35,14 +35,7 @@ urlpatterns = patterns('',
     url(r'^profile/$', 'ui.views.profile', name='core-profile'),
 
     url(r'admin/', include(admin.site.urls)),
-    #url(r'dashboard/', include('core.urls')),
     url(r'api/', include('core.api_urls')),
-
-    # dropbox auth
-    url(r'dropbox_auth_start/?$',dropbox_auth_start),
-    url(r'dropbox_auth_finish/?$',dropbox_auth_finish),
-    url(r'dropbox_auth_disconnect/?$',dropbox_auth_disconnect),
-    url(r'dropbox_notify/?$', DropboxNotifyView.as_view()),
 
     url(r'change_password/?$', change_password, name="change_password"),
 

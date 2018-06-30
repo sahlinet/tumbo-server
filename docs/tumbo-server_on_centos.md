@@ -80,12 +80,6 @@ Running a PostgreSQL instance in a Docker Container
 
 # Run
     
-Add the dropbox configuration to your .bashrc
-
-    DROPBOX_CONSUMER_KEY
-    DROPBOX_CONSUMER_SECRET
-    DROPBOX_REDIRECT_URL
-    
     cd workspace/tumbo
     cli/tumbo-cli.py dev server run --autostart   # This will start postgres, redis-server and rabbitmq-server
 

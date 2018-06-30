@@ -312,7 +312,9 @@ The port is available in functions
 
 and in templates
 
+{% verbatim %}
     {{ SERVICE_PORT }}
+{% endverbatim %}
 
 ### IP
 
@@ -326,24 +328,24 @@ Use `SERVICE_IP6` for the IPv6 address.
 
 A host record is registered in a DNS zone in the form:
 
-    USERNAME-BASENAME-INSTANCE_NUM[-V4,-V6].ZONE
+    USERNAME-BASENAME-INSTANCE_NUM[-V4,-V6].{{ DNS_ZONE }}
 
 Examples:
 
 IPv4 (A) and IPv6 (AAAA) record:
 
     print os.environ['SERVICE_DNS']
-    johndoe-helloworld-0.ZONE
+    johndoe-helloworld-0.{{ DNS_ZONE }}
 
 IPv4 only:
 
     print os.environ['SERVICE_DNS_V4']
-    johndoe-helloworld-0-v4.ZONE
+    johndoe-helloworld-0-v4.{{ DNS_ZONE }}
 
 IPv6 only:
 
     print os.environ['SERVICE_DNS_V6']
-    johndoe-helloworld-0-v6.ZONE
+    johndoe-helloworld-0-v6.{{ DNS_ZONE }}
 
 * * *
 
@@ -394,7 +396,7 @@ Per value in key
 
 ### Static Files
 
-You can access the data in the static files. The data is rendered on server-side.
+You can access the data in the static files. The data is rendered server-side.
 
 {% verbatim %}
 

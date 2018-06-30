@@ -79,7 +79,12 @@
 
     <div class="row">
         <div class="col-md-12" >
+            <h3>Configuration</h3>
+            {% verbatim %}
+            Source: <p>{{ base.source }}</p>
+            Branch: <p>{{ base.branch}}</p>
             <h3>State</h3>
+            {% endverbatim %}
             {% verbatim %}
             Running: <p>{{ base.state }}</p>
             {% endverbatim %}
@@ -102,9 +107,13 @@
 
         </div>
     </div>
+    <!--
+
     <div class="row rendered">
         {{ active_base.template }} {% block content %} {% endblock %}
     </div>
+
+    -->
     <div class="row">
         <div class="col-md-12" >
             <h3>Foreign Apys</h3>
@@ -141,10 +150,12 @@
         <div class="col-md-12" >
             <h3>Configuration</h3>
             {% verbatim %}
-            <p>Public: </p>
+            <p>Public: 
             <a href="#" editable-checkbox="base.public" e-title="Published?" onaftersave="updatePublicity(base)">{{ base.public && "Public" || "Private" }}</a>
-            <p>Static Public: </p>
+</p>
+            <p>Static Public:
             <a href="#" editable-checkbox="base.static_public" e-title="Published?" onaftersave="updatePublicity(base)">{{ base.static_public && "Public" || "Private" }}</a>
+ </p>
             {% endverbatim %}
         </div>
 
@@ -153,12 +164,16 @@
                 <h3>Transport</h3>
                 {% verbatim %}
                 <div ng-repeat="endpoint in endpoints">
-
                     <button ng-click="transport(endpoint, base)" id="transport" type="button" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-share"></span> Transport to {{ endpoint.url }}</button>
                 </div>
+
+                <p ng-show="!endpoints.length">No transport endpoints configured.</>
+
                 {% endverbatim %}
             </div>
+            <!--
+
             <h3>User Agent</h3>
             <h4>index
                 <button id="edit_html" type="button" class="btn btn-default btn-xs">
@@ -188,6 +203,8 @@
                     $('body > div.container > div.row.rendered').html(cm.getValue());
                 });
             </script>
+
+            -->
             <div class="table-responsive" ng-controller="SettingsCtrl" ng-init="init()">
                 <h3>Settings
                     <button type="button" class="btn btn-default btn-xs" ng-click="addRow()">
@@ -223,7 +240,7 @@
                             <div class="input-group">
                                 <input type="text" class="form-control" ng-model="new_exec_name">
                                 <span class="input-group-btn">
-                                    <button class="btn btn-default" type="button" ng-click="create()">
+                                    <button  class="btn btn-default" type="button" ng-click="create()">
                                         <span class="glyphicon glyphicon-save"></span> Save</button>
                                 </span>
                             </div>
@@ -240,16 +257,16 @@
                         {{ apy.description }}
                     </p>
                     <div>
-                        <button id="edit_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="showApyEditor = !showApyEditor">
+                        <button ng-disabled="base.source == 'GIT'" id="edit_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="showApyEditor = !showApyEditor">
                             <span class="glyphicon glyphicon-edit"></span> Edit</button>
 
-                        <button id="delete_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="delete(apy)">
+                        <button ng-disabled="base.source == 'GIT'" id="delete_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="delete(apy)">
                             <span class="glyphicon glyphicon-remove"></span> Delete</button>
 
-                        <button type="button" class="btn btn-default btn-xs" ng-click="save(apy)">
+                        <button ng-disabled="base.source == 'GIT'" type="button" class="btn btn-default btn-xs" ng-click="save(apy)">
                             <span class="glyphicon glyphicon-save"></span> Save</button>
 
-                        <button id="clone_exec_{{ apy.name }}" class="btn btn-default btn-xs" ng-click="clone(apy)">
+                        <button ng-disabled="base.source == 'GIT'" id="clone_exec_{{ apy.name }}" class="btn btn-default btn-xs" ng-click="clone(apy)">
                             <span class="glyphicon glyphicon-chevron-down"></span> Clone</button>
 
                         <button id="exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="executeNewWindow(apy)">
@@ -258,7 +275,7 @@
                         <!--<button id="exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="printcurl(apy)">
                             <span class="glyphicon glyphicon-fire"></span> Curl command</button> -->
 
-                        <button id="rename_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="show = !show">
+                        <button ng-disabled="base.source == 'GIT'" id="rename_exec_{{ apy.name }}" type="button" class="btn btn-default btn-xs" ng-click="show = !show">
                             <span class="glyphicon glyphicon-pencil"></span> Rename</button>
 
                     </div>

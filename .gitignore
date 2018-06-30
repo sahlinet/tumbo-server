@@ -83,4 +83,4 @@ secrets/*
 k8s-files/ansible
 .docker/*
 
-*.png
+*-test.png

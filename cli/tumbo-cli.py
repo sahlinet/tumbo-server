@@ -26,7 +26,7 @@ Usage:
   tumbo-cli.py project <base-name> restart [--env=<env>]
   tumbo-cli.py project <base-name> destroy [--env=<env>]
   tumbo-cli.py project <base-name> delete [--env=<env>]
-  tumbo-cli.py project <base-name> create [--env=<env>]
+  tumbo-cli.py project <base-name> create [--env=<env>] [--git_url=<repo-url>] [--branch=<branch>]
   tumbo-cli.py project <base-name> function <function-name> execute [--async] [--public] [--nocolor] [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> create [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> edit [--env=<env>]
@@ -64,6 +64,7 @@ from os.path import expanduser
 from subprocess import call
 
 import requests
+from django.template import loader
 from docopt import docopt
 from pygments import highlight
 from pygments.formatters import Terminal256Formatter
@@ -97,6 +98,7 @@ try:
     tumbo_path = os.path.join(os.path.dirname(tumbo.__file__), "..")
     manage_py = "%s/tumbo/manage.py" % tumbo_path
     compose_files_path = sys.prefix + "/tumbo_server/compose-files"
+    print compose_files_path
     k8s_files_path = sys.prefix + "/tumbo_server/k8s-files/cli"
 except ImportError:
     tumbo_path = os.path.abspath(".")
@@ -218,7 +220,6 @@ class Env(object):
                 r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             print "Error (%s)" % e.message
-            #print response
             sys.exit(1)
         except requests.exceptions.ConnectionError:
             print "Could not connect to %s" % self.config_data['url']
@@ -326,9 +327,17 @@ class Env(object):
             table.append([project['name'], state])
         print tabulate(table, headers=["Projectname", "State"])
 
-    def project_create(self, name):
+    def project_create(self, name, source_url, branch):
+        """Call API to create a Base
+
+        Arguments:
+            name {string} -- Base name
+            source_url {git-url} -- URL to repository
+            branch {branch} -- Branch to use
+        """
+
         status_code, _ = self._call_api(
-            "/core/api/base/", method="POST", json={"name": name})
+            "/core/api/base/", method="POST", json={"name": name, "source": source_url, "branch": branch})
         if status_code == 201:
             print "Project %s created" % (name)
         else:
@@ -364,7 +373,6 @@ class Env(object):
         status_code, project = self._call_api("/core/api/base/%s/" % name)
         print "\nStatus\n******"
         state = "Running" if project['state'] else "Stopped"
-        print state
 
         print "\nAccess\n******"
         print "Public:        " + str(project['public'])
@@ -589,7 +597,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.4.30-dev")
+    arguments = docopt(__doc__, version="0.5.11-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -631,7 +639,8 @@ if __name__ == '__main__':
         if arguments['<base-name>']:
 
             if arguments['create'] and not arguments['function']:
-                env.project_create(arguments['<base-name>'])
+                env.project_create(
+                    arguments['<base-name>'], arguments['--git_url'], arguments['--branch'])
 
             if arguments['delete'] and not arguments['function']:
                 env.project_delete(arguments['<base-name>'])
@@ -738,10 +747,7 @@ if __name__ == '__main__':
                 print "Starting Development Server"
                 env = {}
                 env.update(os.environ)
-                env.update({'PYTHONPATH': "fastapp",
-                            'DROPBOX_CONSUMER_KEY': os.environ['DROPBOX_CONSUMER_KEY'],
-                            'DROPBOX_CONSUMER_SECRET': os.environ['DROPBOX_CONSUMER_SECRET'],
-                            'DROPBOX_REDIRECT_URL': os.environ['DROPBOX_REDIRECT_URL'],
+                env.update({'PYTHONPATH': "fastapp"
                             })
                 PROPAGATE_VARIABLES = os.environ.get(
                     "PROPAGATE_VARIABLES", None)
@@ -832,12 +838,9 @@ if __name__ == '__main__':
                 r = requests.post("http://localhost:8000/core/api/api-token-auth/",
                                   data={'username': "admin", 'password': "admin"})
                 token = r.json()['token']
-                print token
                 r = requests.post("http://localhost:8000/core/api/base/87/start/", headers={
                     'Authorization': "Token " + token
                 })
-                print r.text
-                print r.status_code
                 time.sleep(5)
                 r = requests.get("http://localhost:8000/core/base/example/exec/foo/?json", headers={
                     'Authorization': "Token " + token
@@ -955,6 +958,7 @@ if __name__ == '__main__':
                 kubectl(cmd.split())
 
             cmd_list = [
+                os.path.join(k8s_files_path, "serviceaccount.yml"),
                 os.path.join(k8s_files_path, "config.yml"),
                 os.path.join(k8s_files_path, "passwords.yml"),
                 os.path.join(k8s_files_path, "base.yml"),
@@ -973,8 +977,6 @@ if __name__ == '__main__':
                     # if each_val.startswith('b64:'):
                     #    each_val = standard_b64encode(each_val)
                     ini_dict[each_key.upper()] = each_val
-
-            pprint.pprint(ini_dict)
 
             env = ini_dict
 
@@ -1004,8 +1006,13 @@ if __name__ == '__main__':
                 for cmd in cmd_list:
                     print "*** " + cmd
                     try:
+                        # t = loader.get_template(cmd)
+                        # s = t.render(env)
+                        # with open(cmd + "tmp", 'w') as cmd_tmp:
+                        #     cmd_tmp.write(s)
                         base = kubectl(
                             j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
+
                     except Exception, e:
                         print e.stderr
                 time.sleep(5)
@@ -1037,7 +1044,7 @@ if __name__ == '__main__':
                     for cmd in cmd_list:
                         try:
                             base = kubectl(
-                                    j2(cmd, _env=env), "delete -f - ".split(), _out=STDOUT, _err=STDERR)
+                                j2(cmd, _env=env), "delete -f - ".split(), _out=STDOUT, _err=STDERR)
                         except Exception, e:
                             pass
 
