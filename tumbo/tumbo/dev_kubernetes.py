@@ -57,7 +57,6 @@ ALLOWED_HOSTS = "*"
 
 TUMBO_REPOSITORIES_PATH = home + "/workspace"
 
-
 TUMBO_PLUGINS_CONFIG = {
     'core.plugins.stats': {},
     'core.plugins.rabbitmq': {},
