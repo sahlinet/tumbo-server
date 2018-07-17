@@ -108,8 +108,7 @@ class KubernetesExecutor(BaseExecutor):
                     {
                         "protocol": "",
                         "targetPort": 0,
-                        "port": int(self.executor.port),
-                        "nodePort": int(self.executor.port),
+                        "port": 1025,
                         "name": ""
                     }
                 ],
@@ -123,6 +122,15 @@ class KubernetesExecutor(BaseExecutor):
                 "name": self.name
             }
         }
+
+
+        if self.executor.port:
+            #svc_manifest['spec']['ports'][0].update({"nodePort": int(self.executor.port)})
+            svc_manifest['spec']['ports'][0]["nodePort"]=int(self.executor.port)
+
+        import pprint; import pdb; pdb.set_trace()
+        pprint.pprint(svc_manifest)
+
 
         rc_manifest = {
             "apiVersion": "v1",
@@ -150,7 +158,7 @@ class KubernetesExecutor(BaseExecutor):
                         "containers": [
                             {
                                 "env": worker_env,
-                                "image": "philipsahli/tumbo-worker:v0.5.11-dev",
+                                "image": "philipsahli/tumbo-worker:v0.5.12-dev",
                                 "imagePullPolicy": "Always",
                                 "name": self.name,
                                 "command": self._start_command,
@@ -194,10 +202,17 @@ class KubernetesExecutor(BaseExecutor):
         except ApiException as e:
             # logger.error(api_response)
             print "Exception when calling CoreV1Api->create_namespaced_replication_controller: %s\n" % e
-            self.destroy()
+            self.destroy(id)
             raise e
 
-        return api_response.metadata.uid
+
+        nodePort = None
+        rc = api_response.metadata.uid
+        if not self.executor.port:
+            nodePort = api_response_service['spec']['ports'][0]["nodePort"]
+            rc = api_response.metadata.uid, nodePort
+
+        return rc
 
     def update(self, id, *args, **kwargs):
         rc_manifest = self._prepare(self, id, *args, **kwargs)
