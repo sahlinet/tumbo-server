@@ -93,9 +93,9 @@ jobs:
     steps:
       - run:
           command: | 
-             curl -u ${CIRCLE_API_USER_TOKEN}: \
-             -d build_parameters[CIRCLE_JOB]=deploy_docker \
-             --data TUMBO_TAG=$CIRCLE_TAG https://circleci.com/api/v1.1/project/github/sahlinet/tumbo-sahli-net/tree/develop
+             curl -v -u ${CIRCLE_API_USER_TOKEN}: \
+             --data build_parameters[CIRCLE_JOB]=deploy_docker \
+             --data build_parameters[TUMBO_TAG]=$CIRCLE_TAG https://circleci.com/api/v1.1/project/github/sahlinet/tumbo-sahli-net/tree/develop
 
 workflows:
   version: 2
