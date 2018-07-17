@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
 from rest_framework_swagger.views import get_swagger_view
 
-from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, CoreApyExecutionViewSet, ApyViewSetByName
+from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, CoreApyExecutionViewSet, ApyViewSetByName, BaseUpdateViewSet
 
 # Routers provide an easy way of automatically determining the URL conf
 router = routers.DefaultRouter(trailing_slash=True)
@@ -18,6 +18,7 @@ urlpatterns = patterns('',
     url(r'^base/$', BaseViewSet.as_view({'get': 'list', 'post': 'create'}), name='base-list'),
 
     url(r'^base/import/$', csrf_exempt(BaseImportViewSet.as_view({'post': 'imp'})), name='base-import'),
+    url(r'^base/(?P<name>[\w-]+)/update/$', csrf_exempt(BaseUpdateViewSet.as_view({'post': 'update'})), name='base-update'),
     url(r'^base/(?P<name>[\w-]+)/$', BaseViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='base-detail'),
     #url(r'^config/$', ServerConfigViewSet.as_view(), name='settings'),
     url(r'^base/destroy_all/$', BaseAdminViewSet.as_view({'get': 'destroy_all'}), name='bases-destroy'),

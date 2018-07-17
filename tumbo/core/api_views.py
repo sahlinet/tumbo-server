@@ -279,7 +279,7 @@ class BaseViewSet(viewsets.ModelViewSet):
             git().import_base(username, name, branch, repo_url)
 
         except IntegrityError, e:
-            pass
+            print e
             # Implement update or redirect to POST with ID url
             #raise APIException(code=409)
 
@@ -446,4 +446,35 @@ class BaseImportViewSet(viewsets.ModelViewSet):
         serializer = BaseSerializer(base_queryset,
                                     context={'request': request}, many=False)
         response = Response(serializer.data, status=201)
+        return response
+
+class BaseUpdateViewSet(viewsets.ModelViewSet):
+    model = Base
+    authentication_classes = (TokenAuthentication, SessionAuthentication, )
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = BaseSerializer
+    lookup_field = ('name')
+    queryset = Base.objects.all()
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(BaseUpdateViewSet, self).dispatch(*args, **kwargs)
+
+    def get_queryset(self, name):
+        return Base.objects.all()._clone().filter(user=self.request.user)
+
+    def update(self, request, name):
+        base = self.get_queryset(name=name)
+        logger.info("start update")
+        # Base
+
+        username = self.request.user
+        name = request.data['name']
+        repo_url = request.data['source']
+        branch = request.data['branch']
+        git().import_base(username, name, branch, repo_url)
+
+        base.branch = branch
+
+        response = Response(status=201)
         return response
