@@ -128,10 +128,6 @@ class KubernetesExecutor(BaseExecutor):
             #svc_manifest['spec']['ports'][0].update({"nodePort": int(self.executor.port)})
             svc_manifest['spec']['ports'][0]["nodePort"]=int(self.executor.port)
 
-        import pprint; import pdb; pdb.set_trace()
-        pprint.pprint(svc_manifest)
-
-
         rc_manifest = {
             "apiVersion": "v1",
             "kind": "ReplicationController",
