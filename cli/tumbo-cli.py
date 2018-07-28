@@ -99,7 +99,7 @@ try:
     tumbo_path = os.path.join(os.path.dirname(tumbo.__file__), "..")
     manage_py = "%s/tumbo/manage.py" % tumbo_path
     compose_files_path = sys.prefix + "/tumbo_server/compose-files"
-    print compose_files_path
+    print(compose_files_path)
     k8s_files_path = sys.prefix + "/tumbo_server/k8s-files/cli"
 except ImportError:
     tumbo_path = os.path.abspath(".")
@@ -479,7 +479,7 @@ class Env(object):
         if tid:
             data['rid'] = tid
         _, transactions = self._call_api(
-            "/core/api/base/%s/transactions/" % name, method="GET", params=data)
+                "/core/api/base/%s/transactions/" % name, method="GET", params=data)
 
         logs_only = arguments.get('--logs', False)
         cut = arguments.get('--cut', None)
@@ -661,7 +661,6 @@ if __name__ == '__main__':
                 env.project_create(
                     arguments['<base-name>'], arguments['--git_url'], arguments['--branch'])
 
-            print arguments
             if arguments['update'] and not arguments['function']:
                 env.project_update(
                     arguments['<base-name>'], arguments['--git_url'], arguments['--branch'])
