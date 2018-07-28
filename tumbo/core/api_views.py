@@ -96,7 +96,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
             return queryset.filter(rid=rid)
         if apy:
             queryset = queryset.filter(apy__name=apy)
-        return queryset.order_by("modified")[10:]
+        return queryset.order_by("modified")[:10]
 
 
 class ApyViewSet(viewsets.ModelViewSet):
