@@ -32,7 +32,11 @@ items:
               value: ""
             {% endif %}
             - name: FIX_SCHEME
+            {% if FIX_SCHEME is defined %}
+              value: "{{ FIX_SCHEME }}"
+            {% else %}
               value: "https"
+            {% endif %}
             - name: VHOST_1_SERVERNAME
               value: "{{ HOST }}"
             - name: VHOST_1_SSL
