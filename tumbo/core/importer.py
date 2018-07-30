@@ -46,7 +46,8 @@ def _handle_settings(settings, base_obj, override_public=False, override_private
 def _handle_apy(filename, content, base_obj, appconfig):
     name = filename.replace(".py", "")
     apy, _ = Apy.objects.get_or_create(base=base_obj, name=name)
-    apy.module = content
+    if content:
+        apy.module = content
     description = appconfig['modules'][name]['description']
     if description:
         apy.description = description
@@ -189,6 +190,10 @@ class GitImport(object):
                         print "Nothing changed"
                         r = None, base_obj
                     else:
+
+
+                        appconfig = _read_config(zf.open("app.config"))
+
                         commit_old = repo.commit(revision)
                         commit_new = repo.commit(short_sha)
                         diff_index = commit_old.diff(commit_new)
@@ -222,10 +227,17 @@ class GitImport(object):
                                         logger.info(
                                             "* file %s saved" % filename)
 
-                                # # Modified
-                                # elif diff_item.change_type == "M":
-                                #     print "* file %s was modified" % diff_item.a_path
-                                #     new, _ = self.blobs(diff_item)
+                                # Modified
+                                elif diff_item.change_type == "M":
+                                     print "* file %s was modified" % diff_item.a_path
+                                     new, _ = self.blobs(diff_item)
+
+                                     if diff_item.a_path.endswith(".py"):
+                                        _handle_apy(diff_item.a_path, new, base_obj, appconfig)
+
+                                     if diff_item.a_path.endswith("app.config"):
+                                        for apy_name in appconfig['modules'].keys():
+                                            _handle_apy(apy_name, None, base_obj, appconfig)
 
                                 # Delete
                                 elif diff_item.change_type == "D":
