@@ -129,7 +129,7 @@ def _handle_static(source_type, base, filename, content):
     if source_type == "GIT":
         storage = Storage.factory(base, backend_type="DB")
         filename = base.name + "/" + filename
-        storage.put(filename, content)
+        storage.put(filename, content.encode("utf-8"))
     else:
         sfile = "%s/%s" % (base.name, filename)
         storage.put(sfile, content)
