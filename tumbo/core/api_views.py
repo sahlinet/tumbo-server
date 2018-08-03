@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
+import os
 import zipfile
+from ipaddress import ip_address, ip_network
 from threading import Thread
 
 import requests
@@ -8,10 +10,12 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.db import IntegrityError, transaction
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import (Http404, HttpResponse, HttpResponseForbidden,
+                         JsonResponse)
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from rest_framework import permissions, renderers, status, views, viewsets
 from rest_framework.authentication import (BasicAuthentication,
                                            SessionAuthentication,
@@ -479,12 +483,7 @@ class BaseUpdateViewSet(viewsets.ModelViewSet):
         response = Response(status=201)
         return response
 
-from django.http import HttpResponse, HttpResponseForbidden
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 
-import requests
-from ipaddress import ip_address, ip_network
 
 class WebhookView(viewsets.ModelViewSet):
     model = Base
@@ -504,15 +503,16 @@ class WebhookView(viewsets.ModelViewSet):
 
         # https://simpleisbetterthancomplex.com/tutorial/2016/10/31/how-to-handle-github-webhooks-using-django.html
 
-        forwarded_for = u'{}'.format(request.META.get('HTTP_X_FORWARDED_FOR'))
-        client_ip_address = ip_address(forwarded_for)
-        whitelist = requests.get('https://api.github.com/meta').json()['hooks']
+        if os.environ.get("CHECK_GITHUB_HOOK_SOURCE", "no").lower() in ["yes", "true"]:
+            forwarded_for = u'{}'.format(request.META.get('HTTP_X_FORWARDED_FOR'))
+            client_ip_address = ip_address(forwarded_for)
+            whitelist = requests.get('https://api.github.com/meta').json()['hooks']
 
-        for valid_ip in whitelist:
-            if client_ip_address in ip_network(valid_ip):
-                break
-        else:
-            return HttpResponseForbidden('Permission denied.')
+            for valid_ip in whitelist:
+                if client_ip_address in ip_network(valid_ip):
+                    break
+            else:
+                return HttpResponseForbidden('Permission denied.')
 
         event = request.META.get('HTTP_X_GITHUB_EVENT', 'ping')
         if event == 'ping':
