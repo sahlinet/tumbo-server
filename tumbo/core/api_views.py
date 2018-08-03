@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.db import IntegrityError, transaction
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -478,3 +478,54 @@ class BaseUpdateViewSet(viewsets.ModelViewSet):
 
         response = Response(status=201)
         return response
+
+from django.http import HttpResponse, HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+import requests
+from ipaddress import ip_address, ip_network
+
+class WebhookView(viewsets.ModelViewSet):
+    model = Base
+    serializer_class = BaseSerializer
+
+    #@method_decorator(csrf_exempt)
+    #def dispatch(self, *args, **kwargs):
+    #    return super(WebhookView, self).dispatch(*args, **kwargs)
+
+    def get_queryset(self, username, name):
+        logger.info("get Base with name {}".format(name))
+        return Base.objects.get(user__username=username, name=name)
+
+    #@require_POST
+    @csrf_exempt
+    def hook(self, request, username, name):
+
+        # https://simpleisbetterthancomplex.com/tutorial/2016/10/31/how-to-handle-github-webhooks-using-django.html
+
+        forwarded_for = u'{}'.format(request.META.get('HTTP_X_FORWARDED_FOR'))
+        client_ip_address = ip_address(forwarded_for)
+        whitelist = requests.get('https://api.github.com/meta').json()['hooks']
+
+        for valid_ip in whitelist:
+            if client_ip_address in ip_network(valid_ip):
+                break
+        else:
+            return HttpResponseForbidden('Permission denied.')
+
+        event = request.META.get('HTTP_X_GITHUB_EVENT', 'ping')
+        if event == 'ping':
+            logger.info("ping request received")
+            return JsonResponse({'msg': 'pong'}, status=200)
+
+        elif event == 'push':
+            # https://developer.github.com/v3/activity/events/types/
+            base = self.get_queryset(username=username, name=name)
+            name = base.name
+            branch = base.branch
+            repo_url = base.source
+            git().import_base(username, name, branch, repo_url)
+            return JsonResponse({'msg': 'success'}, status=200)
+        
+        return JsonResponse({}, status=500)

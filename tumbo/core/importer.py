@@ -144,8 +144,10 @@ class GitImport(object):
         num_results = Base.objects.filter(user=user_obj, name=name).count()
         initial = False
         if num_results == 0:
+            logger.info("doing initial import from git source")
             initial = True
         else:
+            logger.info("doing update from git source")
             try:
                 base_obj = Base.objects.get(
                     user=user_obj, name=name, source_type=source_type)
@@ -161,6 +163,7 @@ class GitImport(object):
 
                 if not repo_path:
                     repo_path = tempfile.mkdtemp()
+                    logger.info("Working on repo_path: %s" % repo_path)
                     repo = Repo.clone_from(repo_url, repo_path)
                 else:
                     if not os.path.exists(repo_path):
@@ -172,6 +175,7 @@ class GitImport(object):
 
                 sha = repo.head.object.hexsha
                 short_sha = repo.git.rev_parse(sha, short=4)
+                logger.info("short_sha: %s" % short_sha)
 
                 if initial:
                     # Initial import
@@ -179,7 +183,7 @@ class GitImport(object):
                     # create zip ball
                     with open('/tmp/clone.zip', 'wb') as archive_file:
                         repo.archive(archive_file, format='zip')
-                        # import all
+                    # import all
                     with open('/tmp/clone.zip', 'r') as archive_file:
                         zf = zipfile.ZipFile(archive_file)
                         base_obj = import_base(zf, user_obj, name, override_public=False,
@@ -190,9 +194,7 @@ class GitImport(object):
                         print "Nothing changed"
                         r = None, base_obj
                     else:
-
-
-                        appconfig = _read_config(zf.open("app.config"))
+                        appconfig = _read_config(open("{}/{}".format(repo_path, "app.config")))
 
                         commit_old = repo.commit(revision)
                         commit_new = repo.commit(short_sha)
@@ -258,10 +260,8 @@ class GitImport(object):
 
                         r = short_sha, base_obj
         except Exception, e:
-            # import traceback
-            # traceback.print_exc()
-            # print dir(e)
-            # print e.__dict__
+            import traceback
+            traceback.print_exc()
             if hasattr(e, "stderr"):
                 raise Exception(e.stderr)
             raise e
