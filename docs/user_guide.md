@@ -18,6 +18,12 @@ can create or update the base on the same or on other platform.
 
 > If a Base contains a lot of static files, export and import might fail because of timeouts!
 
+### Git managed Bases
+
+Source for a Base can be edited directly on Tumbo or the source can be in a Git repository. On Github a Webhook can be configured sending `push` events to a hook URL:
+
+    https://tumbo.sahli.net/core/api/admin/tumbo-demoapp/hook/
+
 * * *
 
 ## CLI
