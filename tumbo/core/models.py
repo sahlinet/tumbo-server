@@ -216,6 +216,24 @@ class Base(models.Model):
             logger.exception(e)
             return []
 
+    # def update(self):
+    #     try:
+    #         self.executor
+    #     except Executor.DoesNotExist:
+    #         logger.debug("update executor for base %s" % self)
+    #         executor = Executor(base=self)
+    #         executor.save()
+    #     if not self.executor.is_running():
+    #         r = self.executor.update()
+
+    #         # call plugin
+    #         logger.info("on_start_base starting...")
+    #         call_plugin_func(self, "on_start_base")
+    #         logger.info("on_start_base done...")
+
+    #         return r
+    #     return None
+
     def start(self):
         try:
             self.executor
@@ -493,8 +511,8 @@ class Executor(models.Model):
 
     port = SequenceField(
         key='test.sequence.1',
-        template='3%NNNN',
-        #auto=True,
+        template='1%NNNN',
+        auto=True,
         null=True
     )
 
@@ -566,13 +584,7 @@ class Executor(models.Model):
         try:
             logger.info("START Start with implementation %s" %
                         self.implementation)
-            
             self.pid = self.implementation.start(self.pid, **kwargs)
-
-            if isinstance(self.pid, tuple):
-                self.pid = self.pid[0]
-                self.port = self.pid[1]
-
             logger.info("END Start with implementation %s" %
                         self.implementation)
         except Exception, e:

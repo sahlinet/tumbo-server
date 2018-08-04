@@ -3,20 +3,28 @@ from settings import *
 from os.path import expanduser
 home = expanduser("~")
 
-redis_pass = os.environ.get('CACHE_ENV_REDIS_PASS', None)
-if not redis_pass:
-    REDIS_URL = "redis://:%s@127.0.0.1:6379/1" % redis_pass
-else:
-    REDIS_URL = "redis://127.0.0.1:6379/1"
-CACHES = {
-   "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": REDIS_URL,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            }
+if os.environ.get('CI', False):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
     }
-}
+
+else:
+    redis_pass = os.environ.get('CACHE_ENV_REDIS_PASS', None)
+    if not redis_pass:
+        REDIS_URL = "redis://:%s@127.0.0.1:6379/1" % redis_pass
+    else:
+        REDIS_URL = "redis://127.0.0.1:6379/1"
+    CACHES = {
+       "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                }
+        }
+    }
 
 STATIC_URL = '/static/'
 
@@ -50,11 +58,11 @@ TUMBO_REPOSITORIES_PATH = home + "/workspace"
 TUMBO_PLUGINS_CONFIG = {
     'core.plugins.stats': {},
     'core.plugins.rabbitmq': {},
-    # 'core.plugins.dnsname': {
-    #     'provider': "DigitalOcean",
-    #     'token': os.environ.get('DIGITALOCEAN_CONFIG', None),
-    #     'zone': os.environ.get('DIGITALOCEAN_ZONE', None)
-    #},
+    'core.plugins.dnsname': {
+        'provider': "DigitalOcean",
+        'token': os.environ.get('DIGITALOCEAN_CONFIG', None),
+        'zone': os.environ.get('DIGITALOCEAN_ZONE', None)
+    },
     'core.plugins.datastore': {
         'ENGINE': "django.db.backends.postgresql_psycopg2",
         'HOST': "127.0.0.1",
