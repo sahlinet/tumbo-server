@@ -183,7 +183,7 @@ LOGGING = {
         'core.views.static': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'core.loader': {
             'handlers': ['console'],
