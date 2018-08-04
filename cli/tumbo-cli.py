@@ -99,7 +99,6 @@ try:
     tumbo_path = os.path.join(os.path.dirname(tumbo.__file__), "..")
     manage_py = "%s/tumbo/manage.py" % tumbo_path
     compose_files_path = sys.prefix + "/tumbo_server/compose-files"
-    print(compose_files_path)
     k8s_files_path = sys.prefix + "/tumbo_server/k8s-files/cli"
 except ImportError:
     tumbo_path = os.path.abspath(".")

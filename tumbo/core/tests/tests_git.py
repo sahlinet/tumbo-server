@@ -15,8 +15,7 @@ from core.tests.tests_all import BaseTestCase
 class GitImportTestCase(BaseTestCase):
 
 
-    @patch("core.models.distribute")
-    def setUp(self, distribute):
+    def setUp(self):
         super(GitImportTestCase, self).setUp()
 
         self.username = self.user1.username
@@ -24,20 +23,16 @@ class GitImportTestCase(BaseTestCase):
         self.branch = "test-branch"
         self.repo_url = "https://git:@github.com/sahlinet/tumbo-demoapp.git/"
 
-    def _add_file(self, repo, repo_path):
+    def _add_file(self):
         # Create commit (add file)
-        new_file = "{}/asdf_{}.txt".format(repo_path, str(uuid.uuid4()))
+        new_file = "{}/asdf_{}.txt".format(self.repo_path, str(uuid.uuid4()))
         touch = sh.Command("touch")
         touch(new_file)
 
-        repo.git.add(new_file)
-        repo.git.config('--global', "user.name", "user name")
-        repo.git.config('--global', "user.email", "user@domain.com")
-        output = repo.git.commit('-m', 'test commit', author='Philip Sahli <philip@sahli.net>')
-        print output
-        #import re
-        #return re.search(output, '\s([a-z0-9]*)\]').group(1)
-        #repo.git.push()
+        self.repo.git.add(new_file)
+        self.repo.git.config('--global', "user.name", "user name")
+        self.repo.git.config('--global', "user.email", "user@domain.com")
+        output = self.repo.git.commit('-m', 'test commit', author='Philip Sahli <philip@sahli.net>')
 
     def test_git_import_base(self):
 
@@ -64,7 +59,7 @@ class GitImportTestCase(BaseTestCase):
             self.test_git_import_base()
 
         # Do update
-        self._add_file(self.repo, self.repo_path)
+        self._add_file()
 
         # Import update
         result = git().import_base(self.username, self.name, self.branch, self.repo_url, repo_ref=True, repo_path="/tmp/demoapp-test-branch")

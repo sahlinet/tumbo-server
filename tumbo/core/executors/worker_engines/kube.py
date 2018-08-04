@@ -126,7 +126,7 @@ class KubernetesExecutor(BaseExecutor):
 
         if self.executor.port:
             #svc_manifest['spec']['ports'][0].update({"nodePort": int(self.executor.port)})
-            svc_manifest['spec']['ports'][0]["nodePort"]=int(self.executor.port)
+            svc_manifest['spec']['ports'][0]["nodePort"] = int(self.executor.port)
 
         rc_manifest = {
             "apiVersion": "v1",
@@ -189,7 +189,7 @@ class KubernetesExecutor(BaseExecutor):
         return rc_manifest, svc_manifest
 
     def start(self, id, *args, **kwargs):
-        rc_manifest, svc_manifest  = self._prepare(self, id, *args, **kwargs)
+        rc_manifest, svc_manifest = self._prepare(self, id, *args, **kwargs)
         try:
             api_response = self.api.create_namespaced_replication_controller(
                 self.namespace, rc_manifest, pretty='pretty_example', _request_timeout=3)
@@ -226,13 +226,13 @@ class KubernetesExecutor(BaseExecutor):
         self.destroy(id)
 
     def _delete_service(self):
-        body = client.V1DeleteOptions()
-        grace_period_seconds = 3 # int | The duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object value if not specified. zero means delete immediately. (optional)
-        orphan_dependents = True # bool | Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both. (optional)
-        propagation_policy = 'propagation_policy_example' # str | Whether and how garbage collection will be performed. Either this field or OrphanDependents may be set, but not both. The default policy is decided by the existing finalizer set in the metadata.finalizers and the resource-specific default policy. Acceptable values are: 'Orphan' - orphan the dependents; 'Background' - allow the garbage collector to delete the dependents in the background; 'Foreground' - a cascading policy that deletes all dependents in the foreground. (optional)
+        #body = client.V1DeleteOptions()
+        #grace_period_seconds = 3 # int | The duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object value if not specified. zero means delete immediately. (optional)
+        #orphan_dependents = True # bool | Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both. (optional)
+        #propagation_policy = 'propagation_policy_example' # str | Whether and how garbage collection will be performed. Either this field or OrphanDependents may be set, but not both. The default policy is decided by the existing finalizer set in the metadata.finalizers and the resource-specific default policy. Acceptable values are: 'Orphan' - orphan the dependents; 'Background' - allow the garbage collector to delete the dependents in the background; 'Foreground' - a cascading policy that deletes all dependents in the foreground. (optional)
 
         try:
-            api_response = self.api.delete_namespaced_service(
+            _ = self.api.delete_namespaced_service(
                 #self.name, self.namespace, body=body, pretty="pretty_example", grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents, propagation_policy=propagation_policy)
                 self.name, self.namespace, pretty="pretty_example")
         except ApiException as e:
