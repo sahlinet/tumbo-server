@@ -236,6 +236,12 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+	'core.staticfiles': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+
         'core.scheduler': {
             'handlers': ['console'],
             'level': 'DEBUG',
