@@ -3,7 +3,6 @@ import uuid
 
 import sh
 from django.core.urlresolvers import reverse
-from mock import patch
 from rest_framework.test import APIRequestFactory
 
 from core.api_views import WebhookView
@@ -32,7 +31,7 @@ class GitImportTestCase(BaseTestCase):
         self.repo.git.add(new_file)
         self.repo.git.config('--global', "user.name", "user name")
         self.repo.git.config('--global', "user.email", "user@domain.com")
-        output = self.repo.git.commit('-m', 'test commit', author='Philip Sahli <philip@sahli.net>')
+        self.repo.git.commit('-m', 'test commit', author='Philip Sahli <philip@sahli.net>')
 
     def test_git_import_base(self):
 

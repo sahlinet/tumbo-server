@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
 import logging
 import random
 import re
@@ -9,27 +8,25 @@ import urllib
 import zipfile
 from datetime import datetime, timedelta
 
-import gevent
 import pytz
 from configobj import ConfigObj
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core import serializers
 from django.core.urlresolvers import reverse
-from django.db import models, transaction
+from django.db import models
 from django.db.models import F
-from django.dispatch import Signal, receiver
+from django.dispatch import Signal
 from django.template import Template
 from django.utils import timezone
 from django_extensions.db.fields import (RandomCharField, ShortUUIDField,
                                          UUIDField)
 from jsonfield import JSONField
-from sequence_field.fields import SequenceField
 
 from core.communication import create_vhost, generate_vhost_configuration
 from core.executors.remote import (CONFIGURATION_EVENT, SETTINGS_EVENT,
                                    distribute)
 from core.plugins import PluginRegistry, call_plugin_func
+from sequence_field.fields import SequenceField
 
 logger = logging.getLogger(__name__)
 
@@ -413,12 +410,7 @@ class Setting(models.Model):
 
 """
 Threads -> Processes -> Instances -> Executor -> Base
-""" 
-
 """
-Threads -> Processes -> Instances -> Executor -> Base
-"""
-
 
 class Instance(models.Model):
     is_alive = models.BooleanField(default=False)
@@ -461,7 +453,7 @@ class Process(models.Model):
     def is_up(self):
         now = datetime.utcnow().replace(tzinfo=pytz.utc)
         delta = now - self.running
-        return (delta < timedelta(seconds=10))
+        return delta < timedelta(seconds=10)
 
 
 class Thread(models.Model):
