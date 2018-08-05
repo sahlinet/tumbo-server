@@ -670,6 +670,3 @@ class StaticFile(models.Model):
     updated = models.DateTimeField(auto_now=True)
     accessed = models.DateTimeField(null=True)
     content = models.BinaryField(max_length=1000, blank=True, null=True)
-
-    def __str__(self):
-        return "%s://%s" % (self.get_storage_display(), self.name)
