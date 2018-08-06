@@ -1,9 +1,10 @@
-__VERSION__ = "0.5.11-dev"
 """Initialize core components:
 
     - Plugins
     - Signals
 """
+
+__VERSION__ = "0.5.22-dev"
 
 
 from django.core.exceptions import ImproperlyConfigured

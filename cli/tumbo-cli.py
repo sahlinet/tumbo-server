@@ -27,6 +27,7 @@ Usage:
   tumbo-cli.py project <base-name> destroy [--env=<env>]
   tumbo-cli.py project <base-name> delete [--env=<env>]
   tumbo-cli.py project <base-name> create [--env=<env>] [--git_url=<repo-url>] [--branch=<branch>]
+  tumbo-cli.py project <base-name> update [--env=<env>] [--git_url=<repo-url>] [--branch=<branch>]
   tumbo-cli.py project <base-name> function <function-name> execute [--async] [--public] [--nocolor] [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> create [--env=<env>]
   tumbo-cli.py project <base-name> function <function-name> edit [--env=<env>]
@@ -98,7 +99,6 @@ try:
     tumbo_path = os.path.join(os.path.dirname(tumbo.__file__), "..")
     manage_py = "%s/tumbo/manage.py" % tumbo_path
     compose_files_path = sys.prefix + "/tumbo_server/compose-files"
-    print compose_files_path
     k8s_files_path = sys.prefix + "/tumbo_server/k8s-files/cli"
 except ImportError:
     tumbo_path = os.path.abspath(".")
@@ -219,6 +219,7 @@ class Env(object):
             if exit_on_error:
                 r.raise_for_status()
         except requests.exceptions.HTTPError as e:
+            print response
             print "Error (%s)" % e.message
             sys.exit(1)
         except requests.exceptions.ConnectionError:
@@ -343,6 +344,23 @@ class Env(object):
         else:
             print status_code
 
+    def project_update(self, name, source_url, branch):
+        """Call API to create a Base
+
+        Arguments:
+            name {string} -- Base name
+            source_url {git-url} -- URL to repository
+            branch {branch} -- Branch to use
+        """
+
+        status_code, _ = self._call_api(
+            "/core/api/base/%s/update/" % name, method="POST", json={"name": name, "source": source_url, "branch": branch})
+        if status_code == 201:
+            print "Project %s updated" % (name)
+        else:
+            print status_code, _
+
+
     def project_stop(self, name):
         status_code, _ = self._call_api(
             "/core/api/base/%s/stop/" % name, method="POST")
@@ -460,7 +478,7 @@ class Env(object):
         if tid:
             data['rid'] = tid
         _, transactions = self._call_api(
-            "/core/api/base/%s/transactions/" % name, method="GET", params=data)
+                "/core/api/base/%s/transactions/" % name, method="GET", params=data)
 
         logs_only = arguments.get('--logs', False)
         cut = arguments.get('--cut', None)
@@ -597,7 +615,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.5.11-dev")
+    arguments = docopt(__doc__, version="0.5.22-dev")
 
     ini = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -640,6 +658,10 @@ if __name__ == '__main__':
 
             if arguments['create'] and not arguments['function']:
                 env.project_create(
+                    arguments['<base-name>'], arguments['--git_url'], arguments['--branch'])
+
+            if arguments['update'] and not arguments['function']:
+                env.project_update(
                     arguments['<base-name>'], arguments['--git_url'], arguments['--branch'])
 
             if arguments['delete'] and not arguments['function']:
@@ -983,19 +1005,19 @@ if __name__ == '__main__':
             if arguments['show']:
                 print "Show Kubernetes Resources\n"
 
-                print kubectl("get pods --namespace=tumbo".split())
+                print kubectl("get pods --insecure-skip-tls-verify --namespace=tumbo".split())
 
             # kubernetes run
             if arguments['run']:
                 print "Starting Tumbo on Kubernetes"
                 try:
-                    base = kubectl("create namespace tumbo".split(),
+                    base = kubectl("--insecure-skip-tls-verify create namespace tumbo".split(),
                                    _out=STDOUT, _err=STDERR)
                 except sh.ErrorReturnCode_1:
                     pass
                 try:
                     base = kubectl(
-                        "create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=tumbo:default".split(), _out=STDOUT, _err=STDERR)
+                        "--insecure-skip-tls-verify create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=tumbo:default".split(), _out=STDOUT, _err=STDERR)
                 except sh.ErrorReturnCode_1:
                     pass
 
@@ -1011,16 +1033,16 @@ if __name__ == '__main__':
                         # with open(cmd + "tmp", 'w') as cmd_tmp:
                         #     cmd_tmp.write(s)
                         base = kubectl(
-                            j2(cmd, _env=env), "apply -f -".split(), _out=STDOUT, _err=STDERR)
+                            j2(cmd, _env=env), "--insecure-skip-tls-verify apply -f -".split(), _out=STDOUT, _err=STDERR)
 
                     except Exception, e:
                         print e.stderr
                 time.sleep(5)
                 print kubectl(
-                    "delete pods -l service=app --namespace=tumbo".split())
+                    "--insecure-skip-tls-verify delete pods -l service=app --namespace=tumbo".split())
                 print kubectl(
-                    "delete pods -l service=background --namespace=tumbo".split())
-                # print kubectl("delete pods -l service=rp --namespace=tumbo".split())
+                    "--insecure-skip-tls-verify delete pods -l service=background --namespace=tumbo".split())
+                # print kubectl("--insecure-skip-tls-verify delete pods -l service=rp --namespace=tumbo".split())
 
                 if is_minikube:
                     print "Waiting to launch UI"

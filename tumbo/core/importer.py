@@ -46,7 +46,8 @@ def _handle_settings(settings, base_obj, override_public=False, override_private
 def _handle_apy(filename, content, base_obj, appconfig):
     name = filename.replace(".py", "")
     apy, _ = Apy.objects.get_or_create(base=base_obj, name=name)
-    apy.module = content
+    if content:
+        apy.module = content
     description = appconfig['modules'][name]['description']
     if description:
         apy.description = description
@@ -128,10 +129,10 @@ def _handle_static(source_type, base, filename, content):
     if source_type == "GIT":
         storage = Storage.factory(base, backend_type="DB")
         filename = base.name + "/" + filename
-        storage.put(filename, content)
+        storage.put(filename, bytearray(content.encode("utf-8")))
     else:
         sfile = "%s/%s" % (base.name, filename)
-        storage.put(sfile, content)
+        storage.put(sfile, bytearray(content.encode("utf-8")))
 
 
 source_type = "GIT"
@@ -142,9 +143,12 @@ class GitImport(object):
         user_obj = User.objects.get(username=username)
         num_results = Base.objects.filter(user=user_obj, name=name).count()
         initial = False
+        result = []
         if num_results == 0:
+            logger.info("doing initial import from git source")
             initial = True
         else:
+            logger.info("doing update from git source")
             try:
                 base_obj = Base.objects.get(
                     user=user_obj, name=name, source_type=source_type)
@@ -160,6 +164,7 @@ class GitImport(object):
 
                 if not repo_path:
                     repo_path = tempfile.mkdtemp()
+                    logger.info("Working on repo_path: %s" % repo_path)
                     repo = Repo.clone_from(repo_url, repo_path)
                 else:
                     if not os.path.exists(repo_path):
@@ -171,6 +176,7 @@ class GitImport(object):
 
                 sha = repo.head.object.hexsha
                 short_sha = repo.git.rev_parse(sha, short=4)
+                logger.info("short_sha: %s" % short_sha)
 
                 if initial:
                     # Initial import
@@ -178,7 +184,7 @@ class GitImport(object):
                     # create zip ball
                     with open('/tmp/clone.zip', 'wb') as archive_file:
                         repo.archive(archive_file, format='zip')
-                        # import all
+                    # import all
                     with open('/tmp/clone.zip', 'r') as archive_file:
                         zf = zipfile.ZipFile(archive_file)
                         base_obj = import_base(zf, user_obj, name, override_public=False,
@@ -189,6 +195,8 @@ class GitImport(object):
                         print "Nothing changed"
                         r = None, base_obj
                     else:
+                        appconfig = _read_config(open("{}/{}".format(repo_path, "app.config")))
+
                         commit_old = repo.commit(revision)
                         commit_new = repo.commit(short_sha)
                         diff_index = commit_old.diff(commit_new)
@@ -199,6 +207,7 @@ class GitImport(object):
                         # added file detected
                         for change_type in ['A', 'M', 'D', 'R']:
                             for diff_item in diff_index.iter_change_type(change_type):
+                                logger.info("change_type: %s" % diff_item.change_type)
 
                                 # Rename
                                 if diff_item.change_type == "R":
@@ -220,12 +229,26 @@ class GitImport(object):
                                         _handle_static(
                                             source_type, base_obj, filename, content)
                                         logger.info(
-                                            "* file %s saved" % filename)
+                                            "* staticfile %s saved" % filename)
 
-                                # # Modified
-                                # elif diff_item.change_type == "M":
-                                #     print "* file %s was modified" % diff_item.a_path
-                                #     new, _ = self.blobs(diff_item)
+                                        result.append({
+                                            filename: "success"
+                                        })
+
+                                # Modified
+                                elif diff_item.change_type == "M":
+                                     print "* file %s was modified" % diff_item.a_path
+                                     new, _ = self.blobs(diff_item)
+
+                                     if diff_item.a_path.endswith(".py"):
+                                        _handle_apy(diff_item.a_path, new, base_obj, appconfig)
+                                        result.append({
+                                            diff_item.a_path: "success"
+                                        })
+
+                                     if diff_item.a_path.endswith("app.config"):
+                                        for apy_name in appconfig['modules'].keys():
+                                            _handle_apy(apy_name, None, base_obj, appconfig)
 
                                 # Delete
                                 elif diff_item.change_type == "D":
@@ -246,19 +269,17 @@ class GitImport(object):
 
                         r = short_sha, base_obj
         except Exception, e:
-            # import traceback
-            # traceback.print_exc()
-            # print dir(e)
-            # print e.__dict__
+            import traceback
+            traceback.print_exc()
             if hasattr(e, "stderr"):
-                raise Exception(e.stderr)
+                raise Exception(getattr(e, "stderr"))
             raise e
         finally:
             if not repo_ref:
                 shutil.rmtree(repo_path)
         if repo_ref:
-            return r + (repo, repo_path,)
-        return r
+            return r + (repo, repo_path,  result,)
+        return r, result
 
     def blobs(self, diff_item):
         # if diff_item.b_blob:
@@ -269,6 +290,7 @@ class GitImport(object):
         #         diff_item.a_blob.data_stream.read().decode('utf-8')))
         new = diff_item.b_blob.data_stream.read().decode(
             'utf-8') if diff_item.b_blob else None
+        logger.info(new)
         old = diff_item.a_blob.data_stream.read().decode(
             'utf-8') if diff_item.a_blob else None
         return new, old

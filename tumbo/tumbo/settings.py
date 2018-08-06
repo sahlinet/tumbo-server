@@ -183,7 +183,7 @@ LOGGING = {
         'core.views.static': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'core.loader': {
             'handlers': ['console'],
@@ -236,6 +236,12 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+	'core.staticfiles': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+
         'core.scheduler': {
             'handlers': ['console'],
             'level': 'DEBUG',

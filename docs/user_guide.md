@@ -18,6 +18,12 @@ can create or update the base on the same or on other platform.
 
 > If a Base contains a lot of static files, export and import might fail because of timeouts!
 
+### Git managed Bases
+
+Source for a Base can be edited directly on Tumbo or the source can be in a Git repository. On Github a Webhook can be configured sending `push` events to a hook URL:
+
+    https://tumbo.sahli.net/core/api/username/admin/base/tumbo-demoapp/hook/
+
 * * *
 
 ## CLI
@@ -274,7 +280,7 @@ wait until the `status` is `FINISHED`.
 
 ### Schedules
 
-Add in the UI a configuration for a scheduled execution of a function. For example `0 */5 * * *` for every five minutes. (`second minute hour day_of_week`).
+Add in the UI a configuration for a scheduled execution of a function. For example `0 */5 * *` for every five minutes. (`second minute hour day_of_week`).
 
 
 * * *

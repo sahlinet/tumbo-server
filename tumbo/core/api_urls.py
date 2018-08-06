@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
 from rest_framework_swagger.views import get_swagger_view
 
-from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, CoreApyExecutionViewSet, ApyViewSetByName
+from core.api_views import BaseAdminViewSet, BaseViewSet, BaseLogViewSet, SettingViewSet, PublicApyViewSet, ApyViewSet, BaseExportViewSet, BaseImportViewSet, TransportEndpointViewSet, TransactionViewSet, ApyExecutionViewSet, CoreApyExecutionViewSet, ApyViewSetByName, BaseUpdateViewSet, WebhookView
 
 # Routers provide an easy way of automatically determining the URL conf
 router = routers.DefaultRouter(trailing_slash=True)
@@ -17,11 +17,20 @@ urlpatterns = patterns('',
     url(r'^transportendpoints/(?P<pk>\d+)/$', TransportEndpointViewSet.as_view({'put': 'update'}), name='transportendpoint-list'),
     url(r'^base/$', BaseViewSet.as_view({'get': 'list', 'post': 'create'}), name='base-list'),
 
+    # Import / Update
     url(r'^base/import/$', csrf_exempt(BaseImportViewSet.as_view({'post': 'imp'})), name='base-import'),
+    url(r'^username/(?P<username>[\w-]+)/base/(?P<name>[\w-]+)/hook/$', csrf_exempt(WebhookView.as_view({'post': 'hook'})), name='base-update-hook'),
+    url(r'^base/(?P<name>[\w-]+)/update/$', csrf_exempt(BaseUpdateViewSet.as_view({'post': 'update'})), name='base-update'),
+
+    # Base REST
     url(r'^base/(?P<name>[\w-]+)/$', BaseViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='base-detail'),
     #url(r'^config/$', ServerConfigViewSet.as_view(), name='settings'),
+
+    # Base admin actions
     url(r'^base/destroy_all/$', BaseAdminViewSet.as_view({'get': 'destroy_all'}), name='bases-destroy'),
     url(r'^base/recreate_all/$', BaseAdminViewSet.as_view({'get': 'recreate_all'}), name='bases-recreate'),
+
+    # Base actions
     url(r'^base/(?P<name>[\w-]+)/start/$', BaseViewSet.as_view({'post': 'start'}), name='base-start'),
     url(r'^base/(?P<name>[\w-]+)/stop/$', BaseViewSet.as_view({'post': 'stop'}), name='base-start'),
     url(r'^base/(?P<name>[\w-]+)/log/$', BaseLogViewSet.as_view({'get': 'log'}), name='base-log'),

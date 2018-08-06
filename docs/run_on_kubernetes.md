@@ -6,7 +6,7 @@
 
 Development Release from PyPi's Testing Site
 
-    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple tumbo-server==0.5.11-dev
+    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple tumbo-server==0.5.22-dev
 
 Released Version from PyPi
 
@@ -54,6 +54,12 @@ Create the configuration file:
     ADMIN_PASSWORD=hellohello
     ALLOWED_HOSTS=192.168.99.100:31999
     SERVER_NAME=192.168.99.100
+
+To access a Minikube cluster on remote server, setup some SSH-Tunnels (and set host and frontend_host to the remote IP):
+
+    https://github.com/kubernetes/minikube/issues/877
+
+    ssh -N -v -i ~/.minikube/machines/minikube/id_rsa docker@$(minikube ip) -L 192.168.1.2:30000:localhost:30000 -L 192.168.1.2:31999:localhost:31999 -L 192.168.1.2:8443:localhost:8443
 
 Deploy Tumbo.
 
