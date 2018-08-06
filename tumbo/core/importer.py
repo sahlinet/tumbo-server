@@ -129,10 +129,10 @@ def _handle_static(source_type, base, filename, content):
     if source_type == "GIT":
         storage = Storage.factory(base, backend_type="DB")
         filename = base.name + "/" + filename
-        storage.put(filename, content)
+        storage.put(filename, bytearray(content.encode("utf-8")))
     else:
         sfile = "%s/%s" % (base.name, filename)
-        storage.put(sfile, content)
+        storage.put(sfile, bytearray(content.encode("utf-8")))
 
 
 source_type = "GIT"
@@ -206,6 +206,7 @@ class GitImport(object):
                         # added file detected
                         for change_type in ['A', 'M', 'D', 'R']:
                             for diff_item in diff_index.iter_change_type(change_type):
+                                logger.info("change_type: %s" % diff_item.change_type)
 
                                 # Rename
                                 if diff_item.change_type == "R":
@@ -221,13 +222,14 @@ class GitImport(object):
 
                                     filename = diff_item.a_path
                                     content = new
+                                    print content
 
                                     if "static" in filename:
                                         filename = base_obj.name + "/" + filename
                                         _handle_static(
                                             source_type, base_obj, filename, content)
                                         logger.info(
-                                            "* file %s saved" % filename)
+                                            "* staticfile %s saved" % filename)
 
                                 # Modified
                                 elif diff_item.change_type == "M":
@@ -263,7 +265,7 @@ class GitImport(object):
             import traceback
             traceback.print_exc()
             if hasattr(e, "stderr"):
-                raise Exception(e.stderr)
+                raise Exception(getattr(e, "stderr"))
             raise e
         finally:
             if not repo_ref:
@@ -281,6 +283,7 @@ class GitImport(object):
         #         diff_item.a_blob.data_stream.read().decode('utf-8')))
         new = diff_item.b_blob.data_stream.read().decode(
             'utf-8') if diff_item.b_blob else None
+        logger.info(new)
         old = diff_item.a_blob.data_stream.read().decode(
             'utf-8') if diff_item.a_blob else None
         return new, old
