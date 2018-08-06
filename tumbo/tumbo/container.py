@@ -5,7 +5,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 def get_var(var_name, fail=True):
     """ Get the environment variable or return exception """
-    # Taken from twoo scoops book, Thank you guys.
+    # Taken from two scoops book, Thank you guys.
     # https://django.2scoops.org/
     try:
         val = os.environ[var_name]
@@ -83,18 +83,8 @@ else:
     RABBITMQ_HOST = get_var('QUEUE_PORT_5672_TCP_ADDR')
     RABBITMQ_PORT = int(get_var('QUEUE_PORT_5672_TCP_PORT'))
 
-DROPBOX_CONSUMER_KEY = get_var('DROPBOX_CONSUMER_KEY')
-DROPBOX_CONSUMER_SECRET = get_var('DROPBOX_CONSUMER_SECRET')
-DROPBOX_REDIRECT_URL = get_var('DROPBOX_REDIRECT_URL')
-
 TUMBO_WORKER_IMPLEMENTATION = get_var('TUMBO_WORKER_IMPLEMENTATION')
 TUMBO_DOCKER_IMAGE = get_var('TUMBO_DOCKER_IMAGE')
-
-if "rancher" in TUMBO_WORKER_IMPLEMENTATION.lower():
-    RANCHER_ACCESS_KEY = get_var('RANCHER_ACCESS_KEY')
-    RANCHER_ACCESS_SECRET = get_var('RANCHER_ACCESS_SECRET')
-    RANCHER_ENVIRONMENT_ID = get_var('RANCHER_ENVIRONMENT_ID')
-    RANCHER_URL = get_var('RANCHER_URL')
 
 DOCKER_TLS_URL = get_var('DOCKER_TLS_URL', False)
 
@@ -111,7 +101,7 @@ if os.environ.get("KUBERNETES_PORT", None):
     STORE_DB_PORT = 5432
     STORE_DB_NAME = "store"
     STORE_DB_USER = "store"
-    STORE_DB_PASSWORD = "storepw"
+    STORE_DB_PASSWORD = get_var("STORE_ENV_PASSWORD")
 else:
     STORE_DB_HOST = os.environ.get('STORE_DB_HOST', None)
     STORE_DB_PORT = int(os.environ.get('STORE_DB_PORT', 5432))
@@ -120,7 +110,6 @@ else:
     STORE_DB_USER = get_var("STORE_ENV_DB_USER")
     STORE_DB_PASSWORD = get_var("STORE_ENV_PASSWORD")
 
-# Direct set, needed at the moment on Rancher
 # TODO: Get them dynamically from API
 if WORKER_RABBITMQ_HOST:
         print "WORKER_RABBITMQ_HOST and probably more is set"

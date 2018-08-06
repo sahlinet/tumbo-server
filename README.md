@@ -28,7 +28,7 @@ Tumbo is a Server Platform for simplifying common development and deployment tas
 
 For a quick start it is fine to use the package from pip.
 
-    pip install tumbo-server==0.4.12
+    pip install tumbo-server==0.5.22-dev
     tumbo-cli.py server dev run
 
 ## Run Tumbo
@@ -41,9 +41,7 @@ See [docs/tumbo-server_on_centos.md](docs/tumbo-server_on_centos.md)
 
 ### On Docker (Production)
 
-To run Tumbo for a production use an Docker Orchestration Platform (Rancher tested).
-
-See [Ranger Guide](docs/dep_rancher.md)
+To run Tumbo for a production use an Docker Orchestration Platform (Kubernetes).
 
 ## External Services
 
@@ -133,8 +131,9 @@ a job runs and deletes transaction data older than
 
 ### Run
 
-    coverage run --append --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
-    coverage run --append --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
+    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a coverage run --append --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
     coverage run --append --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
+    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a coverage run --append --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
+    CI=yes DROPBOX_REDIRECT_URL=a DROPBOX_REDIRECT_URL=a DROPBOX_CONSUMER_SECRET=a DROPBOX_CONSUMER_KEY=a coverage run --append --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
 
 See also the configuration in `circle.yml` for a better understanding.

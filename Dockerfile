@@ -23,7 +23,7 @@ RUN echo cachebust_1470943960
 
 ADD dist $CODE_DIR/dist
 ADD examples $CODE_DIR/examples
-RUN $PIP install --upgrade pip && cd $CODE_DIR/dist && $PIP install tumbo-server-*.tar.gz
+RUN $PIP install --upgrade pip==9.0.3 && cd $CODE_DIR/dist && $PIP install tumbo-server-*.tar.gz
 
 # WORKAROUND
 RUN $PIP install -e git+https://github.com/rpalacios/django-sequence-field.git@f1bdc48c897e6cd95a3182f8253665609a87a895#egg=django_sequence_field-master

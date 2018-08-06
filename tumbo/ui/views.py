@@ -1,25 +1,30 @@
-from django.shortcuts import redirect
-from django.contrib.auth import logout as auth_logout
-
-from ui.decorators import render_to
-
 from django.conf import settings
-
-from tumbo import __VERSION__ as TUMBO_VERSION
-
+from django.contrib.auth import logout as auth_logout
+from django.shortcuts import redirect
 from rest_framework.authtoken.models import Token
-from social.backends.utils import load_backends
+from social_core.backends.utils import load_backends
+
 from core.models import AuthProfile
+from tumbo import __VERSION__ as TUMBO_VERSION
+from ui.decorators import render_to
 
 
 def context(**extra):
-    return dict({
+    context_data = dict({
         # 'plus_id': getattr(settings, 'SOCIAL_AUTH_GOOGLE_PLUS_KEY', None),
         # 'plus_scope': ' '.join(GooglePlusAuth.DEFAULT_SCOPE),
         'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS),
-        'PLANET_VERSION': TUMBO_VERSION,
+        'TUMBO_VERSION': TUMBO_VERSION,
         'TUMBO_STATIC_CACHE_SECONDS': settings.TUMBO_STATIC_CACHE_SECONDS
     }, **extra)
+
+    try:
+        plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.dnsname']
+        context_data['DNS_ZONE'] = plugin_settings.get("zone")
+    except Exception, e:
+        context_data['DNS_ZONE'] = "ZONE"
+
+    return context_data
 
 
 HOME_TEMPLATE = getattr(settings, 'HOME_TEMPLATE', 'home.html')
@@ -38,6 +43,7 @@ def home(request):
 def profile(request):
     """Home view, displays login mechanism"""
     auth, created = AuthProfile.objects.get_or_create(user=request.user)
+    print auth, created
     if not request.user.is_authenticated():
         raise Exception("Not Logged in")
 

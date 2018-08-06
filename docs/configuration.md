@@ -132,16 +132,6 @@ Following stuff is needed for login to one private repository as you would do wi
     DOCKER_LOGIN_EMAIL = "username@example.com"
     DOCKER_LOGIN_HOST= "https://tutum.co/v1/"
 
-or
-
-#### Rancher
-
-    TUMBO_WORKER_IMPLEMENTATION = "fastapp.executors.worker_engines.rancher.RancherApiExecutor"
-    RANCHER_ACCESS_KEY="asdfasdf"
-    RANCHER_ACCESS_SECRET="asdfasdf"
-    RANCHER_ENVIRONMENT_ID="xnx"
-    RANCHER_URL="http://rancher.xy.xy:8080"
-
 ## Cache
 
 Configure a cache backend.
@@ -177,21 +167,6 @@ Following credentials are used for heartbeating between workers and server.
     TUMBO_CORE_RECEIVER_PASSWORD = "asdf"
 
 Specify on the server the setting `WORKER_RABBITMQ_HOST` and `WORKER_RABBITMQ_PORT` on how the worker can connect to RabbitMQ.
-
-### Dropbox Storage
-
-Create a Dropbox App and enter the key and secret.
-
-    # django-fastapp
-    DROPBOX_CONSUMER_KEY = "xxxxxx"
-    DROPBOX_CONSUMER_SECRET = "xxxxxx"
-    DROPBOX_REDIRECT_URL = "http://localhost:8000"
-
-Development only (runserver) for loading static files, root path used for loading static files:
-
-    TUMBO_REPOSITORIES_PATH = "/Users/fatrix/Dropbox/Repositories"
-    TUMBO_DEV_STORAGE_DROPBOX_PATH="/Users/fatrix/Dropbox/Apps/planet dev"
-
 
 # Running
 

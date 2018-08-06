@@ -4,6 +4,6 @@ find . -name static|cut -c3- | awk '{print "recursive-include "$0" *"}' >> MANIF
 
 echo "recursive-include compose-files *" >> MANIFEST.in
 echo "recursive-exclude .tox *" >> MANIFEST.in
-echo "include ./requirements.txt" >> MANIFEST.in
+echo "include requirements.txt" >> MANIFEST.in
 echo "recursive-include . templates" >> MANIFEST.in
 python setup.py sdist --formats=gztar 

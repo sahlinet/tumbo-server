@@ -38,7 +38,7 @@ class Command(BaseCommand):
                     dest='vhost',
                     default=None,
                     help='VHost on Queue system'),
-        )
+    )
 
     def handle(self, *args, **options):
         threads = []
@@ -56,8 +56,10 @@ class Command(BaseCommand):
 
         SENDER_PASSWORD = load_setting("TUMBO_CORE_SENDER_PASSWORD")
 
-        logger.info("TUMBO_WORKER_THREADCOUNT: %s" % load_setting("TUMBO_WORKER_THREADCOUNT"))
-        logger.info("TUMBO_PUBLISH_INTERVAL: %s" % load_setting("TUMBO_PUBLISH_INTERVAL"))
+        logger.info("TUMBO_WORKER_THREADCOUNT: %s" %
+                    load_setting("TUMBO_WORKER_THREADCOUNT"))
+        logger.info("TUMBO_PUBLISH_INTERVAL: %s" %
+                    load_setting("TUMBO_PUBLISH_INTERVAL"))
 
         for c in range(0, settings.TUMBO_WORKER_THREADCOUNT):
             # start threads
@@ -65,7 +67,8 @@ class Command(BaseCommand):
             name = "ExecutorSrvThread-%s-%s" % (c, base)
             thread = ExecutorServerThread(name, host, port, vhost,
                                           queues_consume=[[RPC_QUEUE]],
-                                          topic_receiver=[[CONFIGURATION_QUEUE]],
+                                          topic_receiver=[
+                                              [CONFIGURATION_QUEUE]],
                                           username=username,
                                           password=password)
             threads.append(thread)
@@ -102,7 +105,8 @@ class Command(BaseCommand):
 
         for t in threads:
             try:
-                logger.info("%s Thread started" % settings.TUMBO_WORKER_THREADCOUNT)
+                logger.info("%s Thread started" %
+                            settings.TUMBO_WORKER_THREADCOUNT)
                 t.join(1000)
             except KeyboardInterrupt:
                 print "Ctrl-c received."

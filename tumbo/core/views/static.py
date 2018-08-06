@@ -1,19 +1,19 @@
 import logging
-
 from datetime import datetime
 
-from django.contrib.auth import get_user_model
-from django.views.generic import View
-from django.http import HttpResponseNotFound, HttpResponse, HttpResponseServerError, HttpResponseNotModified
+import pytz
 from django.conf import settings
-from django.template import Template, RequestContext
+from django.contrib.auth import get_user_model
+from django.http import (HttpResponse, HttpResponseNotFound,
+                         HttpResponseNotModified, HttpResponseServerError)
+from django.template import RequestContext, Template
+from django.views.generic import View
 
-from core.utils import totimestamp
 from core.models import Base
 from core.plugins.datastore import PsqlDataStore
+from core.staticfiles import NotFound, StaticfileFactory
+from core.utils import totimestamp
 from core.views import ResponseUnavailableViewMixing
-from core.staticfiles import StaticfileFactory, NotFound
-
 
 User = get_user_model()
 
@@ -48,10 +48,14 @@ class StaticView(ResponseUnavailableViewMixing, View):
         logger.debug("%s GET" % static_path)
 
         # verify that base exists for user
-        base_obj = Base.objects.get(user__username=kwargs['username'], name=kwargs['base'])
+        base_obj = Base.objects.get(
+            user__username=kwargs['username'], name=kwargs['base'])
+
+        if not base_obj.executor.is_running():
+            return HttpResponseNotFound()
 
         #response = self.verify(request, base_obj)
-        #if response:
+        # if response:
         #    return response
 
         last_modified = None
@@ -65,7 +69,7 @@ class StaticView(ResponseUnavailableViewMixing, View):
             logger.error(e)
             return HttpResponseNotFound("Not found: %s" % static_path)
         except Exception, e:
-            logger.error(e)
+            logger.exception(e)
             raise e
 
         # default
@@ -122,14 +126,20 @@ class StaticView(ResponseUnavailableViewMixing, View):
                 pass
             if last_modified:
                 if isinstance(last_modified, float):
-                    last_modified = datetime.utcfromtimestamp(last_modified)
-            if_modified_since = request.META.get('HTTP_IF_MODIFIED_SINCE', None)
+                    last_modified = pytz.utc.localize(datetime.utcfromtimestamp(last_modified))
+            if_modified_since = request.META.get(
+                'HTTP_IF_MODIFIED_SINCE', None)
             if last_modified and if_modified_since:
-                if_modified_since_dt = datetime.strptime(if_modified_since, frmt)
+                if_modified_since_dt = datetime.strptime(
+                    if_modified_since, frmt).replace(tzinfo=pytz.UTC)
                 last_modified = last_modified.replace(microsecond=0)
-                logger.debug("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" % (static_path, last_modified, if_modified_since_dt))
+                
+                logger.debug("%s: checking if last_modified '%s' or smaller/equal of if_modified_since '%s'" %
+                             (static_path, last_modified, if_modified_since_dt))
+                    
                 if last_modified <= if_modified_since_dt:
-                    logger.info("%s: 304 (last_modified): %s" % (static_path, last_modified))
+                    logger.info("%s: 304 (last_modified): %s" %
+                                (static_path, last_modified))
                     return HttpResponseNotModified()
             response = HttpResponse(rfile, content_type=mimetype)
             if last_modified:
@@ -138,24 +148,44 @@ class StaticView(ResponseUnavailableViewMixing, View):
             if static_path.endswith("png") or static_path.endswith("css") or static_path.endswith("js") \
                     or static_path.endswith("woff"):
                 response['Cache-Control'] = "max-age=120"
-            logger.info("%s: 200 (last_modified: %s)" % (static_path, last_modified))
+            logger.info("%s: 200 (last_modified: %s)" %
+                        (static_path, last_modified))
         return response
 
-
     def _setup_context(self, request, base_obj):
+        """Creates a context for rendering files ending with 'html'.
+
+        Arguments:
+            request {Request} -- [The request]
+            base_obj {Base} -- [Base object]
+
+        Returns:
+            Context -- The context used for rendering.
+        """
+
         data = dict((s.key, s.value) for s in base_obj.setting.all())
 
-        data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % ("userland", base_obj.user.username, base_obj.name)
+        data['TUMBO_STATIC_URL'] = "/%s/%s/%s/static/" % (
+            "userland", base_obj.user.username, base_obj.name)
+        data['RUNTIME_USER'] = base_obj.user.username
+        if hasattr(base_obj, "executor"):
+            data['SERVICE_PORT'] = base_obj.executor.port
+            data['SERVICE_IP'] = base_obj.executor.ip
+            data['SERVICE_IP6'] = base_obj.executor.ip6
+        else:
+            data['SERVICE_PORT'] = None
 
         try:
             logger.debug("Setup datastore for context starting")
             plugin_settings = settings.TUMBO_PLUGINS_CONFIG['core.plugins.datastore']
-            data['datastore'] = PsqlDataStore(schema=base_obj.name, keep=False, **plugin_settings)
+            data['datastore'] = PsqlDataStore(
+                schema=base_obj.name, keep=False, **plugin_settings)
             logger.debug("Setup datastore for context done")
             logger.debug("Datastore-Size: %s" % data['datastore'].count())
-            data['is_authenticated'] = request.user.is_authenticated()
         except KeyError:
             logger.error("Setup datastore for context failed")
+        data['is_authenticated'] = request.user.is_authenticated()
+        data['username'] = request.user.get_username()
         updated = request.GET.copy()
         query_params = {}
         for k, v in updated.iteritems():

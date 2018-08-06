@@ -43,16 +43,16 @@
         {% endfor %}
     </div>
   </div>
-<h3>or</h3>
+<h3>orOR</h3>
     <div class="row">
         <div class="col-md-6">
-            <form class="form-signin" id="login_form" method="post" action="/cas/complete/username/"
+            <form class="form-signin" id="login_form" method="post" action="{% url "social:complete" backend="username" %}">
                 {% csrf_token %}
 
                 <label for="inputUsername" class="sr-only">Username</label>
-                <input type="text" id="inputUsername" name="username" class="form-control" placeholder="Username" required="" autofocus="">
+                <input type="text" id="username" name="username" class="form-control" placeholder="Username" required="" autofocus="">
                 <label for="inputPassword" class="sr-only">Password</label>
-                <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required="">
+                <input type="password" id="password" name="password" class="form-control" placeholder="Password" required="">
                 <!--<div class="checkbox">
                   <label>
                     <input type="checkbox" value="remember-me"> Remember me

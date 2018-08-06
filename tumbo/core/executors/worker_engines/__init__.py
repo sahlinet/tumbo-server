@@ -27,14 +27,14 @@ class BaseExecutor(object):
     def _get_name(self):
         # container name, must be unique, therefore we use a mix from site's domain name and executor
         slug = "worker-%s-%i-%s" % (Site.objects.get_current().domain,
-            random.randrange(1,900000), self.base_name)
+                                    random.randrange(1, 900000), self.base_name)
         return slug.replace("_", "-").replace(".", "-")
 
     def addresses(self, id, port=None):
         return {
             'ip': self._get_public_ipv4_address(),
             'ip6': None
-            }
+        }
 
     def _get_public_ipv4_address(self):
         import socket
@@ -53,25 +53,25 @@ class BaseExecutor(object):
             logger.exception("Cannot get external public ip address")
         return None
 
-
     @property
     def _start_command(self):
         start_command = "%s %smanage.py start_worker --vhost=%s --base=%s --username=%s --password=%s" % (
-                    "/home/tumbo/.virtualenvs/tumbo/bin/python",
-                    "/home/tumbo/code/app/",
-                    self.vhost,
-                    self.base_name,
-                    self.base_name, self.password
-                    )
+            "/home/tumbo/.virtualenvs/tumbo/bin/python",
+            "/home/tumbo/code/app/",
+            self.vhost,
+            self.base_name,
+            self.base_name, self.password
+        )
         return start_command
 
     def destroy(self, id):
         logger.debug("Executor does not support 'destroy'")
 
     def _pre_start(self):
-        success, failed = call_plugin_func(self.executor.base, "on_start_base")
+        _, failed = call_plugin_func(self.executor.base, "on_start_base")
         if len(failed.keys()) > 0:
-            logger.warning("Problem with on_start_base for plugin (%s)" % str(failed))
+            logger.warning(
+                "Problem with on_start_base for plugin (%s)" % str(failed))
 
     def log(self, id):
         raise NotImplementedError()

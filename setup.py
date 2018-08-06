@@ -1,12 +1,13 @@
-from setuptools import setup, find_packages
 import glob
 import os
 
-__VERSION__ = "0.4.12"
-
-
 # http://stackoverflow.com/questions/14399534/how-can-i-reference-requirements-txt-for-the-install-requires-kwarg-in-setuptool
 from pip.req import parse_requirements
+from setuptools import find_packages, setup
+
+__VERSION__ = "0.5.22-dev"
+
+
 install_reqs = parse_requirements("./requirements.txt", session=False)
 reqs = [str(ir.req) for ir in install_reqs if not "github" in str(ir.link)]
 

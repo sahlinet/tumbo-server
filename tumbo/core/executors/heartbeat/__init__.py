@@ -1,31 +1,31 @@
-import pika
-import logging
-import time
 import json
+import logging
 import os
 import socket
 import subprocess
-import pytz
+import time
 from datetime import datetime, timedelta
 
-from django.core.urlresolvers import reverse
-from django.core.exceptions import MultipleObjectsReturned
-from django.test import RequestFactory
+import gevent
+import pika
+import psutil
+import pytz
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import serializers
-from django.conf import settings
-from django.db import DatabaseError, transaction
+from django.core.exceptions import MultipleObjectsReturned
+from django.core.urlresolvers import reverse
+from django.db import DatabaseError, connections, transaction
+from django.test import RequestFactory
+from gevent import pool as gevent_pool
+from gevent import Greenlet
 
-from core.executors.remote import distribute
-from core.models import Base, Instance, Process, Thread, Apy, Setting
-from core.communication import CommunicationThread
-
-from core.plugins import call_plugin_func
 from core import __VERSION__
+from core.communication import CommunicationThread
+from core.executors.remote import distribute
+from core.models import Apy, Base, Instance, Process, Setting, Thread
+from core.plugins import call_plugin_func
 from core.utils import load_setting
-#from core.utils import profileit
-
-import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,20 @@ FOREIGN_CONFIGURATION_QUEUE = "fconfiguration"
 SETTING_QUEUE = "setting"
 PLUGIN_CONFIG_QUEUE = "pluginconfig"
 
+
+
+def patch_thread(connections_override):
+    if connections_override:
+        # Override this thread's database connections with the ones
+        # provided by the main thread.
+        for alias, conn in connections_override.items():
+            connections[alias] = conn
+            #import pprint;pprint.pprint(conn.__dict__)
+            #print conn.connection.__dict__
 def log_mem(**kwargs):
+
+    if kwargs.get("connections_override", None):
+        patch_thread(kwargs.get("connections_override"))
 
     name = kwargs['name']
 
@@ -62,35 +75,86 @@ def log_mem(**kwargs):
         logger.exception(e)
 
 
-def inactivate():
-
+def inactivate(**kwargs):
     try:
+
+        if kwargs.get("connections_override", None):
+            patch_thread(kwargs.get("connections_override"))
+
         while True:
             logger.debug("Inactivate Thread run")
 
             time.sleep(0.1)
             now = datetime.now().replace(tzinfo=pytz.UTC)
             with transaction.atomic():
-                for instance in Instance.objects.filter(last_beat__lte=now-timedelta(minutes=1), is_alive=True):
-                    logger.info("inactive instance '%s' detected, mark stopped" % instance)
-                    instance.mark_down()
-                    instance.save()
-
-                # start if is_started and not running
                 try:
-                    for base in Base.objects.select_for_update(nowait=True).filter(executor__started=True):
-                    #for executor in Executor.objects.select_for_update(nowait=True).filter(started=True):
-                        if not base.executor.is_running():
-                            # log start with last beat datetime
-                            logger.error("Start worker for not running base: %s" % base.name)
-                            base.executor.start()
+                    for instance in Instance.objects.filter(last_beat__lte=now - timedelta(minutes=1), is_alive=True):
+                        logger.info(
+                            "inactive instance '%s' detected, mark stopped" % instance)
+                        instance.mark_down()
+                        instance.save()
+                        # start if is_started and not running
+
+                        for base in Base.objects.select_for_update(nowait=True).filter(executor__started=True):
+                            # for executor in Executor.objects.select_for_update(nowait=True).filter(started=True):
+                            if not base.executor.is_running():
+                                # log start with last beat datetime
+                                logger.error(
+                                    "Start worker for not running base: %s" % base.name)
+                                base.executor.start()
                 except DatabaseError, e:
-                    logger.exception("Executor(s) was locked with select_for_update")
+                    logger.exception(
+                        "Executor(s) was locked with select_for_update")
             time.sleep(10)
     except Exception, e:
         logger.exception(e)
 
-def update_status(parent_name, thread_count, threads):
+
+def _recreate(base):
+    """Internal function to recreate a Worker
+    
+    Arguments:
+        base {Base} -- Base to recreate.
+    """
+
+    base.destroy()
+    base.start()
+    logger.info("'%s' recreated" % base)
+
+def updater(**kwargs):
+    if kwargs.get("connections_override", None):
+        patch_thread(kwargs.get("connections_override"))
+    try:
+        while True:
+            logger.debug("UpdaterThread run")
+
+            time.sleep(0.1)
+            now = datetime.now().replace(tzinfo=pytz.UTC)
+            # with transaction.atomic():
+
+            pool = gevent_pool.Pool(10)
+            qs = Instance.objects.filter(last_beat__gte=now - timedelta(
+                minutes=1), is_alive=True).exclude(process__version=__VERSION__)
+            if len(qs) > 0:
+                logger.info("%s running with old version" % str(len(qs)))
+            else:
+                logger.debug("No instances with old version found")
+
+            for instance in qs:
+                logger.info("Instance '%s' with old version detected (%s->%s)" %
+                            (instance, instance.process.version, __VERSION__))
+                worker = Greenlet.spawn(_recreate, instance.executor.base)
+                pool.add(gevent.spawn(worker.run))
+            pool.join()
+
+            time.sleep(10)
+    except Exception, e:
+        logger.exception(e)
+
+
+def update_status(parent_name, thread_count, threads, **kwargs):
+    if kwargs.get("connections_override", None):
+        patch_thread(kwargs.get("connections_override"))
     try:
         while True:
             time.sleep(0.1)
@@ -99,29 +163,31 @@ def update_status(parent_name, thread_count, threads):
             pid = os.getpid()
             args = ["ps", "-p", str(pid), "-o", "rss="]
             proc = subprocess.Popen(args, stdout=subprocess.PIPE)
-            (out, err) = proc.communicate()
+            (out, _) = proc.communicate()
             rss = str(out).rstrip().strip().lstrip()
-            process, created = Process.objects.get_or_create(name=parent_name)
+            process, _ = Process.objects.get_or_create(name=parent_name)
             process.rss = int(rss)
             process.version = __VERSION__
             process.save()
 
             # threads
             for t in threads:
-                logger.debug(t.name+": "+str(t.isAlive()))
+                logger.debug(t.name + ": " + str(t.isAlive()))
 
                 # store in db
-                thread_model, created = Thread.objects.get_or_create(name=t.name, parent=process)
+                thread_model, _ = Thread.objects.get_or_create(
+                    name=t.name, parent=process)
                 if t.isAlive():
                     logger.debug("Thread '%s' is alive." % t.name)
                     thread_model.started()
-                    alive_thread_count=alive_thread_count+1
+                    alive_thread_count = alive_thread_count + 1
                 elif hasattr(t, "health") and t.health():
                     logger.debug("Thread '%s' is healthy." % t.name)
                     thread_model.started()
-                    alive_thread_count=alive_thread_count+1
+                    alive_thread_count = alive_thread_count + 1
                 else:
-                    logger.warn("Thread '%s' is not alive or healthy." % t.name)
+                    logger.warn(
+                        "Thread '%s' is not alive or healthy." % t.name)
                     thread_model.not_connected()
                 thread_model.save()
 
@@ -130,7 +196,8 @@ def update_status(parent_name, thread_count, threads):
                 process.save()
                 logger.debug("Process '%s' is healthy." % parent_name)
             else:
-                logger.error("Process '%s' is not healthy. Threads: %s / %s" % (parent_name, alive_thread_count, thread_count))
+                logger.error("Process '%s' is not healthy. Threads: %s / %s" %
+                             (parent_name, alive_thread_count, thread_count))
             time.sleep(10)
 
     except Exception, e:
@@ -140,8 +207,7 @@ def update_status(parent_name, thread_count, threads):
 class HeartbeatThread(CommunicationThread):
 
     def send_message(self):
-    	"""
-        Client functionality for heartbeating and sending statistics.
+        """Client-side functionality for heartbeating and sending metrics.
         """
         logger.debug("send heartbeat to %s:%s" % (self.vhost, HEARTBEAT_QUEUE))
         pid = os.getpid()
@@ -176,7 +242,7 @@ class HeartbeatThread(CommunicationThread):
                                    routing_key=HEARTBEAT_QUEUE,
                                    properties=pika.BasicProperties(
                                             expiration=str(2000)
-                                       ),
+                                   ),
                                    body=json.dumps(payload)
                                    )
 
@@ -188,54 +254,59 @@ class HeartbeatThread(CommunicationThread):
 
         self.schedule_next_message()
 
-    #@profileit
     def on_message(self, ch, method, props, body):
-    	"""
-        Server functionality for storing status and statistics.
+        """Server functionality for storing received status and metrics.
         """
-
         try:
             data = json.loads(body)
             vhost = data['vhost']
             base = vhost.split("-", 1)[1]
-            logger.debug("** '%s' Heartbeat received from '%s'" % (self.name, vhost))
+            logger.debug("** '%s' Heartbeat received from '%s'" %
+                         (self.name, vhost))
 
             # store timestamp in DB
             try:
                 instance = Instance.objects.get(executor__base__name=base)
             except Instance.DoesNotExist, e:
                 logger.error("Instance for base '%s' does not exist" % base)
-                raise Exception()
+                return
             instance.is_alive = True
             instance.last_beat = datetime.now().replace(tzinfo=pytz.UTC)
             instance.save()
 
-            process, created = Process.objects.get_or_create(name=vhost)
+            process, created = Process.objects.get_or_create(
+                name=vhost, instance=instance)
             process.rss = int(data['rss'])
             if data.has_key('version'):
                 process.version = data['version']
+                if process.version != __VERSION__:
+                    logger.info("Heartbeat detected old version: %s->%s" %
+                                (process.version, __VERSION__))
             process.save()
 
-            slug = vhost.replace("/", "")+"-rss"
-            # logger.info("Sent metric for slug %s" % slug)
+            slug = vhost.replace("/", "") + "-rss"
+
             from redis_metrics import set_metric
 
             try:
-                set_metric(slug, int(process.rss)/1024, expire=86400)
+                set_metric(slug, int(process.rss) / 1024, expire=86400)
             except Exception, e:
                 logger.warn(e)
 
-            #logger.info(data['ready_for_init'], data['in_sync'])
+            logger.debug("Sync status: " +
+                         str(data['ready_for_init']), str(data['in_sync']))
 
             # verify and warn for incomplete threads
             try:
                 base_obj = Base.objects.get(name=base)
             except MultipleObjectsReturned, e:
-                logger.error("Lookup for '%s' returned more than one result" % base)
+                logger.error(
+                    "Lookup for '%s' returned more than one result" % base)
                 raise e
             for thread in data['threads']['list']:
                 try:
-                    thread_obj, created = Thread.objects.get_or_create(name=thread['name'], parent=process)
+                    thread_obj, created = Thread.objects.get_or_create(
+                        name=thread['name'], parent=process)
                     if thread['connected']:
                         thread_obj.health = Thread.STARTED
                     else:
@@ -248,55 +319,61 @@ class HeartbeatThread(CommunicationThread):
             if not data['in_sync']:
                 instances = list(Apy.objects.filter(base__name=base))
                 for instance in instances:
-                    distribute(CONFIGURATION_QUEUE, serializers.serialize("json", [instance,]),
-                        vhost,
-                        instance.base.name,
-                        instance.base.executor.password
-                        )
+                    distribute(CONFIGURATION_QUEUE, serializers.serialize("json", [instance, ]),
+                               vhost,
+                               instance.base.name,
+                               instance.base.executor.password
+                               )
                 instances = base_obj.foreign_apys.all()
                 logger.info("Foreigns to sync: %s" % str(list(instances)))
                 for instance in instances:
-                    distribute(FOREIGN_CONFIGURATION_QUEUE, serializers.serialize("json", [instance,]),
-                        vhost,
-                        base_obj.name,
-                        base_obj.executor.password
-                        )
+                    distribute(FOREIGN_CONFIGURATION_QUEUE, serializers.serialize("json", [instance, ]),
+                               vhost,
+                               base_obj.name,
+                               base_obj.executor.password
+                               )
                 for instance in Setting.objects.filter(base__name=base):
                     distribute(SETTING_QUEUE, json.dumps({
                         instance.key: instance.value
-                        }),
+                    }),
                         vhost,
                         instance.base.name,
                         instance.base.executor.password
                     )
 
                 # Plugin config
-                success, failed = call_plugin_func(base_obj, "config_for_workers")
-                logger.info("Plugin to sync - success: "+str(success))
-                logger.info("Plugin to sync - failed: "+str(failed))
+                success, failed = call_plugin_func(
+                    base_obj, "config_for_workers")
+                logger.info("Plugin to sync - success: " + str(success))
+                logger.info("Plugin to sync - failed: " + str(failed))
                 for plugin, config in success.items():
-                    logger.info("Send '%s' config '%s' to %s" % (plugin, config, base_obj.name))
+                    logger.info("Send '%s' config '%s' to %s" %
+                                (plugin, config, base_obj.name))
                     distribute(PLUGIN_CONFIG_QUEUE, json.dumps({plugin: config}),
-                            vhost,
-                            base_obj.name,
-                            base_obj.executor.password
-                    )
+                               vhost,
+                               base_obj.name,
+                               base_obj.executor.password
+                               )
 
             if data.has_key('ready_for_init') and data['ready_for_init']:
 
-                ## execute init exec
+                # execute init exec
                 try:
                     init = base_obj.apys.get(name='init')
-                    url = reverse('exec', kwargs={'base': base_obj.name, 'id': init.id})
+                    url = reverse('exec', kwargs={
+                                  'base': base_obj.name, 'id': init.id})
 
                     request_factory = RequestFactory()
-                    request = request_factory.get(url, data={'base': base_obj.name, 'id': init.id})
+                    request = request_factory.get(
+                        url, data={'base': base_obj.name, 'id': init.id})
                     request.user = get_user_model().objects.get(username='admin')
 
                     from core.views import ExecView
                     view = ExecView()
-                    response = view.get(request, base=base_obj.name, id=init.id)
-                    logger.info("Init method called for base %s, response_code: %s" % (base_obj.name, response.status_code))
+                    response = view.get(
+                        request, base=base_obj.name, id=init.id)
+                    logger.info("Init method called for base %s, response_code: %s" % (
+                        base_obj.name, response.status_code))
 
                 except Apy.DoesNotExist, e:
                     logger.info("No init exec for base '%s'" % base_obj.name)
@@ -307,14 +384,12 @@ class HeartbeatThread(CommunicationThread):
 
             del ch, method, body, data
 
-
         except Exception, e:
             logger.exception(e)
         time.sleep(0.1)
 
-
     def schedule_next_message(self):
-        #logger.info('Next beat in %0.1f seconds',
-                    #self.PUBLISH_INTERVAL)
+        # logger.info('Next beat in %0.1f seconds',
+                    # self.PUBLISH_INTERVAL)
         self._connection.add_timeout(settings.TUMBO_PUBLISH_INTERVAL,
                                      self.send_message)

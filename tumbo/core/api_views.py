@@ -1,39 +1,44 @@
 # -*- coding: utf-8 -*-
+import logging
+import os
 import zipfile
-import requests
+from ipaddress import ip_address, ip_network
 from threading import Thread
-from rest_framework.renderers import JSONRenderer
-from rest_framework_jsonp.renderers import JSONPRenderer
-from rest_framework import permissions, viewsets, views
-from rest_framework import status
 
+import requests
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
+from django.db import IntegrityError, transaction
+from django.http import (Http404, HttpResponse, HttpResponseForbidden,
+                         JsonResponse)
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404
-from django.http import Http404
-from django.conf import settings
-from django.db import transaction
-from django.core.management import call_command
-
-from rest_framework import renderers
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication, BasicAuthentication
-from rest_framework.response import Response
-#from rest_framework.decorators import link
+from django.views.decorators.http import require_POST
+from rest_framework import permissions, renderers, status, views, viewsets
+from rest_framework.authentication import (BasicAuthentication,
+                                           SessionAuthentication,
+                                           TokenAuthentication)
 from rest_framework.exceptions import APIException
+from rest_framework.mixins import CreateModelMixin
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from rest_framework_jsonp.renderers import JSONPRenderer
 
 from api_authentication import CustomSessionAuthentication
-
-from django.contrib.auth import get_user_model
-
+from core.api_serializers import (ApySerializer, BaseSerializer,
+                                  PublicApySerializer, SettingSerializer,
+                                  TransactionSerializer,
+                                  TransportEndpointSerializer)
+from core.importer import GitImport as git
 from core.importer import import_base
-from core.models import Base, Apy, Setting, TransportEndpoint, Transaction
-from core.api_serializers import PublicApySerializer, ApySerializer, BaseSerializer, SettingSerializer, TransportEndpointSerializer, TransactionSerializer
+from core.models import Apy, Base, Setting, Transaction, TransportEndpoint
 from core.utils import check_code
 from core.views import ExecView
 
 User = get_user_model()
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -90,9 +95,12 @@ class TransactionViewSet(viewsets.ModelViewSet):
         get_object_or_404(Base, user=self.request.user, name=name)
         queryset = Transaction.objects.filter(apy__base__name=name)
         rid = self.request.GET.get('rid', None)
-        if rid is not None:
+        apy = self.request.GET.get('apy', None)
+        if rid:
             return queryset.filter(rid=rid)
-        return queryset.order_by("modified")[10:]
+        if apy:
+            queryset = queryset.filter(apy__name=apy)
+        return queryset.order_by("modified")[:10]
 
 
 class ApyViewSet(viewsets.ModelViewSet):
@@ -265,7 +273,19 @@ class BaseViewSet(viewsets.ModelViewSet):
     queryset = Base.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        try:
+            serializer.save(user=self.request.user, source_type="GIT")
+
+            username = self.request.user
+            name = serializer._validated_data['name']
+            repo_url = serializer._validated_data['source']
+            branch = serializer._validated_data['branch']
+            git().import_base(username, name, branch, repo_url)
+
+        except IntegrityError, e:
+            print e
+            # Implement update or redirect to POST with ID url
+            #raise APIException(code=409)
 
     def get_queryset(self):
         return Base.objects.all()._clone().filter(user=self.request.user)
@@ -373,6 +393,7 @@ class ZipFileRenderer(renderers.BaseRenderer):
 class BaseExportViewSet(viewsets.ModelViewSet):
     model = Base
     permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication, SessionAuthentication, )
     renderer_classes = [ZipFileRenderer]
     serializer_class = BaseSerializer
 
@@ -382,7 +403,6 @@ class BaseExportViewSet(viewsets.ModelViewSet):
     def export(self, request, name):
         base = self.get_queryset().get(name=name)
         f = base.export()
-        logger.info(f)
 
         response = Response(f.getvalue(), headers={
             'Content-Disposition': 'attachment; filename=%s.zip' % base.name
@@ -413,11 +433,17 @@ class BaseImportViewSet(viewsets.ModelViewSet):
         f = request.FILES['file']
         zf = zipfile.ZipFile(f)
 
+        error = None
+#        try:
         base = import_base(zf,
-                           request.user,
-                           name,
-                           override_public,
-                           override_private)
+                        request.user,
+                        name,
+                        override_public,
+                        override_private)
+#        except Exception, e:
+#            pass
+#            error = e.message
+#            return Response(error, status=500)
 
         base_queryset = base
         base.save()
@@ -425,3 +451,85 @@ class BaseImportViewSet(viewsets.ModelViewSet):
                                     context={'request': request}, many=False)
         response = Response(serializer.data, status=201)
         return response
+
+class BaseUpdateViewSet(viewsets.ModelViewSet):
+    model = Base
+    authentication_classes = (TokenAuthentication, SessionAuthentication, )
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = BaseSerializer
+    lookup_field = ('name')
+    queryset = Base.objects.all()
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(BaseUpdateViewSet, self).dispatch(*args, **kwargs)
+
+    def get_queryset(self, name):
+        return Base.objects.all()._clone().filter(user=self.request.user)
+
+    def update(self, request, name):
+        base = self.get_queryset(name=name)
+        logger.info("start update")
+        # Base
+
+        username = self.request.user
+        name = request.data['name']
+        repo_url = request.data['source']
+        branch = request.data['branch']
+        git().import_base(username, name, branch, repo_url)
+
+        base.branch = branch
+
+        response = Response(status=201)
+        return response
+
+
+
+class WebhookView(viewsets.ModelViewSet):
+    model = Base
+    serializer_class = BaseSerializer
+
+    #@method_decorator(csrf_exempt)
+    #def dispatch(self, *args, **kwargs):
+    #    return super(WebhookView, self).dispatch(*args, **kwargs)
+
+    def get_queryset(self, username, name):
+        logger.info("get Base with name {}".format(name))
+        return Base.objects.get(user__username=username, name=name)
+
+    #@require_POST
+    @csrf_exempt
+    def hook(self, request, username, name):
+
+        # https://simpleisbetterthancomplex.com/tutorial/2016/10/31/how-to-handle-github-webhooks-using-django.html
+
+        if os.environ.get("CHECK_GITHUB_HOOK_SOURCE", "no").lower() in ["yes", "true"]:
+            forwarded_for = u'{}'.format(request.META.get('HTTP_X_FORWARDED_FOR'))
+            client_ip_address = ip_address(forwarded_for)
+            whitelist = requests.get('https://api.github.com/meta').json()['hooks']
+
+            for valid_ip in whitelist:
+                if client_ip_address in ip_network(valid_ip):
+                    break
+            else:
+                return HttpResponseForbidden('Permission denied.')
+
+        event = request.META.get('HTTP_X_GITHUB_EVENT', 'ping')
+        if event == 'ping':
+            logger.info("ping request received")
+            return JsonResponse({'msg': 'pong'}, status=200)
+
+        elif event == 'push':
+            # https://developer.github.com/v3/activity/events/types/
+            base = self.get_queryset(username=username, name=name)
+            name = base.name
+            branch = base.branch
+            repo_url = base.source
+            _, result = git().import_base(username, name, branch, repo_url)
+
+            return JsonResponse({
+                'status': 'success',
+                'details': result
+            }, status=200)
+        
+        return JsonResponse({}, status=500)

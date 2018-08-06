@@ -107,11 +107,11 @@
                     <form id="new_base" ng-submit="submit_new_base($event)">
                         <div class="form-group">
                             <label class="control-label">Name</label>
-                            <input type="text" class="form-control" id="inputSuccess" ng-model="new_base_name" name="new_base">
-                            <!--<span class="help-block">Woohoo!</span>-->
+                            <input type="text" class="form-control" id="inputBaseName" ng-model="new_base_name" name="new_base">
+                            <input type="text" class="form-control" id="inputSource" ng-model="new_base_source" name="new_base_source">
                         </div>
-                        <button id="new_base" type="submit" class="btn btn-warning">
-                            <img ng-show="creation_running()" src="{{ STATIC_URL}}img/ajax-loader.gif" /> Submit
+                        <button name="create_new_base" id="new_base" type="submit" class="btn btn-warning">
+                            <img ng-show="creation_running()" src="{{ STATIC_URL}}img/ajax-loader.gif"/> Submit
                         </button>
                     </form>
                 </div>

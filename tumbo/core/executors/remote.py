@@ -488,6 +488,7 @@ def _do(data, functions=None, foreign_functions=None, settings=None, pluginconfi
                                 logger.warning("Func is None")
                             logger.debug("%s: Func attached to _do" % plugin.shortname)
                         except Exception, e:
+                            logger.exception(plugin)
                             logger.exception("%s: Not able to attach, pluginconfig is: %s" % (plugin, pluginconfig))
 
                 # execution
@@ -604,7 +605,7 @@ def get_static(path, vhost, username, password, async=False):
 class StaticServerThread(CommunicationThread):
 
     def __init__(self, *args, **kwargs):
-        return super(StaticServerThread, self).__init__(*args, **kwargs)
+        super(StaticServerThread, self).__init__(*args, **kwargs)
 
     def on_message(self, ch, method, props, body):
         logger.debug(self.name+": "+sys._getframe().f_code.co_name)

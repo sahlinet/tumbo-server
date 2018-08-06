@@ -1,6 +1,5 @@
 import logging
 import json
-import dropbox
 import time
 import copy
 import threading
@@ -28,9 +27,8 @@ from django.core.cache import cache
 
 
 from core.api_serializers import BaseSerializer
-from dropbox.rest import ErrorResponse
 
-from core.utils import UnAuthorized, Connection, NoBasesFound, message, create_jwt
+from core.utils import UnAuthorized, NoBasesFound, message, create_jwt
 from core.communication import generate_vhost_configuration
 from core.models import AuthProfile, Base, Apy, Setting, Executor, Process, Thread, Transaction, StaticFile
 from core.models import RUNNING, FINISHED
@@ -62,7 +60,8 @@ class CockpitView(TemplateView):
             qs = qs.filter(base__user=self.request.user)
         context['executors'] = qs.order_by('base__name')
         context['process_list'] = Process.objects.all().order_by('-running')
-        context['threads'] = Thread.objects.all().order_by('parent__name', 'name')
+        context['threads'] = Thread.objects.all(
+        ).order_by('parent__name', 'name')
         context['plugins'] = PluginRegistry().get()
         return context
 
@@ -76,7 +75,7 @@ class ResponseUnavailableViewMixing():
     def verify(self, request, base_model):
         if not base_model.state:
             response = HttpResponse()
-            if "html" in request.META.get('HTTP_ACCEPT', None):
+            if request.META and "HTTP_ACCEPT" in request.META and "html" in request.META.get('HTTP_ACCEPT', None):
                 #response.content_type = "text/html"
                 #response.content = "Function cannot be executed"
                 response = render_to_response('503.html', {})
@@ -86,14 +85,7 @@ class ResponseUnavailableViewMixing():
             return None
 
 
-class Mixin(object):
-
-    def connection(self, request):
-        logger.debug("Creating connection for %s" % request.user)
-        return Connection(request.user.authprofile.dropbox_access_token)
-
-
-class ExecView(View, ResponseUnavailableViewMixing, Mixin):
+class ExecView(View, ResponseUnavailableViewMixing):
     STATE_OK = "OK"
     STATE_NOK = "NOK"
     STATE_NOT_FOUND = "NOT_FOUND"
@@ -119,15 +111,15 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
                     del get_dict[key]
         token = create_jwt(request.user, exec_model.base.executor.secret)
         request_data.update({'request': {
-                'method': request.method,
-                'content_type': request.META.get('Content-Type'),
-                'GET': get_dict.dict(),
-                'POST': post_dict.dict(),
-                'UUID': exec_model.base.uuid,
-                'REMOTE_ADDR': request.META.get('REMOTE_ADDR'),
-                'token': token
-            }
-            })
+            'method': request.method,
+            'content_type': request.META.get('Content-Type'),
+            'GET': get_dict.dict(),
+            'POST': post_dict.dict(),
+            'UUID': exec_model.base.uuid,
+            'REMOTE_ADDR': request.META.get('REMOTE_ADDR'),
+            'token': token
+        }
+        })
         logger.debug("REQUEST-data: %s" % request_data)
         return request_data
 
@@ -137,18 +129,18 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
             start = int(round(time.time() * 1000))
             request_data.update({'rid': rid})
             response_data = call_rpc_client(json.dumps(request_data),
-                generate_vhost_configuration(
-                    base_model.user.username,
-                    base_model.name),
-                    base_model.name,
-                    base_model.executor.password
-                    )
+                                            generate_vhost_configuration(
+                base_model.user.username,
+                base_model.name),
+                base_model.name,
+                base_model.executor.password
+            )
             end = int(round(time.time() * 1000))
-            ms=str(end-start)
+            ms = str(end - start)
 
             logger.debug("DATA: %s" % str(response_data))
 
-            logger.debug("RESPONSE-time: %sms" %  str(ms))
+            logger.debug("RESPONSE-time: %sms" % str(ms))
             logger.debug("RESPONSE-data: %s" % response_data[:120])
             data = json.loads(response_data)
             data.update({
@@ -164,13 +156,13 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
             # _do on remote
             request_data.update({'rid': rid})
             call_rpc_client(json.dumps(request_data),
-                generate_vhost_configuration(
-                    base_model.user.username,
-                    base_model.name),
-                    base_model.name,
-                    base_model.executor.password,
-                    async=True
-                    )
+                            generate_vhost_configuration(
+                base_model.user.username,
+                base_model.name),
+                base_model.name,
+                base_model.executor.password,
+                async=True
+            )
         except Exception, e:
             logger.exception(e)
             raise e
@@ -185,9 +177,11 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
         else:
             if response_class:
                 try:
-                    response_status_code = json.loads(data['returned']).get('status_code', default_status_code)
+                    response_status_code = json.loads(data['returned']).get(
+                        'status_code', default_status_code)
                 except:
-                    response_status_code = data['returned'].get('status_code', default_status_code)
+                    response_status_code = data['returned'].get(
+                        'status_code', default_status_code)
             else:
                 response_status_code = default_status_code
 
@@ -218,22 +212,23 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
             # }
 
             if request.GET.has_key('callback'):
-                data = '%s(%s);' % (request.REQUEST['callback'], json.dumps(data))
+                data = '%s(%s);' % (
+                    request.REQUEST['callback'], json.dumps(data))
                 return HttpResponse(data, "application/javascript")
             return HttpResponse(json.dumps(data), content_type="application/json", status=response_status_code)
 
         # real response
         elif response_class:
-            if response_class == u''+responses.XMLResponse.__name__:
+            if response_class == u'' + responses.XMLResponse.__name__:
                 content_type = load_json(data['returned'])['content_type']
                 content = load_json(data['returned'])['content']
-            elif response_class == u''+responses.HTMLResponse.__name__:
+            elif response_class == u'' + responses.HTMLResponse.__name__:
                 content_type = load_json(data['returned'])['content_type']
                 content = load_json(data['returned'])['content']
-            elif response_class == u''+responses.JSONResponse.__name__:
+            elif response_class == u'' + responses.JSONResponse.__name__:
                 content_type = load_json(data['returned'])['content_type']
                 content = load_json(data['returned'])['content']
-            elif response_class == u''+responses.RedirectResponse.__name__:
+            elif response_class == u'' + responses.RedirectResponse.__name__:
                 location = load_json(data['returned'])['content']
                 return HttpResponseRedirect(location)
             else:
@@ -244,7 +239,8 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
 
         else:
             msg = "Not received json or callback query string nor response_class from response."
-            logger.error("Not received json or callback query string nor response_class from response.")
+            logger.error(
+                "Not received json or callback query string nor response_class from response.")
             return HttpResponseServerError(msg)
 
     #@profile
@@ -260,7 +256,7 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
         try:
             exec_model = base_model.apys.get(id=kwargs['id'])
         except Apy.DoesNotExist:
-            return HttpResponseNotFound("'%s' not found"     % request.META['PATH_INFO'])
+            return HttpResponseNotFound("'%s' not found" % request.META['PATH_INFO'])
 
         rid = request.GET.get('rid', None)
         if rid:
@@ -283,18 +279,24 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
                 transaction.async = True
                 transaction.save()
                 # execute async
-                data = self._execute_async(request, request_data, base_model, transaction.rid)
-                redirect_to = request.get_full_path()+"&rid=%s" % transaction.rid
+                data = self._execute_async(
+                    request, request_data, base_model, transaction.rid)
+                redirect_to = request.get_full_path() + "&rid=%s" % transaction.rid
                 return HttpResponsePermanentRedirect(redirect_to)
             else:
                 # execute
-                data = self._execute(request, request_data, base_model, transaction.rid)
+                data = self._execute(request, request_data,
+                                     base_model, transaction.rid)
 
         try:
             returned = json.loads(data['returned'])
             data['returned'] = returned
+            transaction.tout = returned
+            transaction.status = FINISHED
+            transaction.save()
         except Exception, e:
-            logger.debug("returned data could not be loaded as json (%s)" % repr(e))
+            logger.debug(
+                "returned data could not be loaded as json (%s)" % repr(e))
             transaction.tout = json.dumps(data)
             transaction.status = FINISHED
             transaction.save()
@@ -303,7 +305,7 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
         data.update({
             "id": kwargs['id'],
             "rid": transaction.rid
-            })
+        })
 
         # response
         response = self._handle_response(request, data, exec_model)
@@ -313,7 +315,6 @@ class ExecView(View, ResponseUnavailableViewMixing, Mixin):
                 base_model.stop()
                 base_model.start()
         return response
-
 
     @method_decorator(csrf_exempt)
     def post(self, request, *args, **kwargs):
@@ -349,7 +350,8 @@ class SharedView(View, ContextMixin):
         context['active_base'] = base_model
         context['username'] = request.user.username
         context['TUMBO_NAME'] = base_model.name
-        context['TUMBO_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base_model.name)
+        context['TUMBO_STATIC_URL'] = "/%s/%s/static/" % (
+            "fastapp", base_model.name)
 
         rs = base_model.template(context)
         return HttpResponse(rs)
@@ -363,7 +365,8 @@ class BaseCreateView(View):
             if get_user_quota(request.user).get('MAX_BASES_PER_USER') <= request.user.bases.count():
                 return HttpResponseForbidden("Too many bases for your plan.")
 
-        base, created = Base.objects.get_or_create(name=request.POST.get('new_base_name'), user=User.objects.get(username=request.user.username))
+        base, created = Base.objects.get_or_create(name=request.POST.get(
+            'new_base_name'), user=User.objects.get(username=request.user.username))
         if not created:
             return HttpResponseBadRequest("A base with this name does already exist.")
         base.save_and_sync()
@@ -374,6 +377,7 @@ class BaseCreateView(View):
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
         return super(BaseCreateView, self).dispatch(*args, **kwargs)
+
 
 class BaseDeleteView(View):
 
@@ -392,8 +396,8 @@ class BaseSettingsView(View):
 
     def get(self, request, *args, **kwargs):
         base = Base.objects.get(name=kwargs['base'])
-        base_settings = base.setting.all().extra(\
-            select={'lower_key':'lower(key)'}).order_by('lower_key').values('key', 'value', 'id')
+        base_settings = base.setting.all().extra(
+            select={'lower_key': 'lower(key)'}).order_by('lower_key').values('key', 'value', 'id')
         return HttpResponse(json.dumps(list(base_settings)), content_type="application/json")
 
     def delete(self, request, *args, **kwargs):
@@ -408,7 +412,8 @@ class BaseSettingsView(View):
             for setting in base_settings:
                 base = Base.objects.get(name=kwargs['base'])
                 if setting.has_key('id'):
-                    setting_obj = Setting.objects.get(base=base, id=setting['id'])
+                    setting_obj = Setting.objects.get(
+                        base=base, id=setting['id'])
                     setting_obj.key = setting['key']
                 else:
                     setting_obj = Setting(key=setting['key'], base=base)
@@ -426,7 +431,8 @@ class BaseSettingsView(View):
 class ExecDeleteView(View):
 
     def post(self, request, *args, **kwargs):
-        base = get_object_or_404(Base, name=kwargs['base'], user=User.objects.get(username=request.user.username))
+        base = get_object_or_404(Base, name=kwargs['base'], user=User.objects.get(
+            username=request.user.username))
 
         # syncing to storage provider
         # exec
@@ -444,18 +450,15 @@ class ExecDeleteView(View):
         return super(ExecDeleteView, self).dispatch(*args, **kwargs)
 
 
-    @csrf_exempt
-    def dispatch(self, *args, **kwargs):
-        return super(ExecRenameView, self).dispatch(*args, **kwargs)
-
-
 class BaseRenameView(View):
 
     def post(self, request, *args, **kwargs):
-        base = get_object_or_404(Base, name=kwargs['base'], user=User.objects.get(username=request.user.username))
+        base = get_object_or_404(Base, name=kwargs['base'], user=User.objects.get(
+            username=request.user.username))
         base.name = request.POST.get('new_name')
         base.save()
-        response_data = {"redirect": request.META['HTTP_REFERER'].replace(kwargs['base'], base.name)}
+        response_data = {"redirect": request.META['HTTP_REFERER'].replace(
+            kwargs['base'], base.name)}
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
     @csrf_exempt
@@ -466,7 +469,8 @@ class BaseRenameView(View):
 class BaseSaveView(View):
 
     def post(self, request, *args, **kwargs):
-        base = get_object_or_404(Base, name=kwargs['base'], user=User.objects.get(username=request.user.username))
+        base = get_object_or_404(Base, name=kwargs['base'], user=User.objects.get(
+            username=request.user.username))
         content = request.POST.get('content', None)
         public = request.POST.get('public', None)
         static_public = request.POST.get('static_public', None)
@@ -485,10 +489,13 @@ class BaseSaveView(View):
         # base
         else:
             logger.info("Save base")
-            if content: base.content = content
+            if content:
+                base.content = content
             import distutils
-            if public: base.public = distutils.util.strtobool(public)
-            if static_public: base.static_public = distutils.util.strtobool(static_public)
+            if public:
+                base.public = distutils.util.strtobool(public)
+            if static_public:
+                base.static_public = distutils.util.strtobool(static_public)
             base.save()
 
         return HttpResponse()
@@ -500,11 +507,6 @@ class BaseSaveView(View):
 
 class BaseView(TemplateView, ContextMixin):
 
-    def _refresh_single_base(self, base):
-        base = Base.objects.get(name=base)
-        base.refresh()
-        base.save()
-
     def get(self, request, *args, **kwargs):
         rs = None
         context = RequestContext(request)
@@ -515,58 +517,51 @@ class BaseView(TemplateView, ContextMixin):
                 return SharedView.as_view()(request, *args, **kwargs)
 
         try:
-            # refresh bases from dropbox
-            refresh = "refresh" in request.GET
-
             base = kwargs.get('base')
-
-            if refresh and base:
-                self._refresh_single_base(base)
 
             base_model = None
             if base:
-                base_model = get_object_or_404(Base, name=base, user=request.user.id)
-                #base_model.save()
-                #if refresh:
+                base_model = get_object_or_404(
+                    Base, name=base, user=request.user.id)
+                # base_model.save()
+                # if refresh:
                 #    base_model.refresh_execs()
 
                 # execs
                 try:
-                    context['TUMBO_EXECS'] = base_model.apys.all().order_by('name')
+                    context['TUMBO_EXECS'] = base_model.apys.all(
+                    ).order_by('name')
                 except ErrorResponse, e:
-                    messages.warning(request, "No app.json found", extra_tags="alert-warning")
+                    messages.warning(request, "No app.json found",
+                                     extra_tags="alert-warning")
                     logging.debug(e)
 
             # context
             try:
-                context['bases'] = Base.objects.filter(user=request.user.id).order_by('name')
+                context['bases'] = Base.objects.filter(
+                    user=request.user.id).order_by('name')
                 context['TUMBO_NAME'] = base
-                #context['DROPBOX_REDIRECT_URL'] = settings.DROPBOX_REDIRECT_URL
-                #context['PUSHER_KEY'] = settings.PUSHER_KEY
-                context['TUMBO_STATIC_URL'] = "/%s/%s/static/" % ("fastapp", base)
+                context['TUMBO_STATIC_URL'] = "/%s/%s/static/" % (
+                    "fastapp", base)
                 context['active_base'] = base_model
                 context['username'] = request.user.username
                 context['LAST_EXEC'] = request.GET.get('done')
-                context['transaction_list'] = Transaction.objects.filter(apy__base__name=base).filter(created__gte=datetime.now()-timedelta(minutes=30)).order_by('created')
-                #rs = base_model.template(context)
+                context['transaction_list'] = Transaction.objects.filter(apy__base__name=base).filter(
+                    created__gte=datetime.now() - timedelta(minutes=30)).order_by('created')
 
             except ErrorResponse, e:
                 if e.__dict__['status'] == 404:
                     logging.debug(base)
                     logging.debug("Template not found")
-                    messages.error(request, "Template %s not found" % template_name, extra_tags="alert-danger")
+                    messages.error(request, "Template %s not found" %
+                                   template_name, extra_tags="alert-danger")
 
-        # error handling
-        except (UnAuthorized, AuthProfile.DoesNotExist), e:
-            return HttpResponseRedirect("/core/dropbox_auth_start")
         except NoBasesFound, e:
             message(request, logging.WARNING, "No bases found")
 
         rs = render_to_string("fastapp/base.html", context_instance=context)
-        #rs = render_to_string("fastapp/base.html", context_instance=context)
 
         return HttpResponse(rs)
-
 
 class View(TemplateView):
 
@@ -587,50 +582,6 @@ class View(TemplateView):
         return super(View, self).dispatch(*args, **kwargs)
 
 
-def get_dropbox_auth_flow(web_app_session):
-    redirect_uri = "%s/fastapp/dropbox_auth_finish" % settings.DROPBOX_REDIRECT_URL
-    dropbox_consumer_key = settings.DROPBOX_CONSUMER_KEY
-    dropbox_consumer_secret = settings.DROPBOX_CONSUMER_SECRET
-    return dropbox.client.DropboxOAuth2Flow(dropbox_consumer_key, dropbox_consumer_secret, redirect_uri, web_app_session, "dropbox-auth-csrf-token")
-
-
-# URL handler for /dropbox-auth-start
-def dropbox_auth_start(request):
-    authorize_url = get_dropbox_auth_flow(request.session).start()
-    return HttpResponseRedirect(authorize_url)
-
-
-# URL handler for /dropbox-auth-finish
-def dropbox_auth_finish(request):
-    try:
-        dropbox_access_token, user_id, url_state = get_dropbox_auth_flow(request.session).finish(request.GET)
-        auth, created = AuthProfile.objects.get_or_create(user=request.user)
-        # store dropbox_access_token
-        auth.dropbox_access_token = dropbox_access_token
-        auth.dropbox_userid = user_id
-        auth.user = request.user
-        auth.save()
-
-        return HttpResponseRedirect("/profile/")
-    except dropbox.client.DropboxOAuth2Flow.BadRequestException, e:
-        return HttpResponseBadRequest(e)
-    except dropbox.client.DropboxOAuth2Flow.BadStateException, e:
-        # Start the auth flow again.
-        return HttpResponseRedirect("http://www.mydomain.com/dropbox_auth_start")
-    except dropbox.client.DropboxOAuth2Flow.CsrfException, e:
-        return HttpResponseForbidden()
-    except dropbox.client.DropboxOAuth2Flow.NotApprovedException, e:
-        raise e
-    except dropbox.client.DropboxOAuth2Flow.ProviderException, e:
-        raise e
-
-# URL handler for /dropbox-auth-start
-def dropbox_auth_disconnect(request):
-    request.user.authprofile.dropbox_access_token = ""
-    request.user.authprofile.save()
-    return HttpResponseRedirect("/profile/")
-
-
 def process_file(path, metadata, client, user):
 
     def get_app_config(client, path):
@@ -645,7 +596,7 @@ def process_file(path, metadata, client, user):
     try:
 
         # Handle only files ending with ".py" or "config"
-        #if not path.endswith("py") or not metadata or "/." in path or not path.endswith("config") or not path is "index.html":
+        # if not path.endswith("py") or not metadata or "/." in path or not path.endswith("config") or not path is "index.html":
         #    logger.info("Ignore path: %s" % path)
         #    continue
 
@@ -662,7 +613,8 @@ def process_file(path, metadata, client, user):
         except:
             logger.warn("Base for %s %s not found" % (user, base_name))
         appconfig_path = "%s/app.config" % base_name
-        logger.info("notification for: base_name: %s, user: %s" % (base_name, user))
+        logger.info("notification for: base_name: %s, user: %s" %
+                    (base_name, user))
 
         if "/." in path:
             logger.debug("Ignore file starting with a dot")
@@ -673,7 +625,8 @@ def process_file(path, metadata, client, user):
             appconfig = get_app_config(client, path)
             logger.debug("Read app.config for base %s" % base_name)
             # base
-            base_obj, created = Base.objects.get_or_create(name=base_name, user=user)
+            base_obj, created = Base.objects.get_or_create(
+                name=base_name, user=user)
             base_obj.save()
             logger.debug("base %s created?: %s" % (base_name, created))
             # settings
@@ -693,7 +646,8 @@ def process_file(path, metadata, client, user):
             apy_name = r.groups()[1]
             try:
                 base_obj = Base.objects.get(name=base_name, user=user)
-                apy, created = Apy.objects.get_or_create(name=apy_name, base=base_obj)
+                apy, created = Apy.objects.get_or_create(
+                    name=apy_name, base=base_obj)
                 if created:
                     apy.save()
                     logger.info("new apy %s created" % apy_name)
@@ -703,12 +657,15 @@ def process_file(path, metadata, client, user):
                 return
 
             try:
-                description = get_app_config(client, appconfig_path)['modules'][apy_name].get('description', None)
+                description = get_app_config(client, appconfig_path)[
+                    'modules'][apy_name].get('description', None)
                 if description:
-                    apy.description = get_app_config(client, appconfig_path)['modules'][apy_name]['description']
+                    apy.description = get_app_config(client, appconfig_path)[
+                        'modules'][apy_name]['description']
                     apy.save()
             except Exception, e:
-                logger.warn("Description could not be read for %s: %s" % (apy_name, repr(e)))
+                logger.warn("Description could not be read for %s: %s" %
+                            (apy_name, repr(e)))
 
             new_rev = metadata['rev']
             logger.debug("local rev: %s, remote rev: %s" % (apy.rev, new_rev))
@@ -720,7 +677,8 @@ def process_file(path, metadata, client, user):
 
                 content, rev = client.get_file_content_and_rev("%s" % path)
                 apy.module = content
-                logger.info("Update content for %s with %s" % (path, str(len(content))))
+                logger.info("Update content for %s with %s" %
+                            (path, str(len(content))))
                 apy.rev = rev
                 apy.save()
                 logger.info("Apy %s updated" % apy.name)
@@ -730,92 +688,38 @@ def process_file(path, metadata, client, user):
 
                 path_orig = path
                 path = re.search('\/.*?\/(.*)', path).group(1)
-                content, rev = client.get_file_content_and_rev("%s" % path_orig)
-                obj, created = StaticFile.objects.get_or_create(base=base_obj, name=path, storage="DR")
+                content, rev = client.get_file_content_and_rev(
+                    "%s" % path_orig)
+                obj, created = StaticFile.objects.get_or_create(
+                    base=base_obj, name=path, storage="DR")
                 if obj.rev != rev or created:
                     obj.rev = rev
                     obj.save()
                 try:
                     cache_path = path.lstrip("/")
                     base_obj = Base.objects.get(name=base_name, user=user)
-                    cache_key = "%s-%s-%s" % (base_obj.user.username, base_obj.name, cache_path)
+                    cache_key = "%s-%s-%s" % (base_obj.user.username,
+                                              base_obj.name, cache_path)
                     logger.debug("Delete cache entry: %s" % cache_key)
                     cache.delete(cache_key)
 
-
                 except Exception, e:
-                    logger.error("Problem cleaning cache for static file %s" % cache_path)
-                    logger.warn("Looking for %s for user %s" % (base_name, user.username))
+                    logger.error(
+                        "Problem cleaning cache for static file %s" % cache_path)
+                    logger.warn("Looking for %s for user %s" %
+                                (base_name, user.username))
 
     except Exception, e:
         logger.error("Exception handling path %s" % path)
         logger.exception(e)
 
 
-def process_user(uid):
-    auth_profile = AuthProfile.objects.filter(dropbox_userid=uid)[0]
-    token = auth_profile.dropbox_access_token
-    user = auth_profile.user
-    logger.info("START process user '%s'" % user)
-    logger.debug("Process change notfication for user: %s" % user.username)
-    cursor = cache.get("cursor-%s" % uid)
-
-    client = Connection(token)
-
-    has_more = True
-    while has_more:
-        result = client.delta(cursor)
-
-        pool = ThreadPool(1)
-        for path, metadata in result['entries']:
-            logger.info("Add task for %s to pool" % path)
-            pool.add_task(process_file, path, metadata, client, user)
-            logger.debug("Waiting for completion ... %s" % path)
-        pool.wait_completion()
-        logger.debug("Tasks completed.")
-
-        # Update cursor
-        cursor = result['cursor']
-        cursor = cache.set("cursor-%s" % uid, cursor)
-
-        # Repeat only if there's more to do
-        has_more = result['has_more']
-
-    logger.info("END process user '%s'" % user)
-
-
-class DropboxNotifyView(View):
-
-    def get(self, request):
-        try:
-            challenge = request.GET['challenge']
-        except:
-            logger.warn("DropboxNotifyView called without challenge")
-            return HttpResponseNotFound("Not Found")
-        return HttpResponse(challenge)
-
-    def post(self, request):
-        logger.info("DropboxNotifyView is called")
-
-        # get delta for user
-        for uid in json.loads(request.body)['delta']['users']:
-            logger.debug("Start thread for handling delta for user '%s'" % uid)
-            thread = threading.Thread(target=process_user, args=(uid,))
-            thread.daemon = True
-            thread.start()
-
-        return HttpResponse()
-
-    @csrf_exempt
-    def dispatch(self, *args, **kwargs):
-        return super(DropboxNotifyView, self).dispatch(*args, **kwargs)
-
 
 @csrf_exempt
 def login_or_sharedkey(function):
     def wrapper(request, *args, **kwargs):
         # logger.debug("authenticate %s" % request.user)
-        user=request.user
+        user = request.user
 
         # if logged in
         if user.is_authenticated():
@@ -830,19 +734,19 @@ def login_or_sharedkey(function):
 
         # if base is public
         if base_obj.public:
-           return function(request, *args, **kwargs)
+            return function(request, *args, **kwargs)
 
         # if shared key in query string
         elif request.GET.has_key('shared_key'):
             shared_key = request.GET.get('shared_key', None)
-            if base_obj.uuid==shared_key or base_obj.public:
+            if base_obj.uuid == shared_key or base_obj.public:
                 request.session['shared_key'] = shared_key
                 return function(request, *args, **kwargs)
             else:
                 return HttpResponseNotFound()
         # if shared key in session and corresponds to base
         #has_shared_key = request.session.__contains__('shared_key')
-        #if has_shared_key:
+        # if has_shared_key:
         #    shared_key = request.session['shared_key']
         #    logger.info("authenticate on base '%s' with shared_key '%s'" % (base, shared_key))
         #    get_object_or_404(Base, name=base_name, uuid=shared_key)
@@ -857,12 +761,14 @@ def login_or_sharedkey(function):
         return HttpResponseRedirect("/")
     return wrapper
 
+
 def load_json(s):
-    if type(s) is str:  
-        r= json.loads(s)
+    if type(s) is str:
+        r = json.loads(s)
     elif type(s) is dict:
         r = s
     return r
+
 
 @login_required
 def change_password(request):
@@ -873,7 +779,7 @@ def change_password(request):
 
             user = User.objects.get(username=request.user.username)
         except User.DoesNotExist:
-            return HttpResponse(status = 400)
+            return HttpResponse(status=400)
         else:
             password1 = request.POST['password1']
             password2 = request.POST['password2']
@@ -881,8 +787,8 @@ def change_password(request):
                 user.set_password(password1)
                 user.save()
             else:
-                return HttpResponse("Password could not be changed (mininum l", status = 400)
+                return HttpResponse("Password could not be changed (mininum l", status=400)
 
         return HttpResponse("OK")
     else:
-        return HttpResponse(status = 400)
+        return HttpResponse(status=400)

@@ -1,6 +1,7 @@
 import logging
 
 from aaa.cas.models import Ticket
+from core.models import AuthProfile
 
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,8 @@ def create_ticket(backend, user, response, *args, **kwargs):
     logger.info("create_ticket pipeline for user %s started" % user.username)
 
     # workaround for creating internalid
+    auth, _ = AuthProfile.objects.get_or_create(user=user)
+    user.authprofile = auth
     user.authprofile.internalid = user.authprofile.internalid
     user.authprofile.save()
 
@@ -25,7 +28,8 @@ def create_ticket(backend, user, response, *args, **kwargs):
         logger.info("Create ticket for user %s" % user.username)
 
         # attach the ticket to the next URL
-        backend.strategy.session['next'] = "%s?ticket=%s" % (next, ticket.ticket)
+        backend.strategy.session['next'] = "%s?ticket=%s" % (
+            next, ticket.ticket)
         logger.info("Setting next URL: %s" % backend.strategy.session['next'])
     else:
         logger.info("Next missing")

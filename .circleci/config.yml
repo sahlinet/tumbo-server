@@ -17,15 +17,25 @@ jobs:
       #
       - run: sudo apt-get update && sudo apt-get install libpq-dev
       #
+      - run: wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      - run: sudo dpkg -i ./google-chrome*.deb
+      - run: rm google-chrome*deb
+      - run: wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/2.37/chromedriver_linux64.zip && sudo unzip -o /tmp/chromedriver.zip chromedriver -d /usr/local/bin/;
+      #
+      - run: bash bin/create_package.sh > /dev/null
+      - run: pip install --upgrade tox==3.0.0 "pip<10.0.0"
+      - run: mkdir /tmp/artifacts
+      - run: tox
       - run: pip install -r requirements.txt
       # TODO: coverage should be run in cotainer and data directory for output should be added as volume
-      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test core --settings=tumbo.dev
-      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test aaa --settings=tumbo.dev
-      - run: DIGITALOCEAN_ZONE=a.a.com CACHE_ENV_REDIS_PASS=aaa DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa coverage run --append --omit='*migrations*' --source=tumbo tumbo/manage.py test ui --settings=tumbo.dev
+      - run: 
+          command: |
+            cp *.png /tmp/artifacts
+          when: always
+      - store_artifacts:
+          path: /tmp/artifacts
       - run: coverage xml
-      - run: python-codacy-coverage -r coverage.xml
-
-      - run: pip install -r requirements-cli.txt
+      - run: python-codacy-coverage -v -r coverage.xml
       #
       - run: sed -i 's|/var/run/docker.sock|/run/docker.sock|g' compose-files/docker-compose-app-docker_socket_exec.yml
       - run: egrep sock compose-files/docker-compose-app-docker_socket_exec.yml
@@ -42,22 +52,22 @@ jobs:
       - run: sudo chmod 777 /run/docker.sock
       #
       - run: pip install --upgrade setuptools
-      - run: bash bin/create_package.sh > /dev/null
       - run: python cli/tumbo-cli.py server docker pull > /dev/null
       - run: python cli/tumbo-cli.py server docker build
 
       # Tests
       - run: sudo mkdir shared
       - run: sudo chown 1000:1000 shared
-      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test core --settings=tumbo.dev"
-      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test aaa --settings=tumbo.dev"
-      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.txt -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -e DROPBOX_CONSUMER_KEY=aa -e DROPBOX_CONSUMER_SECRET=aa -e DROPBOX_REDIRECT_URL=aa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test ui --settings=tumbo.dev"
+      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.xml -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -i -t tumboserver_app bash -c "LC_ALL=en_US.UTF-8 /home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test core --settings=tumbo.dev"
+      - run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.xml -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -i -t tumboserver_app bash -c "LC_ALL=en_US.UTF-8 /home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test aaa --settings=tumbo.dev"
+      # Don't run ui tests in docker (chromedriver not installed)
+      #- run: docker run -e CI=true  -v "$PWD/shared:/shared" -e COVERAGE_FILE=/shared/coverage.xml -e DIGITALOCEAN_ZONE=a.a.com -e CACHE_ENV_REDIS_PASS=aaa -i -t tumboserver_app bash -c "/home/tumbo/.virtualenvs/tumbo/bin/coverage run -a --source=tumbo  /home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py test ui --settings=tumbo.dev"
       #
       - run: sh -x bin/build-worker.sh
       #
       - run: 
           command: |
-              DROPBOX_CONSUMER_KEY=aa DROPBOX_CONSUMER_SECRET=aa DROPBOX_REDIRECT_URL=aa python cli/tumbo-cli.py server docker run
+              python cli/tumbo-cli.py server docker run
           background: true
           no_output_timeout: 3m
       - run: sleep 120
@@ -78,6 +88,14 @@ jobs:
                  pip install twine==1.11.0
                  twine upload -r $PYPI_HOST -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/tumbo-server-*tar.gz
             fi
+  trigger_deploy:
+    machine: true
+    steps:
+      - run:
+          command: | 
+             curl -v -u ${CIRCLE_API_USER_TOKEN}: \
+             --data build_parameters[CIRCLE_JOB]=deploy_docker \
+             --data build_parameters[TUMBO_TAG]=$CIRCLE_TAG https://circleci.com/api/v1.1/project/github/sahlinet/tumbo-sahli-net/tree/develop
 
 workflows:
   version: 2
@@ -91,10 +109,21 @@ workflows:
                 - develop
                 - master
                 - /feature.*/
+                - /hotfix.*/
+                - /.*/
   snapshot-release:
     jobs:
       - build_test:
           context: test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*?dev/
+      - trigger_deploy:
+          context: live
+          requires:
+            - build_test
           filters:
             branches:
               ignore: /.*/
@@ -109,3 +138,6 @@ workflows:
               ignore: /.*/
             tags:
               only: /v[0-9]+\.[0-9]+\.[0-9]+$/
+      - trigger_deploy:
+          requires:
+            - build_test

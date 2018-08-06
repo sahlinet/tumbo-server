@@ -23,8 +23,6 @@ items:
           - env:
             - name: MODE
               value: web
-            - name: NEWRELIC_LICENSE
-              value: bd80fp971051885433a13f77eae8db909e0be6e98
             - name: ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -50,10 +48,15 @@ items:
                 secretKeyRef:
                   name: passwords
                   key: dbpw
+            - name: STORE_ENV_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: storepw
             envFrom:
             - configMapRef:
                 name: tumbo-config
-            image: philipsahli/tumbo-server:v0.4.12
+            image: philipsahli/tumbo-server:v0.5.22-dev
             imagePullPolicy: "Always"
             name: app
             ports:
@@ -106,8 +109,6 @@ items:
           - env:
             - name: MODE
               value: background
-            - name: NEWRELIC_LICENSE
-              value: bd80f971051885433a13f77eae8db909e0be6e98
             - name: ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -133,10 +134,15 @@ items:
                 secretKeyRef:
                   name: passwords
                   key: dbpw
+            - name: STORE_ENV_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: storepw
             envFrom:
             - configMapRef:
                 name: tumbo-config
-            image: philipsahli/tumbo-server:v0.4.12
+            image: philipsahli/tumbo-server:v0.5.22-dev
             imagePullPolicy: "Always"
             name: background
             resources: {}

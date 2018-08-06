@@ -50,9 +50,6 @@ rp:
     - VHOST_2_SSL=True
     - VHOST_2_PROXYCONF_all_proxy_pass
     - VHOST_2_PROXYCONF_all_location=/
-    - VHOST_2_PROXYCONF_notify_proxy_pass
-    - VHOST_2_PROXYCONF_notify_plain=True
-    - VHOST_2_PROXYCONF_notify_location=/core/dashboard/dropbox_notify/
   volumes:
     - /var/certs/codeanywhere.sahli.net:/etc/letsencrypt/
     - /etc/nginx/ssl:/etc/nginx/ssl

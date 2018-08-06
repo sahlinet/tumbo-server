@@ -79,4 +79,8 @@ MANIFEST.in
 secrets/*
 *.retry
 
-*.ini
+.vscode
+k8s-files/ansible
+.docker/*
+
+*-test.png

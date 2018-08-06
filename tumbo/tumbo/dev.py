@@ -34,19 +34,8 @@ RABBITMQ_ADMIN_PASSWORD = "guest"
 RABBITMQ_HOST = "localhost"
 RABBITMQ_PORT = 5672
 
-DROPBOX_CONSUMER_KEY = os.environ['DROPBOX_CONSUMER_KEY']
-DROPBOX_CONSUMER_SECRET = os.environ['DROPBOX_CONSUMER_SECRET']
-DROPBOX_REDIRECT_URL = os.environ['DROPBOX_REDIRECT_URL']
-
 # Spawn
 TUMBO_WORKER_IMPLEMENTATION = "core.executors.worker_engines.spawnproc.SpawnExecutor"
-
-# Rancher
-#TUMBO_WORKER_IMPLEMENTATION = "core.executors.worker_engines.rancher.RancherApiExecutor"
-RANCHER_ACCESS_KEY="0F91E6F0567CB4006008"
-RANCHER_ACCESS_SECRET="8jHYKwWw5RSE72fGGvEF8UgbmtXLj62BzGKZwRvJ"
-RANCHER_ENVIRONMENT_ID="1e1"
-RANCHER_URL="http://192.168.99.1:8080"
 
 TUMBO_CORE_SENDER_PASSWORD = "h8h9h0h1h2h3"
 TUMBO_CORE_RECEIVER_PASSWORD = "h8h9h0h1h2h3"
@@ -64,8 +53,8 @@ WORKER_RABBITMQ_PORT = "5672"
 ALLOWED_HOSTS = "*"
 
 TUMBO_REPOSITORIES_PATH = home + "/workspace"
-TUMBO_DEV_STORAGE_DROPBOX_PATH = home + "/Dropbox/Apps/tumbo dev/"
 
+# docker run -d -p 65432:5432 -e SUPERUSER=true -e DB_NAME=store -e DB_USER=store -e PASSWORD=storepw --name postgresql philipsahli/postgresql-test
 TUMBO_PLUGINS_CONFIG = {
     'core.plugins.stats': {},
     'core.plugins.rabbitmq': {},
@@ -77,10 +66,10 @@ TUMBO_PLUGINS_CONFIG = {
     'core.plugins.datastore': {
         'ENGINE': "django.db.backends.postgresql_psycopg2",
         'HOST': "127.0.0.1",
-        'PORT': "15432",
+        'PORT': "65432",
         'NAME': "store",
         'USER': "store",
-        'PASSWORD': "store123"
+        'PASSWORD': "storepw"
     }
 }
 

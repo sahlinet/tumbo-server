@@ -5,7 +5,6 @@ import base64
 
 from django.template import TemplateDoesNotExist
 from django.template.loaders.base import Loader
-from core.utils import Connection
 
 from django.conf import settings
 
@@ -36,9 +35,9 @@ class FastappLoader(Loader):
             raise e
 
     def load_template_source(self, template_name, template_dirs=None):
-        logger.debug("Trying to load template %s" % str(template_name.split(":")))
+        logger.info("Trying to load template %s" % str(template_name.split(":")))
         if ":" in template_name:
-            username, base, short_name = template_name.split(":")
+            _, base, short_name = template_name.split(":")
             try:
                 base_model = Base.objects.get(name=base)
                 f, template_name = self.get_file(template_name, short_name, base_model)

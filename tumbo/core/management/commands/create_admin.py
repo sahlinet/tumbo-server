@@ -30,7 +30,7 @@ class Command(BaseCommand):
                     dest='email',
                     default=None,
                     help='Email address')
-        )
+    )
 
     def handle(self, *args, **options):
 
@@ -38,16 +38,18 @@ class Command(BaseCommand):
         password = options['password']
         email = options['email']
 
-
         from django.contrib.auth.models import User
 
         try:
-            u = User(username=username)
+            #u = User(username=username)
+            u, created = User.objects.get_or_create(username=username)
             u.set_password(password)
             u.is_superuser = True
             u.is_staff = True
-        except Exception:
-            u = User.objects.get(username="admin")
-            u.set_password(password)
-            u.email(email)
-        u.save()
+            u.save()
+            if created:
+                print "Adminuser '%s' created." % username
+            else:
+                print "Adminuser '%s' updated." % username
+        except Exception, e:
+            print e

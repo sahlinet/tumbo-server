@@ -18,10 +18,10 @@ $(function() {
 
     // forms
     $("form").submit(function(event) {
-        if (event.currentTarget.method == "post") {
+        if (event.currentTarget.method === "post") {
             $.post(event.currentTarget.action, $(this).serialize(), function(data){
             });
-        } else if (event.currentTarget.method == "get") {
+        } else if (event.currentTarget.method === "get") {
             $.get(event.currentTarget.action, $(this).serialize(), function(data){
                 if (data.redirect) {
                   redirect(data.redirect);

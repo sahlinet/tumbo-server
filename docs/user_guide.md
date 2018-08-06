@@ -18,6 +18,12 @@ can create or update the base on the same or on other platform.
 
 > If a Base contains a lot of static files, export and import might fail because of timeouts!
 
+### Git managed Bases
+
+Source for a Base can be edited directly on Tumbo or the source can be in a Git repository. On Github a Webhook can be configured sending `push` events to a hook URL:
+
+    https://tumbo.sahli.net/core/api/username/admin/base/tumbo-demoapp/hook/
+
 * * *
 
 ## CLI
@@ -274,7 +280,7 @@ wait until the `status` is `FINISHED`.
 
 ### Schedules
 
-Add in the UI a configuration for a scheduled execution of a function. For example `0 */5 * * *` for every five minutes. (`second minute hour day_of_week`).
+Add in the UI a configuration for a scheduled execution of a function. For example `0 */5 * *` for every five minutes. (`second minute hour day_of_week`).
 
 
 * * *
@@ -306,7 +312,15 @@ For every worker a service port is reserved. This let's you for example to run a
 
 ### Port
 
+The port is available in functions 
+
     print os.environ['SERVICE_PORT']
+
+and in templates
+
+{% verbatim %}
+    {{ SERVICE_PORT }}
+{% endverbatim %}
 
 ### IP
 
@@ -320,24 +334,24 @@ Use `SERVICE_IP6` for the IPv6 address.
 
 A host record is registered in a DNS zone in the form:
 
-    USERNAME-BASENAME-INSTANCE_NUM[-V4,-V6].ZONE
+    USERNAME-BASENAME-INSTANCE_NUM[-V4,-V6].{{ DNS_ZONE }}
 
 Examples:
 
 IPv4 (A) and IPv6 (AAAA) record:
 
     print os.environ['SERVICE_DNS']
-    johndoe-helloworld-0.ZONE
+    johndoe-helloworld-0.{{ DNS_ZONE }}
 
 IPv4 only:
 
     print os.environ['SERVICE_DNS_V4']
-    johndoe-helloworld-0-v4.ZONE
+    johndoe-helloworld-0-v4.{{ DNS_ZONE }}
 
 IPv6 only:
 
     print os.environ['SERVICE_DNS_V6']
-    johndoe-helloworld-0-v6.ZONE
+    johndoe-helloworld-0-v6.{{ DNS_ZONE }}
 
 * * *
 
@@ -388,7 +402,7 @@ Per value in key
 
 ### Static Files
 
-You can access the data in the static files. The data is rendered on server-side.
+You can access the data in the static files. The data is rendered server-side.
 
 {% verbatim %}
 

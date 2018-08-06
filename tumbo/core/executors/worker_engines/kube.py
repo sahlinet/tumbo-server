@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 # Great examples: https://github.com/inovex/quobyte-kubernetes-operator/blob/master/quobyte-k8s-deployer.py
 
+
 class KubernetesExecutor(BaseExecutor):
     """Implementation of the executor to run workers on Kubernetes.
     """
@@ -28,18 +29,18 @@ class KubernetesExecutor(BaseExecutor):
             config.load_incluster_config()
             self.api = client.CoreV1Api()
         except ConfigException, e:
-            logger.debug("kubernetes.config.load_incluster_config not working, doing config.load_kube_config")
+            logger.debug(
+                "kubernetes.config.load_incluster_config not working, doing config.load_kube_config")
             config.load_kube_config()
             self.api = client.CoreV1Api()
         self.namespace = "tumbo"
-
 
         body = client.V1Namespace()
         metadata = client.V1ObjectMeta()
         metadata.name = self.namespace
         body.metadata = metadata
         try:
-            self.api.create_namespace(body)
+            self.api.create_namespace(body, _request_timeout=3)
         except ApiException as e:
             if e.status not in [409, 403]:
                 print "Exception when calling CoreV1Api->create_namespace: %s\n" % e
@@ -52,8 +53,8 @@ class KubernetesExecutor(BaseExecutor):
     def _get_name(self):
         # container name, must be unique, therefore we use a mix from site's domain name and executor
         slug = "worker-%s-%s-%s" % (Site.objects.get_current().domain,
-            self.username,
-            self.base_name)
+                                    self.username,
+                                    self.base_name)
         return slug.replace("_", "-").replace(".", "-")
 
     @property
@@ -67,7 +68,7 @@ class KubernetesExecutor(BaseExecutor):
         )
         return start_command.split(" ")
 
-    def start(self, id, *args, **kwargs):
+    def _prepare(self, id, *args, **kwargs):
         env = {
             "RABBITMQ_HOST": settings.WORKER_RABBITMQ_HOST,
             "RABBITMQ_PORT": int(settings.WORKER_RABBITMQ_PORT),
@@ -78,7 +79,7 @@ class KubernetesExecutor(BaseExecutor):
             "SERVICE_PORT": self.executor.port,
             "SERVICE_IP": self.executor.ip,
             "secret": self.secret
-            }
+        }
 
         worker_env = []
         for k, v in env.iteritems():
@@ -96,76 +97,146 @@ class KubernetesExecutor(BaseExecutor):
         spec = client.V1ReplicationControllerSpec()
         spec.replicas = 1
 
-        pretty = 'pretty_example' # str | If 'true', then the output is pretty printed. (optional)
-        rc_manifest = {
-    "apiVersion": "v1",
-    "kind": "ReplicationController",
-    "metadata": {
-        "labels": {
-            "service": self.name
-        },
-        "name": self.name,
-        "namespace": self.namespace,
-    },
-    "spec": {
-        "replicas": 1,
-        "selector": {
-            "service": self.name
-        },
-        "template": {
-            "metadata": {
-                "labels": {
-                    "service": self.name,
-                }
+        svc_manifest = {
+            "status": {
+                "loadBalancer": {}
             },
+            "kind": "Service",
             "spec": {
-                "containers": [
+                "type": "NodePort",
+                "ports": [
                     {
-                        "env": worker_env,
-                        "image": "philipsahli/tumbo-worker:kubernetes",
-                        "imagePullPolicy": "Always",
-                        "name": self.name,
-                        "command": self._start_command,
-                        "ports": [
-                            {
-                                "containerPort": 80,
-                                "protocol": "TCP"
-                            }
-                        ],
-                        "resources": {},
-                        "terminationMessagePath": "/dev/termination-log",
-                        "terminationMessagePolicy": "File"
+                        "protocol": "",
+                        "targetPort": 0,
+                        "port": 1025,
+                        "name": ""
                     }
                 ],
-                "dnsPolicy": "ClusterFirst",
-                "restartPolicy": "Always",
-                "schedulerName": "default-scheduler",
-                "securityContext": {},
-                "terminationGracePeriodSeconds": 30
+                "selector": {
+                    "service": self.name
+                }
+            },
+            "apiVersion": "v1",
+            "metadata": {
+                "namespace": self.namespace,
+                "name": self.name
             }
         }
-    },
-    "status": {
-        "availableReplicas": 1,
-        "fullyLabeledReplicas": 1,
-        "observedGeneration": 3,
-        "readyReplicas": 1,
-        "replicas": 1
-    }
-}
 
 
+        if self.executor.port:
+            #svc_manifest['spec']['ports'][0].update({"nodePort": int(self.executor.port)})
+            svc_manifest['spec']['ports'][0]["nodePort"] = int(self.executor.port)
+
+        rc_manifest = {
+            "apiVersion": "v1",
+            "kind": "ReplicationController",
+            "metadata": {
+                "labels": {
+                    "service": self.name
+                },
+                "name": self.name,
+                "namespace": self.namespace,
+            },
+            "spec": {
+                "replicas": 2,
+                "selector": {
+                    "service": self.name
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "service": self.name,
+                        }
+                    },
+                    "spec": {
+                        "serviceAccountName": "worker",
+                        "containers": [
+                            {
+                                "env": worker_env,
+                                "image": "philipsahli/tumbo-worker:v0.5.22-dev",
+                                "imagePullPolicy": "Always",
+                                "name": self.name,
+                                "command": self._start_command,
+                                #"ports": [
+                                #    {
+                                #        "containerPort": 80,
+                                #        "protocol": "TCP"
+                                #    }
+                                #],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File"
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "terminationGracePeriodSeconds": 30
+                    }
+                }
+            },
+            "status": {
+                "availableReplicas": 1,
+                "fullyLabeledReplicas": 1,
+                "observedGeneration": 3,
+                "readyReplicas": 1,
+                "replicas": 1
+            }
+        }
+
+        return rc_manifest, svc_manifest
+
+    def start(self, id, *args, **kwargs):
+        rc_manifest, svc_manifest = self._prepare(self, id, *args, **kwargs)
         try:
-            api_response = self.api.create_namespaced_replication_controller(self.namespace, rc_manifest, pretty=pretty)
+            api_response = self.api.create_namespaced_replication_controller(
+                self.namespace, rc_manifest, pretty='pretty_example', _request_timeout=3)
+            api_response_service = self.api.create_namespaced_service(
+                self.namespace, svc_manifest, pretty='pretty_example', _request_timeout=3)
         except ApiException as e:
-            #logger.error(api_response)
+            # logger.error(api_response)
             print "Exception when calling CoreV1Api->create_namespaced_replication_controller: %s\n" % e
+            self.destroy(id)
+            raise e
+
+
+        nodePort = None
+        rc = api_response.metadata.uid
+        if not self.executor.port:
+            nodePort = api_response_service['spec']['ports'][0]["nodePort"]
+            rc = api_response.metadata.uid, nodePort
+
+        return rc
+
+    def update(self, id, *args, **kwargs):
+        rc_manifest = self._prepare(self, id, *args, **kwargs)
+        try:
+            api_response = self.api.patch_namespaced_replication_controller(
+                self.namespace, rc_manifest, pretty='pretty_example')
+        except ApiException as e:
+            # logger.error(api_response)
+            print "Exception when calling CoreV1Api->patch_namespaced_replication_controller: %s\n" % e
             raise e
 
         return api_response.metadata.uid
 
     def stop(self, id, *args, **kwargs):
         self.destroy(id)
+
+    def _delete_service(self):
+        #body = client.V1DeleteOptions()
+        #grace_period_seconds = 3 # int | The duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object value if not specified. zero means delete immediately. (optional)
+        #orphan_dependents = True # bool | Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both. (optional)
+        #propagation_policy = 'propagation_policy_example' # str | Whether and how garbage collection will be performed. Either this field or OrphanDependents may be set, but not both. The default policy is decided by the existing finalizer set in the metadata.finalizers and the resource-specific default policy. Acceptable values are: 'Orphan' - orphan the dependents; 'Background' - allow the garbage collector to delete the dependents in the background; 'Foreground' - a cascading policy that deletes all dependents in the foreground. (optional)
+
+        try:
+            _ = self.api.delete_namespaced_service(
+                #self.name, self.namespace, body=body, pretty="pretty_example", grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents, propagation_policy=propagation_policy)
+                self.name, self.namespace, pretty="pretty_example")
+        except ApiException as e:
+            print "Exception when calling CoreV1Api->patch_namespaced_replication_controller_scale: %s\n" % e
 
     def destroy(self, id, *args, **kwargs):
         # Check if destroyable state
@@ -175,11 +246,15 @@ class KubernetesExecutor(BaseExecutor):
             print e
             return True
         # scale
-        body = {"spec":{"replicas": 0}}
+        body = {"spec": {"replicas": 0}}
         pretty = 'pretty_example'
 
+
+        self._delete_service()
+
         try:
-            api_response = self.api.patch_namespaced_replication_controller(self.name, self.namespace, body=body, pretty=pretty)
+            api_response = self.api.patch_namespaced_replication_controller(
+                self.name, self.namespace, body=body, pretty=pretty)
         except ApiException as e:
             print "Exception when calling CoreV1Api->patch_namespaced_replication_controller_scale: %s\n" % e
 
@@ -195,7 +270,8 @@ class KubernetesExecutor(BaseExecutor):
 
         try:
             #api_response = self.api.delete_namespaced_replication_controller(self.name, self.namespace, body, pretty=pretty, grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents, propagation_policy=propagation_policy)
-            api_response = self.api.delete_namespaced_replication_controller(self.name, self.namespace, body, pretty=pretty, grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents)
+            api_response = self.api.delete_namespaced_replication_controller(
+                self.name, self.namespace, body, pretty=pretty, grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents)
         except ApiException as e:
             print "Exception when calling CoreV1Api->delete_namespaced_replication_controller: %s\n" % e
             raise e
@@ -203,7 +279,6 @@ class KubernetesExecutor(BaseExecutor):
 
     def _wait_for_pod_deletion(self, id):
         while True:
-            print "check..."
             time.sleep(2)
             if self.get_replication_controller(id).items[0].status.available_replicas is None:
                 break
@@ -215,17 +290,23 @@ class KubernetesExecutor(BaseExecutor):
         raise NotImplementedError
 
     def get_replication_controller(self, id):
-        pretty = 'pretty_example' # str | If 'true', then the output is pretty printed. (optional)
-        include_uninitialized = True # bool | If true, partially initialized resources are included in the response. (optional)
-        label_selector = 'service=%s' % self.name # str | A selector to restrict the list of returned objects by their labels. Defaults to everything. (optional)
-        watch = False # bool | Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion. (optional)
+        # str | If 'true', then the output is pretty printed. (optional)
+        pretty = 'pretty_example'
+        # bool | If true, partially initialized resources are included in the response. (optional)
+        include_uninitialized = True
+        # str | A selector to restrict the list of returned objects by their labels. Defaults to everything. (optional)
+        label_selector = 'service=%s' % self.name
+        # bool | Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion. (optional)
+        watch = False
 
         try:
-            api_response = self.api.list_namespaced_replication_controller(self.namespace, pretty=pretty, include_uninitialized=include_uninitialized, label_selector=label_selector, watch=watch)
+            api_response = self.api.list_namespaced_replication_controller(
+                self.namespace, pretty=pretty, include_uninitialized=include_uninitialized, label_selector=label_selector, watch=watch, _request_timeout=3)
             if len(api_response.items) < 1:
                 raise ContainerNotFound()
         except ApiException as e:
-            logger.error("Exception when calling CoreV1Api->list_namespaced_replication_controller: %s\n" % e)
+            logger.error(
+                "Exception when calling CoreV1Api->list_namespaced_replication_controller: %s\n" % e)
             raise e
         return api_response
 
@@ -234,7 +315,8 @@ class KubernetesExecutor(BaseExecutor):
             return False
         # returns True if worker is running
         try:
-            available_replicas = self.get_replication_controller(id).items[0].status.available_replicas
+            available_replicas = self.get_replication_controller(
+                id).items[0].status.available_replicas
         except ContainerNotFound:
             return False
         return available_replicas > 0
@@ -243,7 +325,7 @@ class KubernetesExecutor(BaseExecutor):
         return {
             'ip': None,
             'ip6': None
-            }
+        }
 
     def get_instances(self, id):
         pass
