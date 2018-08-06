@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import shutil
 import uuid
 
@@ -7,7 +10,7 @@ from rest_framework.test import APIRequestFactory
 
 from core.api_views import WebhookView
 from core.importer import GitImport as git
-from core.models import Base
+from core.models import Base, StaticFile
 from core.tests.tests_all import BaseTestCase
 
 
@@ -23,12 +26,23 @@ class GitImportTestCase(BaseTestCase):
         self.repo_url = "https://git:@github.com/sahlinet/tumbo-demoapp.git/"
 
     def _add_file(self):
-        # Create commit (add file)
-        new_file = "{}/asdf_{}.txt".format(self.repo_path, str(uuid.uuid4()))
         touch = sh.Command("touch")
-        touch(new_file)
+        mkdir = sh.Command("mkdir")
+        echo = sh.Command("echo")
 
+        mkdir("-p static".split())
+
+        # Create commit (add file)
+        new_file = "{}/static/newfile_{}.txt".format(self.repo_path, str(uuid.uuid4()))
+        touch(new_file)
+        h = open(new_file, "a")
+        echo("öö", _out=h)
         self.repo.git.add(new_file)
+
+        new_file2 = "{}/static/newfile2_{}.txt".format(self.repo_path, str(uuid.uuid4()))
+        touch(new_file2)
+        self.repo.git.add(new_file2)
+
         self.repo.git.config('--global', "user.name", "user name")
         self.repo.git.config('--global', "user.email", "user@domain.com")
         self.repo.git.commit('-m', 'test commit', author='Philip Sahli <philip@sahli.net>')
@@ -52,6 +66,7 @@ class GitImportTestCase(BaseTestCase):
 
         self.repo = result[2]
         self.repo_path = result[3]
+
 
     def test_git_update_base(self, update_only=False):
         if not update_only:
