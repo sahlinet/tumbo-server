@@ -525,7 +525,11 @@ class WebhookView(viewsets.ModelViewSet):
             name = base.name
             branch = base.branch
             repo_url = base.source
-            git().import_base(username, name, branch, repo_url)
-            return JsonResponse({'msg': 'success'}, status=200)
+            _, result = git().import_base(username, name, branch, repo_url)
+
+            return JsonResponse({
+                'status': 'success',
+                'details': result
+            }, status=200)
         
         return JsonResponse({}, status=500)

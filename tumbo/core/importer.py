@@ -143,6 +143,7 @@ class GitImport(object):
         user_obj = User.objects.get(username=username)
         num_results = Base.objects.filter(user=user_obj, name=name).count()
         initial = False
+        result = []
         if num_results == 0:
             logger.info("doing initial import from git source")
             initial = True
@@ -222,7 +223,6 @@ class GitImport(object):
 
                                     filename = diff_item.a_path
                                     content = new
-                                    print content
 
                                     if "static" in filename:
                                         filename = base_obj.name + "/" + filename
@@ -231,6 +231,10 @@ class GitImport(object):
                                         logger.info(
                                             "* staticfile %s saved" % filename)
 
+                                        result.append({
+                                            filename: "success"
+                                        })
+
                                 # Modified
                                 elif diff_item.change_type == "M":
                                      print "* file %s was modified" % diff_item.a_path
@@ -238,6 +242,9 @@ class GitImport(object):
 
                                      if diff_item.a_path.endswith(".py"):
                                         _handle_apy(diff_item.a_path, new, base_obj, appconfig)
+                                        result.append({
+                                            diff_item.a_path: "success"
+                                        })
 
                                      if diff_item.a_path.endswith("app.config"):
                                         for apy_name in appconfig['modules'].keys():
@@ -271,8 +278,8 @@ class GitImport(object):
             if not repo_ref:
                 shutil.rmtree(repo_path)
         if repo_ref:
-            return r + (repo, repo_path,)
-        return r
+            return r + (repo, repo_path,  result,)
+        return r, result
 
     def blobs(self, diff_item):
         # if diff_item.b_blob:

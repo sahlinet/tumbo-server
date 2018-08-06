@@ -56,7 +56,6 @@ class GitImportTestCase(BaseTestCase):
 
         # Import again, no changes expected
         result = git().import_base(self.username, self.name, self.branch, self.repo_url, repo_ref=True, repo_path="/tmp/demoapp-test-branch")
-        print result
         assert result[0] is None
         self.base_obj = result[1]
         assert isinstance(self.base_obj, Base)
@@ -114,4 +113,5 @@ class GitHookTestCase(GitImportTestCase):
         response = self._call_hook(HTTP_X_GITHUB_EVENT="push", HTTP_X_FORWARDED_FOR="192.30.252.1")
 
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {'msg': 'success'})
+        assert 'status' in response.content
+        assert 'details' in response.content
