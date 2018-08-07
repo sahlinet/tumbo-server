@@ -29,6 +29,7 @@ class GitImportTestCase(BaseTestCase):
         touch = sh.Command("touch")
         mkdir = sh.Command("mkdir")
         echo = sh.Command("echo")
+        cp = sh.Command("cp")
 
         mkdir("-p static".split())
 
@@ -42,6 +43,10 @@ class GitImportTestCase(BaseTestCase):
         new_file2 = "{}/static/newfile2_{}.txt".format(self.repo_path, str(uuid.uuid4()))
         touch(new_file2)
         self.repo.git.add(new_file2)
+
+        png_file = "{}/static/file_{}.png".format(self.repo_path, str(uuid.uuid4()))
+        cp(['./tumbo/ui/static/45degreee_fabric.png', png_file])
+        self.repo.git.add(png_file)
 
         self.repo.git.config('--global', "user.name", "user name")
         self.repo.git.config('--global', "user.email", "user@domain.com")
@@ -110,8 +115,9 @@ class GitHookTestCase(GitImportTestCase):
 
     def test_git_update_hook_update(self):
         self.test_git_import_base()
-        response = self._call_hook(HTTP_X_GITHUB_EVENT="push", HTTP_X_FORWARDED_FOR="192.30.252.1")
+        response = self._call_hook(HTTP_X_GITHUB_EVENT="push", HTTP_X_FORWARDED_FOR="192.30.252.1", data={'ref': "refs/heads/test-branch" })
 
         self.assertEqual(response.status_code, 200)
+        print response.content
         assert 'status' in response.content
         assert 'details' in response.content
