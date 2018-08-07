@@ -11,7 +11,7 @@ from django.db import transaction
 from git import Repo
 
 # from core.models import Storage
-from core.models import Apy, Base, Setting
+from core.models import Apy, Base, Setting, StaticFile
 from core.storage import Storage
 
 logger = logging.getLogger(__name__)
@@ -129,10 +129,16 @@ def _handle_static(source_type, base, filename, content):
     if source_type == "GIT":
         storage = Storage.factory(base, backend_type="DB")
         filename = base.name + "/" + filename
-        storage.put(filename, bytearray(content.encode("utf-8")))
+        try:
+            storage.put(filename, bytearray(content.encode("utf-8")))
+        except:
+            storage.put(filename, bytearray(content))
     else:
         sfile = "%s/%s" % (base.name, filename)
-        storage.put(sfile, bytearray(content.encode("utf-8")))
+        try:
+            storage.put(sfile, bytearray(content.encode("utf-8")))
+        except:
+            storage.put(sfile, bytearray(content))
 
 
 source_type = "GIT"
@@ -145,10 +151,10 @@ class GitImport(object):
         initial = False
         result = []
         if num_results == 0:
-            logger.info("doing initial import from git source")
+            logger.info("doing initial import from git source from branch %s" % branch)
             initial = True
         else:
-            logger.info("doing update from git source")
+            logger.info("doing update from git source on branch %s" % branch)
             try:
                 base_obj = Base.objects.get(
                     user=user_obj, name=name, source_type=source_type)
@@ -179,6 +185,7 @@ class GitImport(object):
                 logger.info("short_sha: %s" % short_sha)
 
                 if initial:
+                    logger.info("Doing initial import from Git")
                     # Initial import
 
                     # create zip ball
@@ -189,10 +196,12 @@ class GitImport(object):
                         zf = zipfile.ZipFile(archive_file)
                         base_obj = import_base(zf, user_obj, name, override_public=False,
                                     override_private=False, source_type=source_type, source=repo_url, revision=short_sha)
+                        base_obj.branch = branch
+                        base_obj.save()
                         return short_sha, base_obj
                 else:
                     if short_sha == revision:
-                        print "Nothing changed"
+                        logger.info("Nothing changed")
                         r = None, base_obj
                     else:
                         appconfig = _read_config(open("{}/{}".format(repo_path, "app.config")))
@@ -218,14 +227,17 @@ class GitImport(object):
                                 # Add
                                 elif diff_item.change_type == "A" or diff_item.change_type == "R100" or diff_item.change_type == "M":
                                     # Use R100 if a previously deleted file is added again.
-                                    print "* file %s was added / modified" % diff_item.a_path
-                                    new, _ = self.blobs(diff_item)
+                                    logger.info("* file %s was added / modified" % diff_item.a_path)
+                                    new = self.blobs(diff_item)
 
-                                    filename = diff_item.a_path
+                                    if diff_item.change_type == "R100":
+                                        # TODO: delete a_path
+                                        filename = diff_item.b_path
+                                    else:
+                                        filename = diff_item.a_path
                                     content = new
 
                                     if "static" in filename:
-                                        filename = base_obj.name + "/" + filename
                                         _handle_static(
                                             source_type, base_obj, filename, content)
                                         logger.info(
@@ -237,8 +249,8 @@ class GitImport(object):
 
                                 # Modified
                                 elif diff_item.change_type == "M":
-                                     print "* file %s was modified" % diff_item.a_path
-                                     new, _ = self.blobs(diff_item)
+                                     logger.info("* file %s was modified" % diff_item.a_path)
+                                     new = self.blobs(diff_item)
 
                                      if diff_item.a_path.endswith(".py"):
                                         _handle_apy(diff_item.a_path, new, base_obj, appconfig)
@@ -256,8 +268,11 @@ class GitImport(object):
                                                 diff_item.a_path)
 
                                     if "static" in filename:
-                                        _delete_static(
-                                            source_type, base_obj, filename)
+                                        try:
+                                            _delete_static(
+                                                source_type, base_obj, filename)
+                                        except StaticFile.DoesNotExist:
+                                            logger.debug("StaticFile does not exist")
                                 else:
                                     raise Exception(
                                         "change_type '%s' unknown." % diff_item.change_type)
@@ -274,9 +289,9 @@ class GitImport(object):
             if hasattr(e, "stderr"):
                 raise Exception(getattr(e, "stderr"))
             raise e
-        finally:
-            if not repo_ref:
-                shutil.rmtree(repo_path)
+        # finally:
+        #     if not repo_ref:
+        #         shutil.rmtree(repo_path)
         if repo_ref:
             return r + (repo, repo_path,  result,)
         return r, result
@@ -288,9 +303,9 @@ class GitImport(object):
         # if diff_item.a_blob:
         #     print("A blob (old):\n{}".format(
         #         diff_item.a_blob.data_stream.read().decode('utf-8')))
-        new = diff_item.b_blob.data_stream.read().decode(
-            'utf-8') if diff_item.b_blob else None
-        logger.info(new)
-        old = diff_item.a_blob.data_stream.read().decode(
-            'utf-8') if diff_item.a_blob else None
-        return new, old
+        try:
+            new = diff_item.b_blob.data_stream.read().decode(
+                'utf-8') if diff_item.b_blob else None
+        except UnicodeDecodeError, e:
+            new = diff_item.b_blob.data_stream.read() if diff_item.b_blob else None
+        return new

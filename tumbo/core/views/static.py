@@ -9,7 +9,7 @@ from django.http import (HttpResponse, HttpResponseNotFound,
 from django.template import RequestContext, Template
 from django.views.generic import View
 
-from core.models import Base
+from core.models import Base, StaticFile
 from core.plugins.datastore import PsqlDataStore
 from core.staticfiles import NotFound, StaticfileFactory
 from core.utils import totimestamp
@@ -65,7 +65,7 @@ class StaticView(ResponseUnavailableViewMixing, View):
             file_obj = file_fact.lookup()
             file = file_obj.content
             last_modified = file_obj.last_modified
-        except NotFound, e:
+        except (StaticFile.DoesNotExist, NotFound), e:
             logger.error(e)
             return HttpResponseNotFound("Not found: %s" % static_path)
         except Exception, e:
