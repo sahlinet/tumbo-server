@@ -118,6 +118,5 @@ class GitHookTestCase(GitImportTestCase):
         response = self._call_hook(HTTP_X_GITHUB_EVENT="push", HTTP_X_FORWARDED_FOR="192.30.252.1", data={'ref': "refs/heads/test-branch" })
 
         self.assertEqual(response.status_code, 200)
-        print response.content
         assert 'status' in response.content
         assert 'details' in response.content
