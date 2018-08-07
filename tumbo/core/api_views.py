@@ -520,10 +520,16 @@ class WebhookView(viewsets.ModelViewSet):
             return JsonResponse({'msg': 'pong'}, status=200)
 
         elif event == 'push':
+            data = request.data
             # https://developer.github.com/v3/activity/events/types/
             base = self.get_queryset(username=username, name=name)
             name = base.name
             branch = base.branch
+
+            if "refs/heads/%s" % branch != data['ref']:
+                logger.info("hook push request not for our branch '%s' vs '%s'" % ("refs/heads/%s" % branch, data['ref']))
+                return JsonResponse({}, status=200)
+
             repo_url = base.source
             _, result = git().import_base(username, name, branch, repo_url)
 
