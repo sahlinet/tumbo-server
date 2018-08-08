@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import shutil
+import urllib
 import uuid
 
 import sh
@@ -33,7 +34,7 @@ class GitImportTestCase(BaseTestCase):
 
         mkdir("-p static".split())
 
-        # Create commit (add file)
+        # Create commit (add file with unicode characters)
         new_file = "{}/static/newfile_{}.txt".format(self.repo_path, str(uuid.uuid4()))
         touch(new_file)
         h = open(new_file, "a")
@@ -44,8 +45,9 @@ class GitImportTestCase(BaseTestCase):
         touch(new_file2)
         self.repo.git.add(new_file2)
 
+        # Add png to test binary file
         png_file = "{}/static/file_{}.png".format(self.repo_path, str(uuid.uuid4()))
-        cp(['./tumbo/ui/static/45degreee_fabric.png', png_file])
+        urllib.urlretrieve("https://vignette.wikia.nocookie.net/htmlcss/images/e/e4/PNG_Example_1.png", png_file)
         self.repo.git.add(png_file)
 
         self.repo.git.config('--global', "user.name", "user name")
