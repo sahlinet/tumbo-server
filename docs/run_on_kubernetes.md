@@ -6,7 +6,7 @@
 
 Development Release from PyPi's Testing Site
 
-    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple tumbo-server==0.5.22-dev
+    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple tumbo-server==0.5.23-dev
 
 Released Version from PyPi
 
