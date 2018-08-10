@@ -319,7 +319,7 @@ class Env(object):
         webbrowser.open(url + "/")
 
     def projects_list(self):
-        status_code, projects = self._call_api("/core/api/base/")
+        _, projects = self._call_api("/core/api/base/")
         table = []
         for project in projects:
             state = "Running" if project['state'] else "Stopped"
@@ -617,7 +617,7 @@ def tolocaltime(dt):
 if __name__ == '__main__':
     arguments = docopt(__doc__, version="0.5.23-dev")
 
-    ini = arguments.get('--ini', "config.ini")
+    ini_file = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
         try:
             ngrok = sh.Command("ngrok")
@@ -969,14 +969,14 @@ if __name__ == '__main__':
         if arguments['kubernetes']:
             kubectl = sh.Command("kubectl")
             j2 = sh.Command("j2")
-            context = arguments["--context"]
+            context = arguments['--context']
             is_minikube = context == "minikube"
 
             base_cmd = ""
             if arguments['--kubeconfig']:
                 os.environ['KUBECONFIG'] = arguments['--kubeconfig']
-            if arguments["--context"]:
-                cmd = "config use-context %s" % arguments["--context"]
+            if arguments['--context']:
+                cmd = "config use-context %s" % arguments['--context']
                 kubectl(cmd.split())
 
             cmd_list = [
@@ -989,7 +989,7 @@ if __name__ == '__main__':
             ]
 
             conf = RawConfigParser()
-            conf.read(ini)
+            conf.read(ini_file)
 
             ini_dict = {}
             # print conf.sections()
@@ -1021,9 +1021,9 @@ if __name__ == '__main__':
                 except sh.ErrorReturnCode_1:
                     pass
 
-                if arguments["--ingress"]:
-                    cmd_list.append("../tumbo-sahli-net/tumbo-secret.yml")
-                    cmd_list.append("./k8s-files/cli/ingress.yml")
+                if arguments['--ingress']:
+                    cmd_list.append('../tumbo-sahli-net/tumbo-secret.yml')
+                    cmd_list.append('./k8s-files/cli/ingress.yml')
 
                 for cmd in cmd_list:
                     print "*** " + cmd
