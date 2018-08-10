@@ -44,6 +44,7 @@ def _handle_settings(settings, base_obj, override_public=False, override_private
 
 
 def _handle_apy(filename, content, base_obj, appconfig):
+    logger.info("_handle_apy for %s@%s" % (filename, base_obj.name))
     name = filename.replace(".py", "")
     apy, _ = Apy.objects.get_or_create(base=base_obj, name=name)
     if content:
@@ -247,18 +248,19 @@ class GitImport(object):
                                             filename: "success"
                                         })
 
-                                # Modified
-                                elif diff_item.change_type == "M":
-                                     logger.info("* file %s was modified" % diff_item.a_path)
-                                     new = self.blobs(diff_item)
+                                ## Modified
+                                #elif diff_item.change_type == "M":
+                                #     logger.info("* file %s was modified" % diff_item.a_path)
+                                #     new = self.blobs(diff_item)
 
-                                     if diff_item.a_path.endswith(".py"):
+                                    if diff_item.a_path.endswith(".py"):
                                         _handle_apy(diff_item.a_path, new, base_obj, appconfig)
                                         result.append({
                                             diff_item.a_path: "success"
                                         })
 
-                                     if diff_item.a_path.endswith("app.config"):
+                                    if diff_item.a_path.endswith("app.config"):
+                                        logger.info("app.config changed")
                                         for apy_name in appconfig['modules'].keys():
                                             _handle_apy(apy_name, None, base_obj, appconfig)
 
