@@ -139,7 +139,7 @@ class KubernetesExecutor(BaseExecutor):
                 "namespace": self.namespace,
             },
             "spec": {
-                "replicas": 2,
+                "replicas": 1,
                 "selector": {
                     "service": self.name
                 },
