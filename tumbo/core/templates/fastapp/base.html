@@ -83,6 +83,7 @@
             {% verbatim %}
             Source: <p>{{ base.source }}</p>
             Branch: <p>{{ base.branch}}</p>
+            Revision: <p><a href="{{ base.source|cut:".git" }}/commit/{{ base.revision}}">{{ base.revision }}</a></p>
             <h3>State</h3>
             {% endverbatim %}
             {% verbatim %}
