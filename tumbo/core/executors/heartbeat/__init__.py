@@ -26,7 +26,6 @@ from core.executors.remote import distribute
 from core.models import Apy, Base, Instance, Process, Setting, Thread
 from core.plugins import call_plugin_func
 from core.utils import load_setting
-from core.views import ExecView
 
 logger = logging.getLogger(__name__)
 
@@ -369,6 +368,7 @@ class HeartbeatThread(CommunicationThread):
                         url, data={'base': base_obj.name, 'id': init.id})
                     request.user = get_user_model().objects.get(username='admin')
 
+                    from core.views import ExecView
                     view = ExecView()
                     response = view.get(
                         request, base=base_obj.name, id=init.id)
