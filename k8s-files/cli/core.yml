@@ -56,7 +56,7 @@ items:
             envFrom:
             - configMapRef:
                 name: tumbo-config
-            image: philipsahli/tumbo-server:v0.5.24-dev
+            image: philipsahli/tumbo-server:v0.5.25-dev
             imagePullPolicy: "Always"
             name: app
             ports:
@@ -142,7 +142,7 @@ items:
             envFrom:
             - configMapRef:
                 name: tumbo-config
-            image: philipsahli/tumbo-server:v0.5.24-dev
+            image: philipsahli/tumbo-server:v0.5.25-dev
             imagePullPolicy: "Always"
             name: background
             resources: {}
