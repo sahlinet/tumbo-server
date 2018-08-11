@@ -154,7 +154,7 @@ class KubernetesExecutor(BaseExecutor):
                         "containers": [
                             {
                                 "env": worker_env,
-                                "image": "philipsahli/tumbo-worker:v0.5.23-dev",
+                                "image": "philipsahli/tumbo-worker:v0.5.24-dev",
                                 "imagePullPolicy": "Always",
                                 "name": self.name,
                                 "command": self._start_command,
