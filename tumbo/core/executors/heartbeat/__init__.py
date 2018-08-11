@@ -17,8 +17,8 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.core.urlresolvers import reverse
 from django.db import DatabaseError, connections, transaction
 from django.test import RequestFactory
-from gevent import pool as gevent_pool
 from gevent import Greenlet
+from gevent import pool as gevent_pool
 
 from core import __VERSION__
 from core.communication import CommunicationThread
@@ -26,6 +26,7 @@ from core.executors.remote import distribute
 from core.models import Apy, Base, Instance, Process, Setting, Thread
 from core.plugins import call_plugin_func
 from core.utils import load_setting
+from core.views import ExecView
 
 logger = logging.getLogger(__name__)
 
@@ -368,7 +369,6 @@ class HeartbeatThread(CommunicationThread):
                         url, data={'base': base_obj.name, 'id': init.id})
                     request.user = get_user_model().objects.get(username='admin')
 
-                    from core.views import ExecView
                     view = ExecView()
                     response = view.get(
                         request, base=base_obj.name, id=init.id)

@@ -30,13 +30,18 @@ class NotFound(BaseException):
 class LoadMixin(object):
 
     def _cache_not_found(self):
-        logger.debug("cache.set not_found for %s (%s)" % (
+        logger.info("cache.get not_found for %s (%s), caching now..." % (
             self.static_name, self.cache_key + self.__class__.__name__))
         cache.set(self.cache_key + self.__class__.__name__, True,
                   int(settings.TUMBO_STATIC_404_CACHE_SECONDS))
 
     def _is_cached_not_found(self):
-        return cache.get(self.cache_key + self.__class__.__name__, False)
+        cached = cache.get(self.cache_key + self.__class__.__name__, False)
+        if cached:
+             logger.info("Cached staticfile found")
+        else:
+             logger.info("Cached staticfile not found")
+        return cached
 
     def load(self):
         """
