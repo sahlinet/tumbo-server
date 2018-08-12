@@ -21,6 +21,8 @@ items:
         spec:
           containers:
           - env:
+            - name: USE_PGBOUNCER
+              value: yes
             - name: MODE
               value: web
             - name: ADMIN_PASSWORD
