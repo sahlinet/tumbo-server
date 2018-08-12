@@ -236,7 +236,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
-	'core.staticfiles': {
+        'core.staticfiles': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
@@ -280,7 +280,7 @@ LOGGING = {
         'aaa.cas': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True
+            'propagate': False 
         }
     }
 }
@@ -306,7 +306,7 @@ TUMBO_LOG_LISTENER_THREADCOUNT = 5
 TUMBO_CLEANUP_INTERVAL_MINUTES = 60
 TUMBO_CLEANUP_OLDER_THAN_N_HOURS = 48
 TUMBO_STATIC_CACHE_SECONDS = 60
-TUMBO_STATIC_404_CACHE_SECONDS = 5
+TUMBO_STATIC_404_CACHE_SECONDS = 10
 
 TUMBO_DOCKER_IMAGE = "philipsahli/tumbo-worker:develop"
 
