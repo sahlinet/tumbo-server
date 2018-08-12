@@ -22,7 +22,7 @@ items:
           containers:
           - env:
             - name: USE_PGBOUNCER
-              value: yes
+              value: "yes"
             {% if NEWRELIC_LICENSE is defined %}
             - name: NEWRELIC_LICENSE
               value: {{ NEWRELIC_LICENSE }}
@@ -62,7 +62,7 @@ items:
             envFrom:
             - configMapRef:
                 name: tumbo-config
-            image: philipsahli/tumbo-server:v0.5.26-dev
+            image: philipsahli/tumbo-server:v0.5.27-dev
             imagePullPolicy: "Always"
             name: app
             ports:
@@ -148,7 +148,7 @@ items:
             envFrom:
             - configMapRef:
                 name: tumbo-config
-            image: philipsahli/tumbo-server:v0.5.26-dev
+            image: philipsahli/tumbo-server:v0.5.27-dev
             imagePullPolicy: "Always"
             name: background
             resources: {}
