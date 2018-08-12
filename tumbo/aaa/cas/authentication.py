@@ -30,13 +30,13 @@ def cas_login(function):
     def wrapper(request, *args, **kwargs):
         user = request.user
 
-        logger.info("step:cas-1:user %s arrived for URL %s" % (user, request.get_full_path()))
+        logger.debug("step:cas-1:user %s arrived for URL %s" % (user, request.get_full_path()))
 
         # if logged in
         if request.user.is_authenticated():
             logger.info("user.is_authenticated with user %s" %
                         request.user.username)
-            logger.info("user has internalid: %s" %
+            logger.debug("user has internalid: %s" %
                         request.user.authprofile.internalid)
             return function(request, *args, **kwargs)
 
@@ -57,8 +57,6 @@ def cas_login(function):
             service_full = "%s://%s" % (proto, base.frontend_host)
         else:
             service_full = "%s://%s%s" % (proto, host, service)
-
-        ticket = request.GET.get("ticket", None)
 
         if ticket:
             
