@@ -31,16 +31,16 @@ class LoadMixin(object):
 
     def _cache_not_found(self):
         logger.info("cache.get not_found for %s (%s), caching now..." % (
-            self.static_name, self.cache_key + self.__class__.__name__))
-        cache.set(self.cache_key + self.__class__.__name__, True,
+            self.static_name, self.cache_key))
+        cache.set(self.cache_key, True,
                   int(settings.TUMBO_STATIC_404_CACHE_SECONDS))
 
     def _is_cached_not_found(self):
-        cached = cache.get(self.cache_key + self.__class__.__name__, False)
+        cached = cache.get(self.cache_key, False)
         if cached:
-             logger.info("Cached staticfile found")
+             logger.info("Cached staticfile '%s' found" % self.cache_key)
         else:
-             logger.info("Cached staticfile not found")
+             logger.info("Cached staticfile '%s' not found" & self.cache_key)
         return cached
 
     def load(self):
@@ -86,8 +86,8 @@ class StaticfileFactory(LoadMixin):
         self.base_obj = Base.objects.get(
             user__username=username, name=project_name)
 
-        self.cache_key = "%s-%s-%s" % (self.base_obj.user.username,
-                                       self.base_obj.name, self.static_path)
+        self.cache_key = "%s-%s-%s-%s" % (self.base_obj.user.username,
+                                       self.base_obj.name, self.static_path, self.__class__.__name__)
         self.cache_obj = cache.get(self.cache_key, None)
 
     def lookup(self):
@@ -127,7 +127,7 @@ class StaticfileFactory(LoadMixin):
                     logger.debug(
                         "Not caching because no-cache present in HTML")
                 else:
-                    logger.debug("Caching %s (%s)" %
+                    logger.info("Caching %s (%s)" %
                                  (self.cache_key, file_obj.last_modified))
                     cache.set(self.cache_key, {
                         'f': file_obj.content,
