@@ -1,4 +1,4 @@
-"""Staticfiles handling.
+"""Staticfile handling.
 """
 
 import base64
@@ -40,7 +40,7 @@ class LoadMixin(object):
         if cached:
              logger.info("Cached staticfile '%s' found" % self.cache_key)
         else:
-             logger.info("Cached staticfile '%s' not found" & self.cache_key)
+             logger.info("Cached staticfile '%s' not found" % self.cache_key)
         return cached
 
     def load(self):
@@ -86,8 +86,8 @@ class StaticfileFactory(LoadMixin):
         self.base_obj = Base.objects.get(
             user__username=username, name=project_name)
 
-        self.cache_key = "%s-%s-%s-%s" % (self.base_obj.user.username,
-                                       self.base_obj.name, self.static_path, self.__class__.__name__)
+        self.cache_key = "%s-%s-%s" % (self.base_obj.user.username,
+                                       self.base_obj.name, self.static_path)
         self.cache_obj = cache.get(self.cache_key, None)
 
     def lookup(self):
