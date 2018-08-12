@@ -31,8 +31,12 @@ DATABASES['default']['ENGINE'] = "django.db.backends.postgresql_psycopg2"
 DATABASES['default']['NAME'] = get_var('DB_NAME')
 DATABASES['default']['USER'] = get_var('DB_USER')
 DATABASES['default']['PASSWORD'] = get_var('DB_PASS')
-DATABASES['default']['HOST'] = get_var('DB_HOST')
-DATABASES['default']['PORT'] = get_var('DB_PORT')
+if os.environ.get("USE_PGBOUNCER", None):
+    DATABASES['default']['HOST'] = "localhost"
+    DATABASES['default']['PORT'] = 6543
+else:
+    DATABASES['default']['HOST'] = get_var('DB_HOST')
+    DATABASES['default']['PORT'] = get_var('DB_PORT')
 
 # 'postgresql://scott:tiger@localhost:5432/mydatabase'
 TUMBO_SCHEDULE_JOBSTORE = 'postgresql://%s:%s@%s:%s/%s' % (

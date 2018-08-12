@@ -17,6 +17,23 @@ chown -R tumbo:tumbo /static
 
 MANAGE_PY="/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py"
 
+# Start Configure pgbouncer
+echo """[databases]
+${DB_NAME} = host=${DB_HOST} port=${DB_PORT} dbname=${DB_NAME}
+
+[pgbouncer]
+listen_addr = localhost
+listen_port = 6543
+auth_type = md5
+auth_file = /home/tumbo/userlist.txt
+pool_mode = session
+max_client_conn = 200
+default_pool_size = 300""" > /home/tumbo/pgbouncer.ini
+
+echo "\"${DB_USER}\" \"${DB_PASS}\"" > /home/tumbo/userlist.txt
+pgbouncer -d /home/tumbo/pgbouncer.ini
+# End Configure pgbouncer
+
 if [ ! -z "$NEWRELIC_LICENSE" ]; then
     echo "Create newrelic.ini"
     sudo newrelic-admin generate-config $NEWRELIC_LICENSE /newrelic.ini
