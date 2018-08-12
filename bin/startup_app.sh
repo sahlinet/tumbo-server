@@ -28,6 +28,7 @@ auth_type = md5
 auth_file = /home/tumbo/userlist.txt
 pool_mode = session
 max_client_conn = 200
+pidfile = pgbouncer.pid
 default_pool_size = 300""" > /home/tumbo/pgbouncer.ini
 
 echo "\"${DB_USER}\" \"${DB_PASS}\"" > /home/tumbo/userlist.txt
