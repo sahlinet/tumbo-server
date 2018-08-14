@@ -1,5 +1,6 @@
 from pip.req import parse_requirements
 from setuptools import find_packages, setup
+import glob
 
 __VERSION__ = "0.5.27-dev"
 
