@@ -29,7 +29,11 @@ app:
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
    - TUMBO_DOCKER_MEM_LIMIT="128m"
+<<<<<<< HEAD
    - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.5.27-dev
+=======
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.5.25-dev
+>>>>>>> develop
    - DEBUG=True
    - ALLOWED_HOSTS=*
    - DIGITALOCEAN_CONFIG
@@ -39,7 +43,11 @@ app:
    - ../tumbo:/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo
 cleaner:
   build: ..
+<<<<<<< HEAD
   #image: philipsahli/tumbo-server:v0.5.27-dev
+=======
+  #image: philipsahli/tumbo-server:v0.5.25-dev
+>>>>>>> develop
   #image: philipsahli/tumbo-server:develop
   external_links:
    - tumboserver_db_1:db
@@ -69,7 +77,11 @@ cleaner:
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
    - TUMBO_DOCKER_MEM_LIMIT="128m"
+<<<<<<< HEAD
    - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.5.27-dev
+=======
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.5.25-dev
+>>>>>>> develop
    - DEBUG=True
    - DIGITALOCEAN_CONFIG
    - DIGITALOCEAN_ZONE
@@ -153,7 +165,11 @@ async:
    - RABBITMQ_ADMIN_PASSWORD=$${QUEUE_ENV_RABBITMQ_PASS}
    - RABBITMQ_ADMIN_USER=admin
    - TUMBO_DOCKER_MEM_LIMIT="128m"
+<<<<<<< HEAD
    - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.5.27-dev
+=======
+   - TUMBO_DOCKER_IMAGE=philipsahli/tumbo-worker:v0.5.25-dev
+>>>>>>> develop
    - DEBUG=True
    - DIGITALOCEAN_CONFIG
    - DIGITALOCEAN_ZONE

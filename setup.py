@@ -1,7 +1,3 @@
-import glob
-import os
-
-# http://stackoverflow.com/questions/14399534/how-can-i-reference-requirements-txt-for-the-install-requires-kwarg-in-setuptool
 from pip.req import parse_requirements
 from setuptools import find_packages, setup
 
