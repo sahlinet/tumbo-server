@@ -316,55 +316,55 @@ items:
           serviceAccountName: ""
     status:
       replicas: 0
--   apiVersion: v1
-    kind: ReplicationController
-    metadata:
-      creationTimestamp: null
-      labels:
-        service: monitor
-      name: monitor
-      namespace: tumbo
-    spec:
-      replicas: 1
-      selector:
-        service: monitor
-      template:
-        metadata:
-          creationTimestamp: null
-          labels:
-            service: monitor
-        spec:
-          containers:
-          - env:
-            - name: NEWRELIC_LICENSE
-              value: bd80f971051885433a13f77eae8db909e0be6e98
-            - name: MODE
-              value: docker-postgresql-test
-            - name: DB_ENV_DB_NAME 
-              value: planet
-            - name: DB_ENV_DB_USER
-              value: planet
-            - name: DB_ENV_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: passwords
-                  key: dbpw
-            - name: QUEUE_ENV_RABBITMQ_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: passwords
-                  key: rabbitmqadminpw
-            - name: CACHE_ENV_REDIS_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: passwords
-                  key: redispw
-            image: philipsahli/newrelic-plugin-agent
-            imagePullPolicy: ""
-            name: monitor
-            resources: {}
-          restartPolicy: Always
-          serviceAccountName: ""
-          volumes: null
-    status:
-      replicas: 0
+# -   apiVersion: v1
+#     kind: ReplicationController
+#     metadata:
+#       creationTimestamp: null
+#       labels:
+#         service: monitor
+#       name: monitor
+#       namespace: tumbo
+#     spec:
+#       replicas: 1
+#       selector:
+#         service: monitor
+#       template:
+#         metadata:
+#           creationTimestamp: null
+#           labels:
+#             service: monitor
+#         spec:
+#           containers:
+#           - env:
+#             - name: NEWRELIC_LICENSE
+#               value: bd80f971051885433a13f77eae8db909e0be6e98
+#             - name: MODE
+#               value: docker-postgresql-test
+#             - name: DB_ENV_DB_NAME 
+#               value: planet
+#             - name: DB_ENV_DB_USER
+#               value: planet
+#             - name: DB_ENV_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: passwords
+#                   key: dbpw
+#             - name: QUEUE_ENV_RABBITMQ_PASS
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: passwords
+#                   key: rabbitmqadminpw
+#             - name: CACHE_ENV_REDIS_PASS
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: passwords
+#                   key: redispw
+#             image: philipsahli/newrelic-plugin-agent
+#             imagePullPolicy: ""
+#             name: monitor
+#             resources: {}
+#           restartPolicy: Always
+#           serviceAccountName: ""
+#           volumes: null
+#     status:
+#       replicas: 0
