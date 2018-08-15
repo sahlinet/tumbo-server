@@ -38,7 +38,6 @@ else:
     DATABASES['default']['HOST'] = get_var('DB_HOST')
     DATABASES['default']['PORT'] = get_var('DB_PORT')
 
-# 'postgresql://scott:tiger@localhost:5432/mydatabase'
 TUMBO_SCHEDULE_JOBSTORE = 'postgresql://%s:%s@%s:%s/%s' % (
     get_var('JOBSTOREDB_USER'),
     get_var('JOBSTOREDB_PASS'),

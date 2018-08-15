@@ -53,7 +53,6 @@ class StaticView(ResponseUnavailableViewMixing, View):
             user__username=kwargs['username'], name=kwargs['base'])
 
         state= cache.get(base_obj.executor.__str__(), None)
-        logger.info("state_cache: " + str(state))
         # refresh
         if state is None:
             state = base_obj.executor.is_running()
