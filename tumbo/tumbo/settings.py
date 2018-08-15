@@ -155,7 +155,7 @@ LOGGING = {
             'class': 'logging.NullHandler',
         },
         'console': {
-            'level': 'INFO',
+            'level': 'WARN',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
