@@ -4,6 +4,7 @@ from datetime import datetime
 import pytz
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.http import (HttpResponse, HttpResponseNotFound,
                          HttpResponseNotModified, HttpResponseServerError)
 from django.template import RequestContext, Template
@@ -51,12 +52,14 @@ class StaticView(ResponseUnavailableViewMixing, View):
         base_obj = Base.objects.get(
             user__username=kwargs['username'], name=kwargs['base'])
 
-        if not base_obj.executor.is_running():
+        state= cache.get(base_obj.executor.__str__(), None)
+        logger.info("state_cache: " + str(state))
+        # refresh
+        if state is None:
+            state = base_obj.executor.is_running()
+            cache.set(base_obj.executor.__str__(), state, 20)
+        if not state:
             return HttpResponseNotFound()
-
-        #response = self.verify(request, base_obj)
-        # if response:
-        #    return response
 
         last_modified = None
 
