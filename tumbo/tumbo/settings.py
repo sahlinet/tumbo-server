@@ -121,7 +121,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-STATIC_URL = "/tatic/"
+STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 STATIC_ROOT = "static/"
 
@@ -397,17 +397,18 @@ SOCIAL_AUTH_USERNAME_FORM_HTML = 'login_form.html'
 
 COMPRESS_ENABLED = os.environ.get('COMPRESS_ENABLED')
 if COMPRESS_ENABLED and COMPRESS_ENABLED.lower() in ["yes", "true"]:
+    print "COMPRESS enabled"
     COMPRESS_ENABLED = True
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
     COMPRESS_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     AWS_LOCATION = "static"
 
-    STATIC_URL = "%s/%s/%s/" % (AWS_S3_ENDPOINT_URL, AWS_STORAGE_BUCKET_NAME, AWS_LOCATION)
+    STATIC_URL = "%s%s/%s/" % (AWS_S3_ENDPOINT_URL, AWS_STORAGE_BUCKET_NAME, AWS_LOCATION)
+    print "STATIC_URL is: " + STATIC_URL
     COMPRESS_URL = STATIC_URL
 
     # collectfast
