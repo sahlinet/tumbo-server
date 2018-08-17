@@ -23,10 +23,6 @@ items:
           - env:
             - name: USE_PGBOUNCER
               value: "yes"
-            {% if NEWRELIC_LICENSE is defined %}
-            - name: NEWRELIC_LICENSE
-              value: {{ NEWRELIC_LICENSE }}
-            {% endif %}
             - name: MODE
               value: web
             - name: ADMIN_PASSWORD
@@ -62,6 +58,8 @@ items:
             envFrom:
             - configMapRef:
                 name: tumbo-config
+            - configMapRef:
+                name: tumbo-custom-config
             image: philipsahli/tumbo-server:v0.5.27-dev
             imagePullPolicy: "Always"
             name: app

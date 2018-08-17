@@ -993,12 +993,21 @@ if __name__ == '__main__':
 
             ini_dict = {}
             # print conf.sections()
+            fd, temp_path = tempfile.mkstemp()
+            print "See information in file " + temp_path
             for each_section in conf.sections():
                 for (each_key, each_val) in conf.items(each_section):
                     # print each_val
                     # if each_val.startswith('b64:'):
                     #    each_val = standard_b64encode(each_val)
                     ini_dict[each_key.upper()] = each_val
+                    os.write(fd, "%s=%s\n" % (each_key.upper(), each_val))
+
+            cmd_args = "--insecure-skip-tls-verify create configmap tumbo-custom-config --from-env-file %s --namespace=tumbo" % temp_path
+            del_args = "delete configmap tumbo-custom-config --namespace=tumbo"
+            delete_configmap = kubectl(del_args.split(), _out=STDOUT, _err=STDERR)
+            custom_configmap = kubectl(cmd_args.split(), _out=STDOUT, _err=STDERR)
+            os.close(fd)
 
             env = ini_dict
 
