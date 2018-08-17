@@ -30,6 +30,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'collectfast',
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
@@ -79,7 +80,7 @@ if os.environ.get('CI', None):
                 'USER': 'tumbo',
                 'PASSWORD': 'tumbodbpw',
                 'HOST': 'localhost',
-                'PORT': '55432'
+                'PORT': '5432'
             }
         }
     }
@@ -119,12 +120,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-STATIC_URL = '/static/'
-
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-STATIC_URL = "/static/"
+STATIC_URL = "/tatic/"
 MEDIA_URL = "/media/"
-STATIC_ROOT = "/static/"
+STATIC_ROOT = "static/"
 
 LOG_LEVEL = 'INFO'
 
@@ -328,7 +327,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder'
 )
-# COMPRESS_ENABLED = True
 
 # redis-metrics
 REDIS_METRICS = {
@@ -396,3 +394,23 @@ CSRF_COOKIE_PATH = "/core"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 SOCIAL_AUTH_USERNAME_FORM_HTML = 'login_form.html'
+
+COMPRESS_ENABLED = os.environ.get('COMPRESS_ENABLED')
+if COMPRESS_ENABLED and COMPRESS_ENABLED.lower() in ["yes", "true"]):
+    COMPRESS_ENABLED = True
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+    COMPRESS_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_LOCATION = "static"
+
+    STATIC_URL = "%s/%s/%s/" % (AWS_S3_ENDPOINT_URL, AWS_STORAGE_BUCKET_NAME, AWS_LOCATION)
+    COMPRESS_URL = STATIC_URL
+
+    # collectfast
+    COLLECTFAST_THREADS = 20
+    COLLECTFAST_ENABLED = False
+    AWS_PRELOAD_METADATA = True

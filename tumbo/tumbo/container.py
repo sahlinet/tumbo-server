@@ -23,9 +23,11 @@ DEBUG = bool(os.environ.get('DEBUG', "false").lower() in ["true", "yes"])
 
 ALLOWED_HOSTS = [os.environ['ALLOWED_HOSTS']]
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-STATIC_URL = "/static/"
-MEDIA_URL = "/media/"
-STATIC_ROOT = "/static/"
+
+if not COMPRESS_ENABLED:
+    STATIC_URL = "/static/"
+    MEDIA_URL = "/media/"
+    STATIC_ROOT = "/static/"
 
 DATABASES['default']['ENGINE'] = "django.db.backends.postgresql_psycopg2"
 DATABASES['default']['NAME'] = get_var('DB_NAME')
@@ -70,8 +72,6 @@ CACHES = {
             }
     }
 }
-
-STATIC_URL = '/static/'
 
 if os.environ.get("KUBERNETES_PORT", None):
     RABBITMQ_HTTP_API_PORT = 15672
