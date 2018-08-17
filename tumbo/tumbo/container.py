@@ -24,7 +24,7 @@ DEBUG = bool(os.environ.get('DEBUG', "false").lower() in ["true", "yes"])
 ALLOWED_HOSTS = [os.environ['ALLOWED_HOSTS']]
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-COMPRESS_ENABLED = os.environ.get('COMPRESS_ENABLED')
+COMPRESS_ENABLED = os.environ.get('COMPRESS_ENABLED', None)
 if not COMPRESS_ENABLED or COMPRESS_ENABLED.lower() not in ["yes", "true"]:
     STATIC_URL = "/static/"
     MEDIA_URL = "/media/"

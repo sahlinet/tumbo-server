@@ -408,7 +408,7 @@ if COMPRESS_ENABLED and COMPRESS_ENABLED.lower() in ["yes", "true"]:
     AWS_LOCATION = "static"
 
     STATIC_URL = "%s%s/%s/" % (AWS_S3_ENDPOINT_URL, AWS_STORAGE_BUCKET_NAME, AWS_LOCATION)
-    print "STATIC_URL is: " + STATIC_URL
+    print "STATIC_URL is:  " + STATIC_URL
     COMPRESS_URL = STATIC_URL
 
     # collectfast

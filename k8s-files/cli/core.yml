@@ -10,7 +10,7 @@ items:
       name: app
       namespace: tumbo
     spec:
-      replicas: 1
+      replicas: 3
       selector:
         service: app
       template:
