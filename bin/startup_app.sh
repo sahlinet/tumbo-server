@@ -13,6 +13,9 @@ for var in $(env); do
         fi
 done
 
+PYTHON="/home/tumbo/.virtualenvs/tumbo/bin/python"
+SETTINGS=" --settings=tumbo.container"
+
 chown -R tumbo:tumbo /static
 
 MANAGE_PY="/home/tumbo/.virtualenvs/tumbo/lib/python2.7/site-packages/tumbo/manage.py"
@@ -44,21 +47,25 @@ if [ "$MODE" == "web" ]; then
 
     echo "Run collectstatic start"
     find /home/tumbo/.virtualenvs -name manage.py
-    /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY collectstatic --noinput --settings=tumbo.container
+    $PYTHON $MANAGE_PY collectstatic --noinput $SETTINGS
     echo "Run collectstatic done"
     echo "Run migrate start"
-    /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY migrate -v3 --noinput --settings=tumbo.container
+    $PYTHON $MANAGE_PY migrate -v3 --noinput $SETTINGS
     echo "Run migrate end"
 
     LOCKFILE=$HOME/init
+    GENERATED=false
     if [ ! -f "$LOCKFILE" ]; then
         if [ -z "$ADMIN_PASSWORD" ]; then
-            ADMIN_PASSWORD=$(pwgen  -ys 20 1)
+            export ADMIN_PASSWORD=$(pwgen  -ys 20 1)
+            GENERATED=true
         fi
-        # TODO: make admin email configurable
-        echo "from django.contrib.auth import get_user_model;  get_user_model().objects.create_superuser('admin', 'philip@sahli.net', '$ADMIN_PASSWORD')" | /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY shell --settings=tumbo.container
+        $PYTHON $MANAGE_PY create_admin -v2 $SETTINGS --username admin --password '$ADMIN_PASSWORD' --email '$ADMIN_EMAIL'
 
-        echo "Django Adminuser created with password: $ADMIN_PASSWORD"
+
+        if [ "$GENERATED" == true ]; then
+            echo "Django Adminuser created with password: $ADMIN_PASSWORD"
+        fi
     fi
 
     # NGinx
@@ -80,14 +87,14 @@ elif [ "$MODE" == "background" ]; then
         if [ "$ARG" == "all" ] || [ "$ARG" == "heartbeat" ]; then
 
             echo "Import examples"
-            /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY import_base  --username=admin --file=/home/tumbo/code/examples/example.zip --name generics --settings=tumbo.container
+            $PYTHON $MANAGE_PY import_base  --username=admin --file=/home/tumbo/code/examples/example.zip --name generics $SETTINGS
         fi
-        /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY heartbeat --mode=$ARG --settings=tumbo.container
+        $PYTHON $MANAGE_PY heartbeat --mode=$ARG $SETTINGS
 
     else
         echo "Import examples"
-        /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY import_base  --username=admin --file=/home/tumbo/code/examples/example.zip --name generics --settings=tumbo.container
+        $PYTHON $MANAGE_PY import_base  --username=admin --file=/home/tumbo/code/examples/example.zip --name generics $SETTINGS
 
-        /home/tumbo/.virtualenvs/tumbo/bin/python $MANAGE_PY heartbeat --settings=tumbo.container
+        $PYTHON $MANAGE_PY heartbeat $SETTINGS
     fi
 fi

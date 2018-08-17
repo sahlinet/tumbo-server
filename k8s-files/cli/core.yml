@@ -25,11 +25,6 @@ items:
               value: "yes"
             - name: MODE
               value: web
-            - name: ADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: passwords
-                  key: adminpw 
             - name: JOBSTOREDB_PASS
               valueFrom:
                 secretKeyRef:
