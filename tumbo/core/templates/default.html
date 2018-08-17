@@ -1,4 +1,4 @@
-{% load gravatar %}
+{% load gravatar compress %}
 
 <!DOCTYPE html>
 <html>
@@ -11,8 +11,10 @@
     <link rel="shortcut icon" href="{{ STATIC_URL }}/favicon.ico" />
     <link rel="bookmark" href="{{ STATIC_URL }}/favicon.ico" />
     <!-- site css -->
+    {% compress css %}
     <link rel="stylesheet" href="{{ STATIC_URL }}bower_components/Bootflat/css/site.min.css">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/tumbo.css">
+    {% endcompress %}
     <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,800,700,400italic,600italic,700italic,800italic,300italic" rel="stylesheet" type="text/css">
 
     <!-- sentry -->
