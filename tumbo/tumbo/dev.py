@@ -40,7 +40,7 @@ TUMBO_CORE_RECEIVER_PASSWORD = "h8h9h0h1h2h3"
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-if COMPRESS_ENABLED and COMPRESS_ENABLED.lower() in ["yes", "true"]):
+if COMPRESS_ENABLED and COMPRESS_ENABLED.lower() in ["yes", "true"]:
     STATIC_URL = "/static/"
     MEDIA_URL = "/media/"
     STATIC_ROOT = "/static/"

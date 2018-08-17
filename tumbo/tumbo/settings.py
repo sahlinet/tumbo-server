@@ -396,7 +396,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SOCIAL_AUTH_USERNAME_FORM_HTML = 'login_form.html'
 
 COMPRESS_ENABLED = os.environ.get('COMPRESS_ENABLED')
-if COMPRESS_ENABLED and COMPRESS_ENABLED.lower() in ["yes", "true"]):
+if COMPRESS_ENABLED and COMPRESS_ENABLED.lower() in ["yes", "true"]:
     COMPRESS_ENABLED = True
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
