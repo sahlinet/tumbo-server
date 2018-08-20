@@ -67,7 +67,7 @@ class BaseStorage(object):
             self.cache_key = "%s-%s-%s" % (self.base.user.username,
                                         self.base.name, self.static_path)
             result = cache.delete(self.cache_key)
-            logger.info("Cache cleanup result: %s" % result)
+            logger.info("Cache cleanup %s result: %s" % (filename, result))
 
 
 class LocalStorage(BaseStorage):
