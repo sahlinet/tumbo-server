@@ -254,10 +254,15 @@ class GitImport(object):
                                 #     new = self.blobs(diff_item)
 
                                     if diff_item.a_path.endswith(".py"):
-                                        _handle_apy(diff_item.a_path, new, base_obj, appconfig)
-                                        result.append({
-                                            diff_item.a_path: "success"
-                                        })
+                                        try:
+                                            _handle_apy(diff_item.a_path, new, base_obj, appconfig)
+                                            result.append({
+                                                diff_item.a_path: "success"
+                                            })
+                                        except KeyError:
+                                            result.append({
+                                                diff_item.a_path: "ignored"
+                                            })
 
                                     if diff_item.a_path.endswith("app.config"):
                                         logger.info("app.config changed")
