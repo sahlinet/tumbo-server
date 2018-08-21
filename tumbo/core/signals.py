@@ -100,19 +100,6 @@ def initialize_on_storage(sender, *args, **kwargs):
 @receiver(ready_to_sync, sender=Apy)
 def synchronize_to_storage(sender, *args, **kwargs):
     instance = kwargs['instance']
-    #try:
-    #    storage = Storage.factory(instance)
-    #    result = storage.put("%s/%s.py" %
-    #                         (instance.base.name, instance.name), instance.module)
-#
-#        # add revision for the storage modules
-#       if result:
-#            instance.rev = result['rev']
-#            instance.save()
-
-    except Exception, e:
-        logger.exception(e)
-
     if instance.base.state:
         distribute(CONFIGURATION_EVENT, serializers.serialize("json",
                                                               [instance, ]),
