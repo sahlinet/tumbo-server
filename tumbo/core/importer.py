@@ -52,8 +52,7 @@ def _handle_apy(filename, content, base_obj, appconfig):
     description = appconfig['modules'][name]['description']
     if description:
         apy.description = description
-    schedule = hasattr(appconfig['modules'][name], "schedule")
-    if schedule:
+    if "schedule" in appconfig['modules'][name]:
         apy.schedule = appconfig['modules'][name]['schedule']
     else:
         apy.schedule = ""

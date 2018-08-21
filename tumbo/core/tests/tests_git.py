@@ -11,7 +11,7 @@ from rest_framework.test import APIRequestFactory
 
 from core.api_views import WebhookView
 from core.importer import GitImport as git
-from core.models import Base, StaticFile
+from core.models import Base, StaticFile, Apy
 from core.tests.tests_all import BaseTestCase
 
 
@@ -60,6 +60,9 @@ class GitImportTestCase(BaseTestCase):
         result = git().import_base(self.username, self.name, self.branch, self.repo_url, repo_ref=True)
         assert result[0] is not None
         assert type(result[1]) is Base
+
+        apy = Apy.objects.get(base=result[1], name="scheduler")
+        assert apy.schedule == "*/2 * * *"
 
         # Import again, no changes expected
         result = git().import_base(self.username, self.name, self.branch, self.repo_url, repo_ref=True, repo_path="/tmp/demoapp-test-branch")
