@@ -167,7 +167,7 @@ LOGGING = {
         'django': {
             'handlers': ['console'],
             'propagate': True,
-            'level': 'INFO',
+            'level': 'WARN',
         },
         'django.request': {
             'handlers': ['mail_admins', 'console'],
@@ -176,23 +176,23 @@ LOGGING = {
         },
         'core': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'WARN',
             'propagate': False,
         },
         'core.views.static': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'core.loader': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'WARN',
             'propagate': False,
         },
         'core.executors.remote': {
             # 'handlers': ['console'],
             'handlers': [],
-            'level': 'INFO',
+            'level': 'WARN',
             'propagate': False,
         },
         'core.executors.worker_engines': {
@@ -202,7 +202,7 @@ LOGGING = {
         },
         'core.communication': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'WARN',
             'propagate': False,
         },
         'core.plugins.singleton': {
@@ -222,12 +222,12 @@ LOGGING = {
         },
         'core.views': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'WARN',
             'propagate': False,
         },
         'core.executors.heartbeat': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'WARN',
             'propagate': False,
         },
         'core.utils': {
@@ -237,18 +237,17 @@ LOGGING = {
         },
         'core.staticfiles': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
-
         'core.scheduler': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'tornado': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'WARN',
             'propagate': True,
         },
         'sqlalchemy': {
@@ -278,7 +277,7 @@ LOGGING = {
         },
         'aaa.cas': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False 
         }
     }
