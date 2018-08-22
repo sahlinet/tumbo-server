@@ -2,7 +2,7 @@ from pip.req import parse_requirements
 from setuptools import find_packages, setup
 import glob
 
-__VERSION__ = "0.5.32-dev"
+__VERSION__ = "0.5.33-dev"
 
 
 install_reqs = parse_requirements("./requirements.txt", session=False)
