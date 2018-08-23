@@ -241,7 +241,7 @@ LOGGING = {
         },
         'tornado': {
             'handlers': ['console'],
-            'level': WARNING,
+            'level': 'WARNING',
             'propagate': True,
         },
         'sqlalchemy': {
