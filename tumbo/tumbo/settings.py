@@ -125,7 +125,7 @@ STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 STATIC_ROOT = "static/"
 
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING')
 
 LOGGING = {
     'version': 1,
@@ -143,18 +143,12 @@ LOGGING = {
         },
     },
     'handlers': {
-        # 'cas_logfile': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.FileHandler',
-        #     'filename': 'cas.log',
-        #     'formatter': 'verbose'
-        # },
         'null': {
             'level': 'DEBUG',
             'class': 'logging.NullHandler',
         },
         'console': {
-            'level': 'WARN',
+            'level': LOG_LEVEL,
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
@@ -167,42 +161,42 @@ LOGGING = {
         'django': {
             'handlers': ['console'],
             'propagate': True,
-            'level': 'WARN',
+            'level': LOG_LEVEL,
         },
         'django.request': {
             'handlers': ['mail_admins', 'console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core': {
             'handlers': ['console'],
-            'level': 'WARN',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.views.static': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.loader': {
             'handlers': ['console'],
-            'level': 'WARN',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.executors.remote': {
             # 'handlers': ['console'],
             'handlers': [],
-            'level': 'WARN',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.executors.worker_engines': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': True,
         },
         'core.communication': {
             'handlers': ['console'],
-            'level': 'WARN',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.plugins.singleton': {
@@ -217,37 +211,37 @@ LOGGING = {
         },
         'core.models': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.views': {
             'handlers': ['console'],
-            'level': 'WARN',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.executors.heartbeat': {
             'handlers': ['console'],
-            'level': 'WARN',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.utils': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.staticfiles': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.scheduler': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'tornado': {
             'handlers': ['console'],
-            'level': 'WARN',
+            'level': WARNING,
             'propagate': True,
         },
         'sqlalchemy': {
@@ -272,12 +266,12 @@ LOGGING = {
         },
         'aaa': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': True
         },
         'aaa.cas': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False 
         }
     }

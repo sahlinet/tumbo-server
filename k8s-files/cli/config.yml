@@ -4,7 +4,6 @@ metadata:
   name: tumbo-config
   namespace: tumbo
 data:
-  log_level: INFO
   DB_HOST: db
   DB_NAME: planet
   DB_PORT: '5432'
