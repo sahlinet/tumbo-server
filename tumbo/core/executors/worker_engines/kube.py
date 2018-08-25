@@ -59,7 +59,7 @@ class KubernetesExecutor(BaseExecutor):
 
     @property
     def _start_command(self):
-        start_command = "%s %smanage.py start_worker --vhost=%s --base=%s --username=%s --password=%s" % (
+        start_command = "hupwatch -- %s %smanage.py start_worker --vhost=%s --base=%s --username=%s --password=%s" % (
             "/home/tumbo/.virtualenvs/tumbo/bin/python",
             "/home/tumbo/code/app/",
             self.vhost,
