@@ -4,7 +4,7 @@
     - Signals
 """
 
-__VERSION__ = "0.5.35-dev"
+__VERSION__ = "0.5.36-dev"
 
 
 from django.core.exceptions import ImproperlyConfigured
