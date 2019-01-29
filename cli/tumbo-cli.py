@@ -615,7 +615,7 @@ def tolocaltime(dt):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="0.5.34-dev")
+    arguments = docopt(__doc__, version="0.5.35-dev")
 
     ini_file = arguments.get('--ini', "config.ini")
     if arguments['--ngrok-hostname'] and arguments['docker']:
@@ -1003,10 +1003,10 @@ if __name__ == '__main__':
                     ini_dict[each_key.upper()] = each_val
                     os.write(fd, "%s=%s\n" % (each_key.upper(), each_val))
 
-            cmd_args = "--insecure-skip-tls-verify create configmap tumbo-custom-config --from-env-file %s --namespace=tumbo" % temp_path
-            del_args = "delete configmap tumbo-custom-config --namespace=tumbo"
-            delete_configmap = kubectl(del_args.split(), _out=STDOUT, _err=STDERR)
-            custom_configmap = kubectl(cmd_args.split(), _out=STDOUT, _err=STDERR)
+            #cmd_args = "--insecure-skip-tls-verify create configmap tumbo-custom-config --from-env-file %s --namespace=tumbo" % temp_path
+            #del_args = "delete configmap tumbo-custom-config --namespace=tumbo"
+            #delete_configmap = kubectl(del_args.split(), _out=STDOUT, _err=STDERR)
+            #custom_configmap = kubectl(cmd_args.split(), _out=STDOUT, _err=STDERR)
             os.close(fd)
 
             env = ini_dict
