@@ -2,17 +2,17 @@ apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
   name: tumbo-certificate
-  namespace: tumbo
+  namespace: {{ NAMESPACE }}
 spec:
   acme:
     config:
     - domains:
-      - {{ frontend_host }}
+      - {{ FRONTEND_HOST }}
       http01:
         ingress: ""
         ingressClass: nginx
   dnsNames:
-  - {{ frontend_host }}
+  - {{ FRONTEND_HOST }}
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-prod

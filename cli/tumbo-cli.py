@@ -1000,7 +1000,6 @@ if __name__ == '__main__':
                     pass
 
                 if arguments["--ingress"]:
-                    cmd_list.append("../tumbo-sahli-net/tumbo-secret.yml")
                     cmd_list.append("./k8s-files/cli/ingress.yml")
                     cmd_list.append("./k8s-files/cli/certificate.yml")
 
