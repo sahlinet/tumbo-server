@@ -1030,9 +1030,10 @@ if __name__ == '__main__':
                 except sh.ErrorReturnCode_1:
                     pass
 
-                if arguments['--ingress']:
-                    cmd_list.append('../tumbo-sahli-net/tumbo-secret.yml')
-                    cmd_list.append('./k8s-files/cli/ingress.yml')
+                if arguments["--ingress"]:
+                    cmd_list.append("./k8s-files/cli/ingress.yml")
+                    cmd_list.append("./k8s-files/cli/certificate.yml")
+
 
                 for cmd in cmd_list:
                     print "*** " + cmd
