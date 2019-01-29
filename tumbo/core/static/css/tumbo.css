@@ -3,7 +3,7 @@
 	color: #50c1e9 !important; /* deepskyblue */
 }
 .docs-header {
-	background-image: url("/static/45degreee_fabric.png");
+	background-image: url("../45degreee_fabric.png");
 	color: #999999;
 	padding-top: 0px ! important;
 }

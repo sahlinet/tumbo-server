@@ -1,4 +1,4 @@
-"""Staticfiles handling.
+"""Staticfile handling.
 """
 
 import base64
@@ -30,13 +30,18 @@ class NotFound(BaseException):
 class LoadMixin(object):
 
     def _cache_not_found(self):
-        logger.debug("cache.set not_found for %s (%s)" % (
-            self.static_name, self.cache_key + self.__class__.__name__))
-        cache.set(self.cache_key + self.__class__.__name__, True,
+        logger.info("cache.get not_found for %s (%s), caching now..." % (
+            self.static_name, self.cache_key))
+        cache.set(self.cache_key, True,
                   int(settings.TUMBO_STATIC_404_CACHE_SECONDS))
 
     def _is_cached_not_found(self):
-        return cache.get(self.cache_key + self.__class__.__name__, False)
+        cached = cache.get(self.cache_key, False)
+        if cached:
+             logger.info("Cached staticfile '%s' found" % self.cache_key)
+        else:
+             logger.info("Cached staticfile '%s' not found" % self.cache_key)
+        return cached
 
     def load(self):
         """
@@ -122,7 +127,7 @@ class StaticfileFactory(LoadMixin):
                     logger.debug(
                         "Not caching because no-cache present in HTML")
                 else:
-                    logger.debug("Caching %s (%s)" %
+                    logger.info("Caching %s (%s)" %
                                  (self.cache_key, file_obj.last_modified))
                     cache.set(self.cache_key, {
                         'f': file_obj.content,

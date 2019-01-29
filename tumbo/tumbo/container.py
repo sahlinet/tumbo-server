@@ -23,18 +23,24 @@ DEBUG = bool(os.environ.get('DEBUG', "false").lower() in ["true", "yes"])
 
 ALLOWED_HOSTS = [os.environ['ALLOWED_HOSTS']]
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-STATIC_URL = "/static/"
-MEDIA_URL = "/media/"
-STATIC_ROOT = "/static/"
+
+COMPRESS_ENABLED = os.environ.get('COMPRESS_ENABLED', None)
+if not COMPRESS_ENABLED or COMPRESS_ENABLED.lower() not in ["yes", "true"]:
+    STATIC_URL = "/static/"
+    MEDIA_URL = "/media/"
+    STATIC_ROOT = "/static/"
 
 DATABASES['default']['ENGINE'] = "django.db.backends.postgresql_psycopg2"
 DATABASES['default']['NAME'] = get_var('DB_NAME')
 DATABASES['default']['USER'] = get_var('DB_USER')
 DATABASES['default']['PASSWORD'] = get_var('DB_PASS')
-DATABASES['default']['HOST'] = get_var('DB_HOST')
-DATABASES['default']['PORT'] = get_var('DB_PORT')
+if os.environ.get("USE_PGBOUNCER", None):
+    DATABASES['default']['HOST'] = "localhost"
+    DATABASES['default']['PORT'] = 6543
+else:
+    DATABASES['default']['HOST'] = get_var('DB_HOST')
+    DATABASES['default']['PORT'] = get_var('DB_PORT')
 
-# 'postgresql://scott:tiger@localhost:5432/mydatabase'
 TUMBO_SCHEDULE_JOBSTORE = 'postgresql://%s:%s@%s:%s/%s' % (
     get_var('JOBSTOREDB_USER'),
     get_var('JOBSTOREDB_PASS'),
@@ -67,8 +73,6 @@ CACHES = {
             }
     }
 }
-
-STATIC_URL = '/static/'
 
 if os.environ.get("KUBERNETES_PORT", None):
     RABBITMQ_HTTP_API_PORT = 15672

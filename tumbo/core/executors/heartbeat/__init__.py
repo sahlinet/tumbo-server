@@ -17,8 +17,8 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.core.urlresolvers import reverse
 from django.db import DatabaseError, connections, transaction
 from django.test import RequestFactory
-from gevent import pool as gevent_pool
 from gevent import Greenlet
+from gevent import pool as gevent_pool
 
 from core import __VERSION__
 from core.communication import CommunicationThread

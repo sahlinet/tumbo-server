@@ -4,12 +4,13 @@ from datetime import datetime
 import pytz
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.http import (HttpResponse, HttpResponseNotFound,
                          HttpResponseNotModified, HttpResponseServerError)
 from django.template import RequestContext, Template
 from django.views.generic import View
 
-from core.models import Base
+from core.models import Base, StaticFile
 from core.plugins.datastore import PsqlDataStore
 from core.staticfiles import NotFound, StaticfileFactory
 from core.utils import totimestamp
@@ -51,12 +52,13 @@ class StaticView(ResponseUnavailableViewMixing, View):
         base_obj = Base.objects.get(
             user__username=kwargs['username'], name=kwargs['base'])
 
-        if not base_obj.executor.is_running():
+        state= cache.get(base_obj.executor.__str__(), None)
+        # refresh
+        if state is None:
+            state = base_obj.executor.is_running()
+            cache.set(base_obj.executor.__str__(), state, 20)
+        if not state:
             return HttpResponseNotFound()
-
-        #response = self.verify(request, base_obj)
-        # if response:
-        #    return response
 
         last_modified = None
 
@@ -65,7 +67,7 @@ class StaticView(ResponseUnavailableViewMixing, View):
             file_obj = file_fact.lookup()
             file = file_obj.content
             last_modified = file_obj.last_modified
-        except NotFound, e:
+        except (StaticFile.DoesNotExist, NotFound), e:
             logger.error(e)
             return HttpResponseNotFound("Not found: %s" % static_path)
         except Exception, e:

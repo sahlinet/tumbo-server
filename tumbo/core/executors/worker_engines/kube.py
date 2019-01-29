@@ -97,6 +97,37 @@ class KubernetesExecutor(BaseExecutor):
         spec = client.V1ReplicationControllerSpec()
         spec.replicas = 1
 
+        svc_manifest = {
+            "status": {
+                "loadBalancer": {}
+            },
+            "kind": "Service",
+            "spec": {
+                "type": "NodePort",
+                "ports": [
+                    {
+                        "protocol": "",
+                        "targetPort": 0,
+                        "port": 1025,
+                        "name": ""
+                    }
+                ],
+                "selector": {
+                    "service": self.name
+                }
+            },
+            "apiVersion": "v1",
+            "metadata": {
+                "namespace": self.namespace,
+                "name": self.name
+            }
+        }
+
+
+        if self.executor.port:
+            #svc_manifest['spec']['ports'][0].update({"nodePort": int(self.executor.port)})
+            svc_manifest['spec']['ports'][0]["nodePort"] = int(self.executor.port)
+
         rc_manifest = {
             "apiVersion": "v1",
             "kind": "ReplicationController",
@@ -123,16 +154,16 @@ class KubernetesExecutor(BaseExecutor):
                         "containers": [
                             {
                                 "env": worker_env,
-                                "image": "philipsahli/tumbo-worker:v0.5.11-dev",
+                                "image": "philipsahli/tumbo-worker:v0.5.34-dev",
                                 "imagePullPolicy": "Always",
                                 "name": self.name,
                                 "command": self._start_command,
-                                "ports": [
-                                    {
-                                        "containerPort": 80,
-                                        "protocol": "TCP"
-                                    }
-                                ],
+                                #"ports": [
+                                #    {
+                                #        "containerPort": 80,
+                                #        "protocol": "TCP"
+                                #    }
+                                #],
                                 "resources": {},
                                 "terminationMessagePath": "/dev/termination-log",
                                 "terminationMessagePolicy": "File"
@@ -155,19 +186,29 @@ class KubernetesExecutor(BaseExecutor):
             }
         }
 
-        return rc_manifest
+        return rc_manifest, svc_manifest
 
     def start(self, id, *args, **kwargs):
-        rc_manifest = self._prepare(self, id, *args, **kwargs)
+        rc_manifest, svc_manifest = self._prepare(self, id, *args, **kwargs)
         try:
             api_response = self.api.create_namespaced_replication_controller(
                 self.namespace, rc_manifest, pretty='pretty_example', _request_timeout=3)
+            api_response_service = self.api.create_namespaced_service(
+                self.namespace, svc_manifest, pretty='pretty_example', _request_timeout=3)
         except ApiException as e:
             # logger.error(api_response)
             print "Exception when calling CoreV1Api->create_namespaced_replication_controller: %s\n" % e
+            self.destroy(id)
             raise e
 
-        return api_response.metadata.uid
+
+        nodePort = None
+        rc = api_response.metadata.uid
+        if not self.executor.port:
+            nodePort = api_response_service['spec']['ports'][0]["nodePort"]
+            rc = api_response.metadata.uid, nodePort
+
+        return rc
 
     def update(self, id, *args, **kwargs):
         rc_manifest = self._prepare(self, id, *args, **kwargs)
@@ -184,6 +225,19 @@ class KubernetesExecutor(BaseExecutor):
     def stop(self, id, *args, **kwargs):
         self.destroy(id)
 
+    def _delete_service(self):
+        #body = client.V1DeleteOptions()
+        #grace_period_seconds = 3 # int | The duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object value if not specified. zero means delete immediately. (optional)
+        #orphan_dependents = True # bool | Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both. (optional)
+        #propagation_policy = 'propagation_policy_example' # str | Whether and how garbage collection will be performed. Either this field or OrphanDependents may be set, but not both. The default policy is decided by the existing finalizer set in the metadata.finalizers and the resource-specific default policy. Acceptable values are: 'Orphan' - orphan the dependents; 'Background' - allow the garbage collector to delete the dependents in the background; 'Foreground' - a cascading policy that deletes all dependents in the foreground. (optional)
+
+        try:
+            _ = self.api.delete_namespaced_service(
+                #self.name, self.namespace, body=body, pretty="pretty_example", grace_period_seconds=grace_period_seconds, orphan_dependents=orphan_dependents, propagation_policy=propagation_policy)
+                self.name, self.namespace, pretty="pretty_example")
+        except ApiException as e:
+            print "Exception when calling CoreV1Api->patch_namespaced_replication_controller_scale: %s\n" % e
+
     def destroy(self, id, *args, **kwargs):
         # Check if destroyable state
         try:
@@ -194,6 +248,9 @@ class KubernetesExecutor(BaseExecutor):
         # scale
         body = {"spec": {"replicas": 0}}
         pretty = 'pretty_example'
+
+
+        self._delete_service()
 
         try:
             api_response = self.api.patch_namespaced_replication_controller(

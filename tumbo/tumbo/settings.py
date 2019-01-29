@@ -30,6 +30,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'collectfast',
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
@@ -79,7 +80,7 @@ if os.environ.get('CI', None):
                 'USER': 'tumbo',
                 'PASSWORD': 'tumbodbpw',
                 'HOST': 'localhost',
-                'PORT': '55432'
+                'PORT': '5432'
             }
         }
     }
@@ -119,14 +120,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-STATIC_URL = '/static/'
-
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
-STATIC_ROOT = "/static/"
+STATIC_ROOT = "static/"
 
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING')
 
 LOGGING = {
     'version': 1,
@@ -144,18 +143,12 @@ LOGGING = {
         },
     },
     'handlers': {
-        # 'cas_logfile': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.FileHandler',
-        #     'filename': 'cas.log',
-        #     'formatter': 'verbose'
-        # },
         'null': {
             'level': 'DEBUG',
             'class': 'logging.NullHandler',
         },
         'console': {
-            'level': 'DEBUG',
+            'level': LOG_LEVEL,
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
@@ -168,42 +161,42 @@ LOGGING = {
         'django': {
             'handlers': ['console'],
             'propagate': True,
-            'level': 'INFO',
+            'level': LOG_LEVEL,
         },
         'django.request': {
             'handlers': ['mail_admins', 'console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.views.static': {
             'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
+            'level': LOG_LEVEL,
+            'propagate': False,
         },
         'core.loader': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.executors.remote': {
             # 'handlers': ['console'],
             'handlers': [],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.executors.worker_engines': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': True,
         },
         'core.communication': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.plugins.singleton': {
@@ -218,32 +211,37 @@ LOGGING = {
         },
         'core.models': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.views': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.executors.heartbeat': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.utils': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
+            'propagate': False,
+        },
+        'core.staticfiles': {
+            'handlers': ['console'],
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'core.scheduler': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
         'tornado': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'propagate': True,
         },
         'sqlalchemy': {
@@ -268,13 +266,13 @@ LOGGING = {
         },
         'aaa': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LOG_LEVEL,
             'propagate': True
         },
         'aaa.cas': {
             'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True
+            'level': LOG_LEVEL,
+            'propagate': False 
         }
     }
 }
@@ -300,7 +298,7 @@ TUMBO_LOG_LISTENER_THREADCOUNT = 5
 TUMBO_CLEANUP_INTERVAL_MINUTES = 60
 TUMBO_CLEANUP_OLDER_THAN_N_HOURS = 48
 TUMBO_STATIC_CACHE_SECONDS = 60
-TUMBO_STATIC_404_CACHE_SECONDS = 5
+TUMBO_STATIC_404_CACHE_SECONDS = 10
 
 TUMBO_DOCKER_IMAGE = "philipsahli/tumbo-worker:develop"
 
@@ -322,7 +320,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder'
 )
-# COMPRESS_ENABLED = True
 
 # redis-metrics
 REDIS_METRICS = {
@@ -390,3 +387,25 @@ CSRF_COOKIE_PATH = "/core"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 SOCIAL_AUTH_USERNAME_FORM_HTML = 'login_form.html'
+
+COMPRESS_ENABLED = os.environ.get('COMPRESS_ENABLED')
+if COMPRESS_ENABLED and COMPRESS_ENABLED.lower() in ["yes", "true"]:
+    print "COMPRESS enabled"
+    COMPRESS_ENABLED = True
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+    COMPRESS_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_LOCATION = "static"
+
+    STATIC_URL = "%s%s/%s/" % (AWS_S3_ENDPOINT_URL, AWS_STORAGE_BUCKET_NAME, AWS_LOCATION)
+    print "STATIC_URL is:  " + STATIC_URL
+    COMPRESS_URL = STATIC_URL
+
+    # collectfast
+    COLLECTFAST_THREADS = 20
+    COLLECTFAST_ENABLED = False
+    AWS_PRELOAD_METADATA = True
+    AWS_QUERYSTRING_AUTH = False

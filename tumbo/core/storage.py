@@ -6,6 +6,7 @@ import os
 
 import gevent
 from django.conf import settings
+from django.core.cache import cache
 
 from core.models import StaticFile
 
@@ -59,6 +60,14 @@ class BaseStorage(object):
 
     def _save_config(self):
         pass
+
+    def _clean_cache(self, filename):
+        if "static" in filename:
+            self.static_path = "%s/%s/%s" % (self.base_name, "static", filename)
+            self.cache_key = "%s-%s-%s" % (self.base.user.username,
+                                        self.base.name, self.static_path)
+            result = cache.delete(self.cache_key)
+            logger.info("Cache cleanup %s result: %s" % (filename, result))
 
 
 class LocalStorage(BaseStorage):
@@ -135,6 +144,7 @@ class DBStorage(BaseStorage):
         )
         staticfile_obj.delete()
 
+
     def rename(self, filename_from, filename_to):
         staticfile_obj = StaticFile.objects.get(
             base=self.instance,
@@ -143,6 +153,7 @@ class DBStorage(BaseStorage):
         )
         staticfile_obj.filename = filename_to
         staticfile_obj.save()
+        self._clean_cache(filename_from)
 
     def put(self, filename, content):
         staticfile_obj, created = StaticFile.objects.get_or_create(
@@ -156,3 +167,4 @@ class DBStorage(BaseStorage):
 
         staticfile_obj.content = content
         staticfile_obj.save()
+        self._clean_cache(filename)

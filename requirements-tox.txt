@@ -3,7 +3,7 @@ bumpversion==0.5.3
 bunch==1.0.1
 configobj==5.0.6
 coverage==4.5.1
-django-compressor==1.5
+django-compressor==2.2
 django-cors-headers==1.1.0
 django-debug-toolbar==1.6
 django-extensions==1.6.7
@@ -56,3 +56,7 @@ j2cli==0.3.1.post0
 tox==2.9.1
 selenium==3.11.0
 gitpython==2.1.9
+ipaddress==1.0.22
+django-storages==1.6.6
+boto3==1.7.79
+Collectfast==0.6.2

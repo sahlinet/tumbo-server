@@ -74,7 +74,9 @@ class CockpitView(TemplateView):
 class ResponseUnavailableViewMixing():
     def verify(self, request, base_model):
         if not base_model.state:
+            logger.info("State is: %s" % base_model.state)
             response = HttpResponse()
+            #if request.META and "HTTP_ACCEPT" in request.META and "html" in request.META.get('HTTP_ACCEPT', None):
             if request.META and "HTTP_ACCEPT" in request.META and "html" in request.META.get('HTTP_ACCEPT', None):
                 #response.content_type = "text/html"
                 #response.content = "Function cannot be executed"
