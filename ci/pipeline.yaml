@@ -13,8 +13,8 @@ resources:
   icon: docker
   source:
     repository: philipsahli/tumbo-server
-    username: aaa
-    password: aaa
+    username: ((docker.username))
+    password: ((docker.password))
 
 jobs:
 - name: build-and-push
