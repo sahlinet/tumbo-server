@@ -29,11 +29,11 @@ jobs:
         source:
           repository: vito/oci-build-task
       inputs:
-      - name: tumbo-server-image
+      - name: tumbo-server-repo
       outputs:
       - name: tumbo-server-image
       run:
         path: build
-  - put: simple-image
+  - put: tumbo-server-image
     params:
       image: image/image.tar
