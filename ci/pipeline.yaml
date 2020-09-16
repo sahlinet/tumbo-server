@@ -9,7 +9,7 @@ resources:
 
 # Where we will push the image
 - name: tumbo-server-image
-  type: registry-image
+  type: docker-image
   icon: docker
   source:
     repository: philipsahli/tumbo-server
@@ -26,14 +26,9 @@ jobs:
       platform: linux
       image_resource:
         type: registry-image
-        source:
-          repository: vito/oci-build-task
       inputs:
       - name: tumbo-server-repo
       outputs:
       - name: tumbo-server-image
       run:
         path: build
-  - put: tumbo-server-image
-    params:
-      image: image/image.tar
