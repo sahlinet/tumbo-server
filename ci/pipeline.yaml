@@ -32,10 +32,10 @@ jobs:
       - name: tumbo-server-repo
       outputs:
       - name: image
-      run:
-        path: build
       params:
         CONTEXT: tumbo-server-repo
+      run:
+        path: build
   - put: tumbo-server-image
     params:
       image: image/image.tar
