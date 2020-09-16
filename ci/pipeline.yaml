@@ -1,0 +1,39 @@
+resources:
+# The repo with our Dockerfile
+- name: tumbo-server-repo
+  type: git
+  icon: github
+  source:
+    uri: https://github.com/sahlinet/tumbo-server.git
+    branch: feature/concourse
+
+# Where we will push the image
+- name: tumbo-server-image
+  type: registry-image
+  icon: docker
+  source:
+    repository: philipsahli/tumbo-server
+    username: aaa
+    password: aaa
+
+jobs:
+- name: build-and-push
+  plan:
+  - get: tumbo-server-repo
+  - task: build-task-image
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: vito/oci-build-task
+      inputs:
+      - name: tumbo-server-image
+      outputs:
+      - name: tumbo-server-image
+      run:
+        path: build
+  - put: simple-image
+    params:
+      image: image/image.tar
